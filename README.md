@@ -1,0 +1,1 @@
+# ejabberd-cloud-auth
