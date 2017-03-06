@@ -77,8 +77,6 @@ def getArgs():
 
 
 if __name__ == '__main__':
-    global URL, SECRET
-
     URL, SECRET, DEBUG, LOG = getArgs()
 
     LOGFILE = LOG + '/extauth.log'
