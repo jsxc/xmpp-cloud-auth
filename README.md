@@ -13,3 +13,5 @@ extauth_program: "/opt/ejabberd-cloud-auth/external_cloud.py"
 ```
 
 https://www.ejabberd.im/files/doc/dev.html#htoc9
+
+:warning: https://github.com/processone/ejabberd/issues/1598
