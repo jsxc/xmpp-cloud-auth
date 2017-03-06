@@ -38,7 +38,14 @@ def auth(username, server, password):
         'content-type': 'application/x-www-form-urlencoded'
     }
 
-    r = requests.post(URL, data = payload, headers = headers, allow_redirects = False)
+    try:
+        r = requests.post(URL, data = payload, headers = headers, allow_redirects = False)
+    except requests.exceptions.HTTPError as err:
+        logging.warn(err)
+        return False
+    except requests.exceptions.RequestException as err:
+        logging.warn('An error occured during the request')
+        return False
 
     if r.status_code != requests.codes.ok:
         return False
