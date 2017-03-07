@@ -27,6 +27,11 @@ local auth_processes = module:get_option_number("external_auth_processes", 1);
 assert(script_type == "ejabberd" or script_type == "generic", "Config error: external_auth_protocol must be 'ejabberd' or 'generic'");
 assert(not host:find(":"), "Invalid hostname");
 
+local commands = {}; i = 1
+for c in string.gmatch(command, "%S+") do
+	commands[i] = c
+	i = i + 1
+end
 
 if not blocking then
 	log("debug", "External auth in non-blocking mode, yay!")
@@ -58,7 +63,7 @@ function send_query(text)
 			log("warn", "Auth process exited unexpectedly with %s %d, restarting", status, ret or 0);
 			return nil;
 		end
-		local ok, err = pty:startproc(command);
+		local ok, err = pty:startproc(unpack(commands));
 		if not ok then
 			log("error", "Failed to start auth process '%s': %s", command, err);
 			return nil;
@@ -66,7 +71,9 @@ function send_query(text)
 		log("debug", "Started auth process");
 	end
 
-	pty:send(text);
+	sent = pty:send(text);
+	log("debug", "Sent %s bytes", sent or 0)
+
 	if blocking then
 		return pty:read(read_timeout);
 	else
