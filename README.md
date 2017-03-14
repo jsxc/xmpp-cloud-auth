@@ -1,10 +1,11 @@
-# ejabberd-cloud-auth
+# xmpp-cloud-auth
 
-This authentication script for [ejabberd]() (and also [prosody]()) allows to authenticate against a
-[Nextcloud]()/[Owncloud]() instance running [OJSXC]() (>= 3.2.0).
+This authentication script for [ejabberd](https://www.ejabberd.im) and [prosody](https://prosody.im) allows to authenticate against a
+[Nextcloud](https://nextcloud.com)/[Owncloud](https://owncloud.org) instance running [OJSXC](https://www.jsxc.org) (>= 3.2.0).
 
 ## Installation
-Download [external_cloud.py]() and put it to your desired location or clone this repository to simplify updates:
+Download [external_cloud.py](https://raw.githubusercontent.com/jsxc/xmpp-cloud-auth/master/external_cloud.py) and
+put it to your desired location or clone this repository to simplify updates:
 ```
 cd /opt
 git clone https://github.com/jsxc/ejabberd-cloud-auth
@@ -29,7 +30,7 @@ Adjust your configuration as described in the [admin manual](https://docs.ejabbe
 vim /etc/ejabberd/ejabberd.yml
 
 auth_method: external
-extauth_program: "/opt/ejabberd-cloud-auth/external_cloud.py --url=APIURL --secret=APISECRET"
+extauth_program: "/opt/ejabberd-cloud-auth/external_cloud.py -t ejabberd -u APIURL -s APISECRET"
 ```
 You will find the values for `APIURL` and `APISECRET` on your Nextcloud/Owncloud admin page.
 
@@ -40,8 +41,7 @@ You will find the values for `APIURL` and `APISECRET` on your Nextcloud/Owncloud
 Install [mod_auth_external](https://modules.prosody.im/mod_auth_external.html) and add the following to your config:
 ```
 authentication = "external"
-external_auth_protocol = "ejabberd"
-external_auth_command = "/opt/ejabberd-cloud-auth/external_cloud.py --url=APIURL --secret=APISECRET --log=/var/log/prosody"
+external_auth_command = "/opt/ejabberd-cloud-auth/external_cloud.py -t prosody -u APIURL -s APISECRET -l /var/log/prosody"
 ```
 You will find the values for `APIURL` and `APISECRET` on your Nextcloud/Owncloud admin page.
 
@@ -50,12 +50,15 @@ You will find the values for `APIURL` and `APISECRET` on your Nextcloud/Owncloud
 ## Options
 ```
 $ ./external_cloud.py --help
-usage: external_cloud.py [-h] -u URL -s SECRET [-l LOG] [-d]
+usage: external_cloud.py [-h] -t {prosody,ejabberd} -u URL -s SECRET [-l LOG]
+                         [-d]
 
-ejabberd authentication script
+XMPP server authentication script
 
 optional arguments:
   -h, --help            show this help message and exit
+  -t {prosody,ejabberd}, --type {prosody,ejabberd}
+                        XMPP server
   -u URL, --url URL     base URL
   -s SECRET, --secret SECRET
                         secure api token

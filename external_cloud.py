@@ -13,6 +13,29 @@ DEFAULT_LOG_DIR = '/var/log/ejabberd'
 URL = ''
 SECRET = ''
 
+def from_server(type):
+    if type == 'ejabberd':
+        return from_ejabberd();
+    elif type == 'prosody':
+        return from_prosody();
+
+def to_server(type, bool):
+    if type == 'ejabberd':
+        return to_ejabberd(bool);
+    elif type == 'prosody':
+        return to_prosody(bool);
+
+def from_prosody():
+    line = sys.stdin.readline().rstrip("\n")
+    return line.split(':')
+
+def to_prosody(bool):
+    answer = '0'
+    if bool:
+        answer = '1'
+    sys.stdout.write(answer+"\n")
+    sys.stdout.flush()
+
 def from_ejabberd():
     input_length = sys.stdin.read(2)
     (size,) = unpack('>h', input_length)
@@ -59,8 +82,13 @@ def auth(username, server, password):
 
 def getArgs():
     # build command line argument parser
-    desc = 'ejabberd authentication script'
+    desc = 'XMPP server authentication script'
     parser = argparse.ArgumentParser(description=desc)
+
+    parser.add_argument('-t', '--type',
+        required=True,
+        choices=['prosody', 'ejabberd'],
+        help='XMPP server')
 
     parser.add_argument('-u', '--url',
         required=True,
@@ -80,11 +108,11 @@ def getArgs():
 
     args = vars(parser.parse_args())
 
-    return args['url'], args['secret'], args['debug'], args['log']
+    return args['type'], args['url'], args['secret'], args['debug'], args['log']
 
 
 if __name__ == '__main__':
-    URL, SECRET, DEBUG, LOG = getArgs()
+    TYPE, URL, SECRET, DEBUG, LOG = getArgs()
 
     LOGFILE = LOG + '/extauth.log'
     LEVEL = logging.DEBUG if DEBUG else logging.INFO
@@ -93,20 +121,21 @@ if __name__ == '__main__':
     ERRFILE = LOG + '/extauth.err'
     sys.stderr = open(ERRFILE, 'a+')
 
-    logging.basicConfig(filename=LOGFILE,level=LEVEL)
+    logging.basicConfig(filename=LOGFILE,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
-    logging.info('Start external auth script with endpoint: ' + URL)
-    logging.info('Log level: ' + str(LEVEL))
+    logging.info('Start external auth script for %s with endpoint: %s', TYPE, URL)
+    logging.info('Log location: %s', LOG)
+    logging.info('Log level: %s', 'DEBUG' if DEBUG else 'INFO')
 
     while True:
-        data = from_ejabberd()
+        data = from_server(TYPE)
         logging.info('Receive operation ' + data[0]);
 
         success = False
-        if data[0] == "auth":
+        if data[0] == "auth" and len(data) == 4:
             success = auth(data[1], data[2], data[3])
 
-        to_ejabberd(success)
+        to_server(TYPE, success)
 
     logging.info('Shutting down...');
 
