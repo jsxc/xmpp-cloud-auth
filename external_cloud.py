@@ -8,10 +8,70 @@ import hmac
 import hashlib
 import sys
 from struct import *
+from time import time
+import hmac, hashlib
+from base64 import b64decode
+from string import maketrans
 
 DEFAULT_LOG_DIR = '/var/log/ejabberd'
 URL = ''
 SECRET = ''
+
+usersafe_encoding = maketrans('-$%', 'OIl')
+
+def verify_token(username, server, password):
+    token = b64decode(password.translate(usersafe_encoding) + "=======")
+    jid = username + '@' + server
+
+    if len(token) != 23:
+        logging.debug('Token is too short')
+        return False
+
+    (version, mac, header) = unpack("> B 16s 6s", token)
+    if version != 0:
+        logging.debug('Wrong token version')
+        return False;
+
+    (secretID, expiry) = unpack("> H I", header)
+    if expiry < time():
+        logging.debug('Token is expired')
+        return False
+
+    challenge = pack("> B 6s %ds" % len(jid), version, header, jid)
+    response = hmac.new(SECRET, challenge, hashlib.sha256).digest()
+
+    return hmac.compare_digest(mac, response[:16])
+
+def verify_cloud(username, server, password):
+    payload = urllib.urlencode({
+        'operation':'auth',
+        'username':username,
+        'password':password
+    })
+    signature = hmac.new(SECRET, msg=payload, digestmod=hashlib.sha1).hexdigest();
+    headers = {
+        'X-JSXC-SIGNATURE': 'sha1=' + signature,
+        'content-type': 'application/x-www-form-urlencoded'
+    }
+
+    try:
+        r = requests.post(URL, data = payload, headers = headers, allow_redirects = False)
+    except requests.exceptions.HTTPError as err:
+        logging.warn(err)
+        return False
+    except requests.exceptions.RequestException as err:
+        logging.warn('An error occured during the request')
+        return False
+
+    if r.status_code != requests.codes.ok:
+        return False
+
+    json = r.json();
+
+    if json['result'] == 'success':
+        return True
+
+    return False
 
 def from_server(type):
     if type == 'ejabberd':
@@ -50,32 +110,12 @@ def to_ejabberd(bool):
     sys.stdout.flush()
 
 def auth(username, server, password):
-    payload = urllib.urlencode({
-        'operation':'auth',
-        'username':username,
-        'password':password
-    })
-    signature = hmac.new(SECRET, msg=payload, digestmod=hashlib.sha1).hexdigest();
-    headers = {
-        'X-JSXC-SIGNATURE': 'sha1=' + signature,
-        'content-type': 'application/x-www-form-urlencoded'
-    }
+    if verify_token(username, server, password):
+        logging.info('Token is valid')
+        return True
 
-    try:
-        r = requests.post(URL, data = payload, headers = headers, allow_redirects = False)
-    except requests.exceptions.HTTPError as err:
-        logging.warn(err)
-        return False
-    except requests.exceptions.RequestException as err:
-        logging.warn('An error occured during the request')
-        return False
-
-    if r.status_code != requests.codes.ok:
-        return False
-
-    json = r.json();
-
-    if json['result'] == 'success':
+    if verify_cloud(username, server, password):
+        logging.info('Cloud says this password is valid')
         return True
 
     return False
