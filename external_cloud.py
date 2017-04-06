@@ -20,7 +20,12 @@ SECRET = ''
 usersafe_encoding = maketrans('-$%', 'OIl')
 
 def verify_token(username, server, password):
-    token = b64decode(password.translate(usersafe_encoding) + "=======")
+    try:
+        token = b64decode(password.translate(usersafe_encoding) + "=======")
+    except:
+        logging.debug('Could not decode token')
+        return False
+
     jid = username + '@' + server
 
     if len(token) != 23:
