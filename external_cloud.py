@@ -19,6 +19,30 @@ SECRET = ''
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
+def send_request(data):
+    payload = urllib.urlencode(data)
+    signature = hmac.new(SECRET, msg=payload, digestmod=hashlib.sha1).hexdigest();
+    headers = {
+        'X-JSXC-SIGNATURE': 'sha1=' + signature,
+        'content-type': 'application/x-www-form-urlencoded'
+    }
+
+    try:
+        r = requests.post(URL, data = payload, headers = headers, allow_redirects = False)
+    except requests.exceptions.HTTPError as err:
+        logging.warn(err)
+        return False
+    except requests.exceptions.RequestException as err:
+        logging.warn('An error occured during the request')
+        return False
+
+    if r.status_code != requests.codes.ok:
+        return False
+
+    json = r.json();
+
+    return json;
+
 def verify_token(username, server, password):
     try:
         token = b64decode(password.translate(usersafe_encoding) + "=======")
@@ -48,32 +72,30 @@ def verify_token(username, server, password):
     return hmac.compare_digest(mac, response[:16])
 
 def verify_cloud(username, server, password):
-    payload = urllib.urlencode({
+    response = send_request({
         'operation':'auth',
         'username':username,
         'password':password
-    })
-    signature = hmac.new(SECRET, msg=payload, digestmod=hashlib.sha1).hexdigest();
-    headers = {
-        'X-JSXC-SIGNATURE': 'sha1=' + signature,
-        'content-type': 'application/x-www-form-urlencoded'
-    }
+    });
 
-    try:
-        r = requests.post(URL, data = payload, headers = headers, allow_redirects = False)
-    except requests.exceptions.HTTPError as err:
-        logging.warn(err)
-        return False
-    except requests.exceptions.RequestException as err:
-        logging.warn('An error occured during the request')
+    if not response:
         return False
 
-    if r.status_code != requests.codes.ok:
+    if response['result'] == 'success':
+        return True
+
+    return False
+
+def is_user_cloud(username, server):
+    response = send_request({
+        'operation':'isuser',
+        'username':username
+    });
+
+    if not response:
         return False
 
-    json = r.json();
-
-    if json['result'] == 'success':
+    if response['result'] == 'success' and response['data']['isUser']:
         return True
 
     return False
@@ -121,6 +143,13 @@ def auth(username, server, password):
 
     if verify_cloud(username, server, password):
         logging.info('Cloud says this password is valid')
+        return True
+
+    return False
+
+def is_user(username, server):
+    if is_user_cloud(username, server):
+        logging.info('Cloud says this user exists')
         return True
 
     return False
@@ -179,6 +208,8 @@ if __name__ == '__main__':
         success = False
         if data[0] == "auth" and len(data) == 4:
             success = auth(data[1], data[2], data[3])
+        if data[0] == "isuser" and len(data) == 3:
+            success = is_user(data[1], data[2])
 
         to_server(TYPE, success)
 
