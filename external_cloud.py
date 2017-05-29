@@ -184,8 +184,8 @@ def getArgs():
         help='enable debug mode')
 
     parser.add_argument('-A', '--auth-test',
-	nargs=3,
-        help='one-shot query of the user, domain, and password triple')
+	nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
+        help='one-shot query of the user, domain, and password triple; does not keep running and ignores the "-t" value')
 
     args = vars(parser.parse_args())
     return args['type'], args['url'], args['secret'], args['debug'], args['log'], args['auth_test']
