@@ -33,7 +33,7 @@ def send_request(data):
         logging.warn(err)
         return False
     except requests.exceptions.RequestException as err:
-        logging.warn('An error occured during the request')
+        logging.warn('An error occured during the request: %s' % err)
         return False
 
     if r.status_code != requests.codes.ok:
@@ -43,27 +43,29 @@ def send_request(data):
 
     return json;
 
+# First try if it is a valid token
+# Failure may just indicate that we were passed a password
 def verify_token(username, server, password):
     try:
         token = b64decode(password.translate(usersafe_encoding) + "=======")
     except:
-        logging.debug('Could not decode token')
+        logging.debug('Could not decode token (maybe not a token?)')
         return False
 
     jid = username + '@' + server
 
     if len(token) != 23:
-        logging.debug('Token is too short')
+        logging.debug('Token is too short: %d != 23 (maybe not a token?)' % len(token))
         return False
 
     (version, mac, header) = unpack("> B 16s 6s", token)
     if version != 0:
-        logging.debug('Wrong token version')
+        logging.debug('Wrong token version (maybe not a token?)')
         return False;
 
     (secretID, expiry) = unpack("> H I", header)
     if expiry < time():
-        logging.debug('Token is expired')
+        logging.debug('Token has expired')
         return False
 
     challenge = pack("> B 6s %ds" % len(jid), version, header, jid)
@@ -138,13 +140,14 @@ def to_ejabberd(bool):
 
 def auth(username, server, password):
     if verify_token(username, server, password):
-        logging.info('Token is valid')
+        logging.info('SUCCESS: Token is valid')
         return True
 
     if verify_cloud(username, server, password):
-        logging.info('Cloud says this password is valid')
+        logging.info('SUCCESS: Cloud says this password is valid')
         return True
 
+    logging.info('FAILURE: Neither token nor cloud approves')
     return False
 
 def is_user(username, server):
@@ -177,29 +180,40 @@ def getArgs():
         help='log directory (default: %(default)s)')
 
     parser.add_argument('-d', '--debug',
-        action='store_const', const=True,
-        help='toggle debug mode')
+        action='store_true',
+        help='enable debug mode')
+
+    parser.add_argument('-A', '--auth-test',
+	nargs=3,
+        help='one-shot query of the user, domain, and password triple')
 
     args = vars(parser.parse_args())
-
-    return args['type'], args['url'], args['secret'], args['debug'], args['log']
+    return args['type'], args['url'], args['secret'], args['debug'], args['log'], args['auth_test']
 
 
 if __name__ == '__main__':
-    TYPE, URL, SECRET, DEBUG, LOG = getArgs()
+    TYPE, URL, SECRET, DEBUG, LOG, AUTH_TEST = getArgs()
 
     LOGFILE = LOG + '/extauth.log'
-    LEVEL = logging.DEBUG if DEBUG else logging.INFO
+    LEVEL = logging.DEBUG if DEBUG or AUTH_TEST else logging.INFO
 
-    # redirect stderr
-    ERRFILE = LOG + '/extauth.err'
-    sys.stderr = open(ERRFILE, 'a+')
+    if not AUTH_TEST:
+        logging.basicConfig(filename=LOGFILE,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
-    logging.basicConfig(filename=LOGFILE,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
+        # redirect stderr
+        ERRFILE = LOG + '/extauth.err'
+        sys.stderr = open(ERRFILE, 'a+')
+    else:
+        logging.basicConfig(stream=sys.stdout,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
     logging.info('Start external auth script for %s with endpoint: %s', TYPE, URL)
     logging.info('Log location: %s', LOG)
     logging.info('Log level: %s', 'DEBUG' if DEBUG else 'INFO')
+
+    if AUTH_TEST:
+        success = auth(AUTH_TEST[0], AUTH_TEST[1], AUTH_TEST[2])
+        print(success)
+        sys.exit(0)
 
     while True:
         data = from_server(TYPE)
