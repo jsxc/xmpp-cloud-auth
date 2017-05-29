@@ -22,6 +22,10 @@ Install python and all desired libraries.
 sudo apt-get install python python-pip
 sudo -u USER -H pip install requests
 ```
+OR
+```
+sudo apt-get install python python-requests
+```
 
 ### Ejabberd
 Adjust your configuration as described in the [admin manual](https://docs.ejabberd.im/admin/configuration/#external-script).
@@ -32,10 +36,14 @@ vim /etc/ejabberd/ejabberd.yml
 auth_method: external
 extauth_program: "/opt/xmpp-cloud-auth/external_cloud.py -t ejabberd -u APIURL -s APISECRET"
 ```
-You will find the values for `APIURL` and `APISECRET` on your Nextcloud/Owncloud admin page.
+You will find the values for `APIURL` and `APISECRET` on your Nextcloud/ownCloud admin page.
 
-:warning: On Ubuntu ejabberd will come with an **apparmor** profile which will block the external authentication script.
+:warning: On Ubuntu, `ejabberd` will come with an **apparmor** profile which will block the external authentication script.
  See also the related [issue](https://github.com/processone/ejabberd/issues/1598).
+
+:warning: If you installed a `deb` file from ejabberd.im on Ubuntu 16.04 LTS (and possibly other versions),
+you may have to run `external_cloud.sh` instead of `external_cloud.py`, due to shared library conflicts
+between ejabberd and the system.
 
 ### Prosody
 Install [mod_auth_external](https://modules.prosody.im/mod_auth_external.html) and add the following to your config:
@@ -63,8 +71,17 @@ optional arguments:
   -s SECRET, --secret SECRET
                         secure api token
   -l LOG, --log LOG     log directory (default: /var/log/ejabberd)
-  -d, --debug           toggle debug mode
+  -d, --debug           enable debug mode
+  -A USER DOMAIN PASSWORD, --auth-test USER DOMAIN PASSWORD
+                        one-shot query of the user, domain, and password
+                        triple; does not keep running and ignores the "-t"
+                        value
 ```
+
+## Troubleshooting
+In case you are need some additional debugging, you can try and run `external_cloud.py` from the command line with the usual options and then add '-A jane.doe example.com p4ssw0rd' to test the connection to the ownCloud/Nextcloud server.
+
+If Conversations cannot connect and complains about "Downgrade attack", see the following issue: [No (obvious?) way to accept SASL downgrade](https://github.com/siacs/Conversations/issues/2498). Current workaround: Delete the account in Conversations and then add it again.
 
 ## How does it work?
 Your XMPP server sends the authentication data in a [special format](https://www.ejabberd.im/files/doc/dev.html#htoc9) on the standard input to the authentication script. The script will first try to verify the given password as time-limited token and if this fails, it will send a HTTP request to your cloud installation to verify this data. To protect your Nextcloud/Owncloud against different attacks, every request has a signature similar to the  [github webhook signature]( https://developer.github.com/webhooks/securing/).
