@@ -115,8 +115,14 @@ def to_server(type, bool):
         return to_prosody(bool);
 
 def from_prosody():
-    line = sys.stdin.readline().rstrip("\n")
-    return line.split(':')
+    # "while line in sys.stdin:" would be more concise but adds unwanted buffering
+    while True:
+        line = sys.stdin.readline()
+        if not line:
+            break
+        line = line.rstrip("\n")
+        logging.debug("from_prosody got %s" + line)
+        yield line.split(':')
 
 def to_prosody(bool):
     answer = '0'
@@ -126,9 +132,20 @@ def to_prosody(bool):
     sys.stdout.flush()
 
 def from_ejabberd():
-    input_length = sys.stdin.read(2)
-    (size,) = unpack('>h', input_length)
-    return sys.stdin.read(size).split(':')
+    length_field = sys.stdin.read(2)
+    while len(length_field) == 2:
+        (size,) = unpack('>h', length_field)
+        if size == 0:
+           logging.info("command length 0, treating as logical EOF")
+           return
+        cmd = sys.stdin.read(size)
+        if len(cmd) != size:
+           logging.warn("premature EOF while reading cmd: %d != %d" % (len(cmd), size))
+           return
+        logging.debug("from_ejabberd got %s" % cmd)
+	x = cmd.split(':')
+        yield x
+        length_field = sys.stdin.read(2)
 
 def to_ejabberd(bool):
     answer = 0
@@ -215,8 +232,7 @@ if __name__ == '__main__':
         print(success)
         sys.exit(0)
 
-    while True:
-        data = from_server(TYPE)
+    for data in from_server(TYPE):
         logging.info('Receive operation ' + data[0]);
 
         success = False
