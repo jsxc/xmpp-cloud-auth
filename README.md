@@ -53,7 +53,7 @@ external_auth_command = "/opt/ejabberd-cloud-auth/external_cloud.py -t prosody -
 ```
 You will find the values for `APIURL` and `APISECRET` on your Nextcloud/Owncloud admin page.
 
-:warning: The current module has some issue, see also [#1](https://github.com/jsxc/ejabberd-cloud-auth/issues/1) and [#2](https://github.com/jsxc/ejabberd-cloud-auth/issues/2).
+:warning: The current `mod_auth_external` module cannot pass parameters. Until this is fixed (see [#2](https://github.com/jsxc/ejabberd-cloud-auth/issues/2)), replace your installed module with the patched version in `./prosody-modules/`.
 
 ## Options
 ```
