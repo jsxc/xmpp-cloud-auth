@@ -157,19 +157,19 @@ def to_ejabberd(bool):
 
 def auth(username, server, password):
     if verify_token(username, server, password):
-        logging.info('SUCCESS: Token is valid')
+        logging.info('SUCCESS: Token for %s@%s is valid' % (username, server))
         return True
 
     if verify_cloud(username, server, password):
-        logging.info('SUCCESS: Cloud says this password is valid')
+        logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, server))
         return True
 
-    logging.info('FAILURE: Neither token nor cloud approves')
+    logging.info('FAILURE: Neither token nor cloud approves user %s@%s' % (username, server))
     return False
 
 def is_user(username, server):
     if is_user_cloud(username, server):
-        logging.info('Cloud says this user exists')
+        logging.info('Cloud says user %s@%s exists' % (username, server))
         return True
 
     return False
@@ -224,8 +224,7 @@ if __name__ == '__main__':
         logging.basicConfig(stream=sys.stdout,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
     logging.info('Start external auth script for %s with endpoint: %s', TYPE, URL)
-    logging.info('Log location: %s', LOG)
-    logging.info('Log level: %s', 'DEBUG' if DEBUG else 'INFO')
+    logging.debug('Log level: %s', 'DEBUG' if DEBUG else 'INFO')
 
     if AUTH_TEST:
         success = auth(AUTH_TEST[0], AUTH_TEST[1], AUTH_TEST[2])
@@ -233,7 +232,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     for data in from_server(TYPE):
-        logging.info('Receive operation ' + data[0]);
+        logging.debug('Receive operation ' + data[0]);
 
         success = False
         if data[0] == "auth" and len(data) == 4:
