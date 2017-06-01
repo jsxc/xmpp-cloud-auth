@@ -115,7 +115,7 @@ def to_server(type, bool):
         return to_prosody(bool);
 
 def from_prosody():
-    # "while line in sys.stdin:" would be more concise but adds unwanted buffering
+    # "for line in sys.stdin:" would be more concise but adds unwanted buffering
     while True:
         line = sys.stdin.readline()
         if not line:
@@ -143,7 +143,7 @@ def from_ejabberd():
            logging.warn("premature EOF while reading cmd: %d != %d" % (len(cmd), size))
            return
         logging.debug("from_ejabberd got %s" % cmd)
-	x = cmd.split(':')
+        x = cmd.split(':')
         yield x
         length_field = sys.stdin.read(2)
 
