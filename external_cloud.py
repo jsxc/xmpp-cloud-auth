@@ -122,7 +122,7 @@ def from_prosody():
             break
         line = line.rstrip("\n")
         logging.debug("from_prosody got %s" + line)
-        yield line.split(':')
+        yield line.split(':', 3)
 
 def to_prosody(bool):
     answer = '0'
@@ -143,7 +143,7 @@ def from_ejabberd():
            logging.warn("premature EOF while reading cmd: %d != %d" % (len(cmd), size))
            return
         logging.debug("from_ejabberd got %s" % cmd)
-        x = cmd.split(':')
+        x = cmd.split(':', 3)
         yield x
         length_field = sys.stdin.read(2)
 
