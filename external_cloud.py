@@ -204,17 +204,21 @@ def getArgs():
 	nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='one-shot query of the user, domain, and password triple; does not keep running and ignores the "-t" value')
 
+    parser.add_argument('-I', '--isuser-test',
+	nargs=2, metavar=("USER", "DOMAIN"),
+        help='one-shot query of the user and domain tuple; does not keep running and ignores the "-t" value')
+
     args = vars(parser.parse_args())
-    return args['type'], args['url'], args['secret'], args['debug'], args['log'], args['auth_test']
+    return args['type'], args['url'], args['secret'], args['debug'], args['log'], args['auth_test'], args['isuser_test']
 
 
 if __name__ == '__main__':
-    TYPE, URL, SECRET, DEBUG, LOG, AUTH_TEST = getArgs()
+    TYPE, URL, SECRET, DEBUG, LOG, AUTH_TEST, ISUSER_TEST = getArgs()
 
     LOGFILE = LOG + '/extauth.log'
     LEVEL = logging.DEBUG if DEBUG or AUTH_TEST else logging.INFO
 
-    if not AUTH_TEST:
+    if not AUTH_TEST and not ISUSER_TEST:
         logging.basicConfig(filename=LOGFILE,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
         # redirect stderr
@@ -225,6 +229,11 @@ if __name__ == '__main__':
 
     logging.info('Start external auth script for %s with endpoint: %s', TYPE, URL)
     logging.debug('Log level: %s', 'DEBUG' if DEBUG else 'INFO')
+
+    if ISUSER_TEST:
+        success = is_user(ISUSER_TEST[0], ISUSER_TEST[1])
+        print(success)
+        sys.exit(0)
 
     if AUTH_TEST:
         success = auth(AUTH_TEST[0], AUTH_TEST[1], AUTH_TEST[2])
