@@ -16,6 +16,7 @@ from string import maketrans
 DEFAULT_LOG_DIR = '/var/log/ejabberd'
 URL = ''
 SECRET = ''
+VERSION = '0.2.0'
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
@@ -200,6 +201,8 @@ def getArgs():
         action='store_true',
         help='enable debug mode')
 
+    parser.add_argument('--version', action='version', version=VERSION)
+
     parser.add_argument('-A', '--auth-test',
 	nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='one-shot query of the user, domain, and password triple; does not keep running and ignores the "-t" value')
@@ -227,7 +230,7 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(stream=sys.stdout,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
-    logging.info('Start external auth script for %s with endpoint: %s', TYPE, URL)
+    logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, TYPE, URL)
     logging.debug('Log level: %s', 'DEBUG' if DEBUG else 'INFO')
 
     if ISUSER_TEST:
