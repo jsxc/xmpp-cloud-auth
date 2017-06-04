@@ -16,7 +16,7 @@ from string import maketrans
 DEFAULT_LOG_DIR = '/var/log/ejabberd'
 URL = ''
 SECRET = ''
-VERSION = '0.2.0'
+VERSION = '0.2.0+'
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
@@ -78,6 +78,7 @@ def verify_cloud(username, server, password):
     response = send_request({
         'operation':'auth',
         'username':username,
+	'domain':server,
         'password':password
     });
 
@@ -92,7 +93,8 @@ def verify_cloud(username, server, password):
 def is_user_cloud(username, server):
     response = send_request({
         'operation':'isuser',
-        'username':username
+        'username':username,
+	'domain':server
     });
 
     if not response:
