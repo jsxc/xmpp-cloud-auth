@@ -122,7 +122,7 @@ def from_prosody():
         if not line:
             break
         line = line.rstrip("\n")
-        logging.debug("from_prosody got %s" + line)
+        logging.debug("from_prosody got %s" % line)
         yield line.split(':', 3)
 
 def to_prosody(bool):
