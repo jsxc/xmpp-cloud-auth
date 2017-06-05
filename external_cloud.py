@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 import logging
+try:
+    import configargparse
+    parseclass = "configargparse"
+except ImportError:
+    import argparse
+    parseclass = "argparse"
 import argparse
 import urllib
 import requests
@@ -179,15 +185,23 @@ def is_user(username, server):
 
 def getArgs():
     # build command line argument parser
-    desc = 'XMPP server authentication script'
+    desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
+        See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
     epilog = '''One of -A, -I, and -t is required. If more than
         one is given, -A takes precedence over -I over -t.'''
-    parser = argparse.ArgumentParser(description=desc,
-        epilog=epilog)
 
-    parser.add_argument('-t', '--type',
-        choices=['prosody', 'ejabberd'],
-        help='XMPP server')
+    if parseclass == "argparse":
+        parser = argparse.ArgumentParser(description=desc,
+            epilog=epilog)
+    else:
+	# Config file in /etc or the program directory
+        cfpath = sys.argv[0][:-3] + ".conf"
+        parser = configargparse.ArgumentParser(description=desc,
+            epilog=epilog,
+	    default_config_files=['/etc/external_cloud.conf', cfpath])
+        parser.add_argument('-c', '--config-file',
+            is_config_file=True,
+	    help='config file path')
 
     parser.add_argument('-u', '--url',
         required=True,
@@ -205,15 +219,19 @@ def getArgs():
         action='store_true',
         help='enable debug mode')
 
-    parser.add_argument('--version', action='version', version=VERSION)
+    parser.add_argument('-t', '--type',
+        choices=['prosody', 'ejabberd'],
+        help='XMPP server type; implies reading requests from stdin until EOF')
 
     parser.add_argument('-A', '--auth-test',
 	nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
-        help='one-shot query of the user, domain, and password triple; does not keep running and ignores the "-t" value')
+        help='single, one-shot query of the user, domain, and password triple')
 
     parser.add_argument('-I', '--isuser-test',
 	nargs=2, metavar=("USER", "DOMAIN"),
-        help='one-shot query of the user and domain tuple; does not keep running and ignores the "-t" value')
+        help='single, one-shot query of the user and domain tuple')
+
+    parser.add_argument('--version', action='version', version=VERSION)
 
     args = parser.parse_args()
     if args.type is None and args.auth_test is None and args.isuser_test is None:

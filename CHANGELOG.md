@@ -5,6 +5,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Transmit domain to JSXC externalApi.php (necessary for cloud accounts
+  of the form user@domain)
+- Support for a configuration file when ConfigArgParse python module
+  is installed (`external_cloud.conf` in `/etc` or the installation dir)
+
+### Fixed
+
+### Changed
+- When the configuration file is for all options, no command line
+  parameters are necessary. Then, the modified `mod_auth_external.lua`
+  prosody module does not need to be installed.
+- Old-style configuration (parameters on the command line, no configuration
+  file) is now deprecated.
+- Minor debug output corrections
+- Clarifications in the `--help` output
 
 ## 0.2.0 - 2017-06-02
 ### Added
