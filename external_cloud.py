@@ -180,10 +180,12 @@ def is_user(username, server):
 def getArgs():
     # build command line argument parser
     desc = 'XMPP server authentication script'
-    parser = argparse.ArgumentParser(description=desc)
+    epilog = '''One of -A, -I, and -t is required. If more than
+        one is given, -A takes precedence over -I over -t.'''
+    parser = argparse.ArgumentParser(description=desc,
+        epilog=epilog)
 
     parser.add_argument('-t', '--type',
-        required=True,
         choices=['prosody', 'ejabberd'],
         help='XMPP server')
 
@@ -213,8 +215,11 @@ def getArgs():
 	nargs=2, metavar=("USER", "DOMAIN"),
         help='one-shot query of the user and domain tuple; does not keep running and ignores the "-t" value')
 
-    args = vars(parser.parse_args())
-    return args['type'], args['url'], args['secret'], args['debug'], args['log'], args['auth_test'], args['isuser_test']
+    args = parser.parse_args()
+    if args.type is None and args.auth_test is None and args.isuser_test is None:
+        parser.print_help(sys.stderr)
+	sys.exit(1)
+    return args.type, args.url, args.secret, args.debug, args.log, args.auth_test, args.isuser_test
 
 
 if __name__ == '__main__':
