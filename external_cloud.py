@@ -40,7 +40,10 @@ def send_request(data):
         logging.warn(err)
         return False
     except requests.exceptions.RequestException as err:
-        logging.warn('An error occured during the request: %s' % err)
+        try:
+            logging.warn('An error occured during the request: %s' % err)
+        except TypeError as err:
+            logging.warn('An unknown error occured duringg the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.")
         return False
 
     if r.status_code != requests.codes.ok:
