@@ -43,7 +43,7 @@ def send_request(data):
         try:
             logging.warn('An error occured during the request: %s' % err)
         except TypeError as err:
-            logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.")
+            logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.')
         return False
 
     if r.status_code != requests.codes.ok:
@@ -240,7 +240,7 @@ def getArgs():
     args = parser.parse_args()
     if args.type is None and args.auth_test is None and args.isuser_test is None:
         parser.print_help(sys.stderr)
-	sys.exit(1)
+        sys.exit(1)
     return args.type, args.url, args.secret, args.debug, args.log, args.auth_test, args.isuser_test
 
 
