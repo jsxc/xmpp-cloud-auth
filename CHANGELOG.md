@@ -4,16 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.2.1+ - [Unreleased]
+### Added
+### Fixed
+### Changed
+- Cleanup: The default configuration method is now via configuration file.
+  Removed own version of Prosody module.
+
 ## 0.2.1 - 2017-06-08
 ### Added
 - Transmit domain to JSXC externalApi.php (necessary for cloud accounts
-  of the form user@domain) (#13)
+  of the form user@domain) ([#13](https://github.com/jsxc/xmpp-cloud-auth/issues/13))
 - Support for a configuration file when ConfigArgParse python module
   is installed (`external_cloud.conf` in `/etc` or the installation dir)
 
 ### Fixed
 - No longer die without explanation on SSL errors caused by old libraries.
-  Upgrading your Python libraries would be the actual fix. (#17)
+  Upgrading your Python libraries would be the actual fix.
+  ([#17](https://github.com/jsxc/xmpp-cloud-auth/issues/17))
 
 ### Changed
 - When the configuration file is for all options, no command line

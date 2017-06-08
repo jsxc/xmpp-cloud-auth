@@ -22,7 +22,7 @@ from string import maketrans
 DEFAULT_LOG_DIR = '/var/log/ejabberd'
 URL = ''
 SECRET = ''
-VERSION = '0.2.1'
+VERSION = '0.2.1+'
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
@@ -191,7 +191,8 @@ def getArgs():
     desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
         See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
     epilog = '''One of -A, -I, and -t is required. If more than
-        one is given, -A takes precedence over -I over -t.'''
+        one is given, -A takes precedence over -I over -t.
+        -A and -I imply -d.'''
 
     if parseclass == "argparse":
         parser = argparse.ArgumentParser(description=desc,
