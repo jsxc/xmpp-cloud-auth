@@ -4,14 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## 0.2.1 - 2017-06-08
 ### Added
 - Transmit domain to JSXC externalApi.php (necessary for cloud accounts
-  of the form user@domain)
+  of the form user@domain) (#13)
 - Support for a configuration file when ConfigArgParse python module
   is installed (`external_cloud.conf` in `/etc` or the installation dir)
 
 ### Fixed
+- No longer die without explanation on SSL errors caused by old libraries.
+  Upgrading your Python libraries would be the actual fix. (#17)
 
 ### Changed
 - When the configuration file is for all options, no command line
