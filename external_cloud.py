@@ -248,7 +248,7 @@ if __name__ == '__main__':
     TYPE, URL, SECRET, DEBUG, LOG, AUTH_TEST, ISUSER_TEST = getArgs()
 
     LOGFILE = LOG + '/extauth.log'
-    LEVEL = logging.DEBUG if DEBUG or AUTH_TEST else logging.INFO
+    LEVEL = logging.DEBUG if DEBUG or AUTH_TEST or ISUSER_TEST else logging.INFO
 
     if not AUTH_TEST and not ISUSER_TEST:
         logging.basicConfig(filename=LOGFILE,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
@@ -260,7 +260,7 @@ if __name__ == '__main__':
         logging.basicConfig(stream=sys.stdout,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
     logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, TYPE, URL)
-    logging.debug('Log level: %s', 'DEBUG' if DEBUG else 'INFO')
+    logging.debug('Log level: %s', 'DEBUG' if LEVEL == logging.DEBUG else 'INFO')
 
     if ISUSER_TEST:
         success = is_user(ISUSER_TEST[0], ISUSER_TEST[1])
