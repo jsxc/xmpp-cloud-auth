@@ -132,7 +132,7 @@ def from_prosody():
         line = sys.stdin.readline()
         if not line:
             break
-        line = line.rstrip("\n")
+        line = line.rstrip("\r\n")
         logging.debug("from_prosody got %s" % line)
         yield line.split(':', 3)
 
