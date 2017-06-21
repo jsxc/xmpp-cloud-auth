@@ -66,8 +66,8 @@ function send_query(text)
 		log("debug", "Started auth process");
 	end
 
-	pty:flush("i");
 	pty:send(text);
+	pty:flush("i");
 	if blocking then
 		local response;
 		response = pty:read(read_timeout);
