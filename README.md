@@ -4,7 +4,9 @@ This authentication script for [ejabberd](https://www.ejabberd.im) and [prosody]
 [Nextcloud](https://nextcloud.com)/[Owncloud](https://owncloud.org) instance running [OJSXC](https://www.jsxc.org) (>= 3.2.0).
 
 
-## Installation
+## Quick installation
+[Full step-by-step instructions to install *Nextcloud* with an external XMPP server](https://github.com/jsxc/xmpp-cloud-auth/wiki/) are in the wiki.
+
 Download [external_cloud.py](https://raw.githubusercontent.com/jsxc/xmpp-cloud-auth/master/external_cloud.py) and
 put it to your desired location or clone this repository to simplify updates:
 ```
@@ -30,6 +32,10 @@ sudo -u USER -H pip install requests ConfigArgParse
 
 ## Configuration
 
+:warning: The API secret must not fall into the wrong hands!
+Anyone knowing it can authenticate as any user to the XMPP server
+(and create arbitrary new users).
+
 1. Copy `external_cloud.conf` to `/etc` as root and restrict the access rights
    (e.g., `chown ejabberd /etc/external_cloud.conf; chmod 600 /etc/external_cloud.conf`)
 1. Modify `/etc/external_cloud.conf` according to your environment. The values for 
@@ -49,6 +55,7 @@ See also the related issue [ejabberd#1598](https://github.com/processone/ejabber
 
 :warning: This starts `external_cloud.sh`, as some **ejabberd** installations will lead to shared library conflicts,
 preventing HTTPS access from within Python. The shell wrapper prevents this conflict.
+([ejabberd#1756](https://github.com/processone/ejabberd/issues/1756))
 
 ### Prosody
 Add the following to your config:
@@ -59,6 +66,10 @@ external_auth_command = "/opt/ejabberd-cloud-auth/external_cloud.py"
 :warning: The Prosody `mod_auth_external.lua` only accepts a command name, no parameters
 ([xmpp-cloud-auth#2](https://github.com/jsxc/xmpp-cloud-auth/issues/2), [Prosody#841](https://prosody.im/issues/issue/841)).
 All parameters must therefore be set in the configuration file.
+
+:warning: Use the `mod_auth_external.lua` in this repository.
+This fixes a bug with treating the request as the answer
+([xmpp-cloud-auth#21](https://github.com/jsxc/xmpp-cloud-auth/issues/21), [Prosody#855](https://prosody.im/issues/issue/855)).
 
 ## Options
 ```
