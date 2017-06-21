@@ -66,15 +66,23 @@ function send_query(text)
 		log("debug", "Started auth process");
 	end
 
+	pty:flush("i");
 	pty:send(text);
 	if blocking then
-		return pty:read(read_timeout);
+		local response;
+		response = pty:read(read_timeout);
+		if response == text then
+			response = pty:read(read_timeout);
+		end
+		return response;
 	else
 		local response;
 		local wait, done = waiter();
 		server.addevent(pty:getfd(), server.event.EV_READ, function ()
 			response = pty:read();
-			done();
+			if not response == text then
+				done();
+			end
 			return -1;
 		end);
 		wait();
@@ -99,6 +107,7 @@ function do_query(kind, username, password)
 	end
 
 	local response, err = send_query(query);
+	if response then log("debug", "Reponse %s", response ); end
 	if not response then
 		log("warn", "Error while waiting for result from auth process: %s", err or "unknown error");
 	elseif (script_type == "ejabberd" and response == "\0\2\0\0") or
