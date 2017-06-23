@@ -22,7 +22,7 @@ from string import maketrans
 DEFAULT_LOG_DIR = '/var/log/ejabberd'
 URL = ''
 SECRET = ''
-VERSION = '0.2.1+'
+VERSION = '0.2.2'
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
