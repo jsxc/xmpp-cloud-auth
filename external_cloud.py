@@ -22,7 +22,7 @@ from string import maketrans
 DEFAULT_LOG_DIR = '/var/log/ejabberd'
 URL = ''
 SECRET = ''
-VERSION = '0.2.2'
+VERSION = '0.2.2+'
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
@@ -278,8 +278,10 @@ if __name__ == '__main__':
         success = False
         if data[0] == "auth" and len(data) == 4:
             success = auth(data[1], data[2], data[3])
-        if data[0] == "isuser" and len(data) == 3:
+        elif data[0] == "isuser" and len(data) == 3:
             success = is_user(data[1], data[2])
+        elif data[0] == "quit" or data[0] == "exit":
+            break
 
         to_server(TYPE, success)
 

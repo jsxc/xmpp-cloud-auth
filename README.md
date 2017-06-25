@@ -109,6 +109,14 @@ One of -A, -I, and -t is required. If more than one is given, -A takes
 precedence over -I over -t. -A and -I imply -d.
 ```
 
+## Commands
+When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the following commands are recognized:
+
+* `auth:<USER>:<DOMAIN>:<PASSWORD>`: Is this the <PASSWORD> for the given <USER> (in the given <DOMAIN>)?
+* `isuser:<USER>:<DOMAIN>`: Does this <USER> exist (in the given <DOMAIN>)?
+* `quit` and `exit`: Terminate (for interactive commands, especially over a socket connection)
+* EOF: Terminate
+
 
 ## Troubleshooting
 In case you are need some additional debugging, you can try and run `external_cloud.py` from the command line with the usual options and then add '-A jane.doe example.com p4ssw0rd' to test the connection to the ownCloud/Nextcloud server.
