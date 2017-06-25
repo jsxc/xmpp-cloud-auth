@@ -1,0 +1,8 @@
+[Unit]
+Description=XMPP to Nextcloud+JSXC authentication bridge
+PartOf=xmpp-cloud-auth.service
+
+[Socket]
+ListenStream=[::1]:23664
+ListenStream=127.0.0.1:23664
+Accept=yes
