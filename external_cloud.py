@@ -26,7 +26,7 @@ VERSION = '0.2.2+'
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
-def send_request(data):
+def send_request(s, data):
     payload = urllib.urlencode(data)
     signature = hmac.new(SECRET, msg=payload, digestmod=hashlib.sha1).hexdigest();
     headers = {
@@ -35,7 +35,7 @@ def send_request(data):
     }
 
     try:
-        r = requests.post(URL, data = payload, headers = headers, allow_redirects = False)
+        r = s.post(URL, data = payload, headers = headers, allow_redirects = False)
     except requests.exceptions.HTTPError as err:
         logging.warn(err)
         return False
@@ -83,8 +83,8 @@ def verify_token(username, server, password):
 
     return hmac.compare_digest(mac, response[:16])
 
-def verify_cloud(username, server, password):
-    response = send_request({
+def verify_cloud(s, username, server, password):
+    response = send_request(s, {
         'operation':'auth',
         'username':username,
 	'domain':server,
@@ -99,8 +99,8 @@ def verify_cloud(username, server, password):
 
     return False
 
-def is_user_cloud(username, server):
-    response = send_request({
+def is_user_cloud(s, username, server):
+    response = send_request(s, {
         'operation':'isuser',
         'username':username,
 	'domain':server
@@ -167,20 +167,20 @@ def to_ejabberd(bool):
     sys.stdout.write(token)
     sys.stdout.flush()
 
-def auth(username, server, password):
+def auth(s, username, server, password):
     if verify_token(username, server, password):
         logging.info('SUCCESS: Token for %s@%s is valid' % (username, server))
         return True
 
-    if verify_cloud(username, server, password):
+    if verify_cloud(s, username, server, password):
         logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, server))
         return True
 
     logging.info('FAILURE: Neither token nor cloud approves user %s@%s' % (username, server))
     return False
 
-def is_user(username, server):
-    if is_user_cloud(username, server):
+def is_user(s, username, server):
+    if is_user_cloud(s, username, server):
         logging.info('Cloud says user %s@%s exists' % (username, server))
         return True
 
@@ -262,13 +262,14 @@ if __name__ == '__main__':
     logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, TYPE, URL)
     logging.debug('Log level: %s', 'DEBUG' if LEVEL == logging.DEBUG else 'INFO')
 
+    s = requests.Session()
     if ISUSER_TEST:
-        success = is_user(ISUSER_TEST[0], ISUSER_TEST[1])
+        success = is_user(s, ISUSER_TEST[0], ISUSER_TEST[1])
         print(success)
         sys.exit(0)
 
     if AUTH_TEST:
-        success = auth(AUTH_TEST[0], AUTH_TEST[1], AUTH_TEST[2])
+        success = auth(s, AUTH_TEST[0], AUTH_TEST[1], AUTH_TEST[2])
         print(success)
         sys.exit(0)
 
@@ -277,9 +278,9 @@ if __name__ == '__main__':
 
         success = False
         if data[0] == "auth" and len(data) == 4:
-            success = auth(data[1], data[2], data[3])
+            success = auth(s, data[1], data[2], data[3])
         elif data[0] == "isuser" and len(data) == 3:
-            success = is_user(data[1], data[2])
+            success = is_user(s, data[1], data[2])
         elif data[0] == "quit" or data[0] == "exit":
             break
 
