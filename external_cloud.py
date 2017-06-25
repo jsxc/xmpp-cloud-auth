@@ -117,13 +117,13 @@ def is_user_cloud(s, username, server):
 def from_server(type):
     if type == 'ejabberd':
         return from_ejabberd();
-    elif type == 'prosody':
+    else:
         return from_prosody();
 
 def to_server(type, bool):
     if type == 'ejabberd':
         return to_ejabberd(bool);
-    elif type == 'prosody':
+    else:
         return to_prosody(bool);
 
 def from_prosody():
@@ -190,8 +190,7 @@ def getArgs():
     # build command line argument parser
     desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
         See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
-    epilog = '''One of -A, -I, and -t is required. If more than
-        one is given, -A takes precedence over -I over -t.
+    epilog = '''-A takes precedence over -I over -t.
         -A and -I imply -d.'''
 
     if parseclass == "argparse":
@@ -224,8 +223,9 @@ def getArgs():
         help='enable debug mode')
 
     parser.add_argument('-t', '--type',
-        choices=['prosody', 'ejabberd'],
-        help='XMPP server type; implies reading requests from stdin until EOF')
+        choices=['generic', 'prosody', 'ejabberd'],
+        default='generic',
+        help='XMPP server type (prosody=generic); implies reading requests from stdin')
 
     parser.add_argument('-A', '--auth-test',
 	nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),

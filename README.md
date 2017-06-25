@@ -68,14 +68,14 @@ external_auth_command = "/opt/ejabberd-cloud-auth/external_cloud.py"
 All parameters must therefore be set in the configuration file.
 
 :warning: Use the `mod_auth_external.lua` in this repository.
-This fixes a bug with treating the request as the answer
+This fixes a bug with treating an echo of the request as the answer
 ([xmpp-cloud-auth#21](https://github.com/jsxc/xmpp-cloud-auth/issues/21), [Prosody#855](https://prosody.im/issues/issue/855)).
 
 ## Options
 ```
 $ ./external_cloud.py --help
 usage: external_cloud.py [-h] [-c CONFIG_FILE] -u URL -s SECRET [-l LOG] [-d]
-                         [-t {prosody,ejabberd}] [-A USER DOMAIN PASSWORD]
+                         [-t {generic,prosody,ejabberd}] [-A USER DOMAIN PASSWORD]
                          [-I USER DOMAIN] [--version]
 
 XMPP server authentication against JSXC>=3.2.0 on Nextcloud. See
@@ -95,9 +95,9 @@ optional arguments:
                         secure api token
   -l LOG, --log LOG     log directory (default: /var/log/ejabberd)
   -d, --debug           enable debug mode
-  -t {prosody,ejabberd}, --type {prosody,ejabberd}
+  -t {generic,prosody,ejabberd}, --type {generic,prosody,ejabberd}
                         XMPP server type; implies reading requests from stdin
-                        until EOF
+                        until EOF. 'generic' is identical to 'prosody'.
   -A USER DOMAIN PASSWORD, --auth-test USER DOMAIN PASSWORD
                         single, one-shot query of the user, domain, and
                         password triple
@@ -108,6 +108,11 @@ optional arguments:
 One of -A, -I, and -t is required. If more than one is given, -A takes
 precedence over -I over -t. -A and -I imply -d.
 ```
+
+Note that `-t generic` is identical to `-t prosody`. This is just to indicate
+that new applications should pick the line-based protocol instead of the `ejabberd`
+length-prefixed protocol. (*Prosody* `mod_auth_external.lua` calls the protocol
+`generic` as well.)
 
 ## Commands
 When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the following commands are recognized:
