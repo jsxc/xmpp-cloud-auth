@@ -6,3 +6,6 @@ PartOf=xmpp-cloud-auth.service
 ListenStream=[::1]:23664
 ListenStream=127.0.0.1:23664
 Accept=yes
+
+[Install]
+WantedBy=multi-user.target

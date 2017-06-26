@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - "quit" and "exit" commands (useful, when used behind a socket)
 - *systemd* configuration files for sending the authentication requests/responses over a socket
+  with `multi-user.target` depending on it
 - Use HTTP/1.1 persistent connections for higher throughput
 - `-t generic` (equivalent to `-t prosody`) is now default
 ### Fixed
