@@ -9,7 +9,6 @@
 -- COPYING file in the source package for more information.
 --
 
-local lpty = assert(require "lpty", "mod_auth_external requires lpty: https://modules.prosody.im/mod_auth_external.html#installation");
 local usermanager = require "core.usermanager";
 local new_sasl = require "util.sasl".new;
 local server = require "net.server";
@@ -24,6 +23,17 @@ local read_timeout = module:get_option_number("external_auth_timeout", 5);
 local blocking = module:get_option_boolean("external_auth_blocking", not(have_async and server.event and lpty.getfd));
 local auth_processes = module:get_option_number("external_auth_processes", 1);
 
+local lpty, pty_options;
+if command:sub(1,1) == "@" then
+	-- Use a socket connection
+	lpty = module:require "pseudolpty";
+	log("info", "External auth with pseudolpty socket to %s", command:sub(2));
+	pty_options = { log = log };
+else
+	lpty = assert(require "lpty", "mod_auth_external requires lpty: https://modules.prosody.im/mod_auth_external.html#installation");
+	log("info", "External auth with pty command %s", command);
+	pty_options = { throw_errors = false, no_local_echo = true, use_path = false };
+end
 assert(script_type == "ejabberd" or script_type == "generic", "Config error: external_auth_protocol must be 'ejabberd' or 'generic'");
 assert(not host:find(":"), "Invalid hostname");
 
@@ -38,7 +48,6 @@ end
 
 local ptys = {};
 
-local pty_options = { throw_errors = false, no_local_echo = true, use_path = false };
 for i = 1, auth_processes do
 	ptys[i] = lpty.new(pty_options);
 end

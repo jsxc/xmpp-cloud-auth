@@ -130,6 +130,13 @@ If Conversations cannot connect and complains about "Downgrade attack", see the 
 [No (obvious?) way to accept SASL downgrade (Conversations#2498)](https://github.com/siacs/Conversations/issues/2498).
 Current workaround: Delete the account in Conversations and then add it again.
 
+### Experimental socket interface
+
+If you see unreliable behavior with *Prosody*, you might want to try the experimental socket interface.
+When using the `mod_auth_external.lua` bundled here (together with `pseudolpty.lua`), you can use
+the `external_auth_command = "@localhost:23664";` option to talk over a socket to a process not spawned
+by *Prosody* on port 23664. [systemd/README.md](systemd/README.md) explains how to automatically start
+such a process using *systemd*.
 
 ## How does it work?
 Your XMPP server sends the authentication data in a [special format](https://www.ejabberd.im/files/doc/dev.html#htoc9) on the standard input to the authentication script. The script will first try to verify the given password as time-limited token and if this fails, it will send a HTTP request to your cloud installation to verify this data. To protect your Nextcloud/Owncloud against different attacks, every request has a signature similar to the  [github webhook signature]( https://developer.github.com/webhooks/securing/).
