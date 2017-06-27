@@ -74,9 +74,11 @@ This fixes a bug with treating an echo of the request as the answer
 ## Options
 ```
 $ ./external_cloud.py --help
-usage: external_cloud.py [-h] [-c CONFIG_FILE] -u URL -s SECRET [-l LOG] [-d]
-                         [-t {generic,prosody,ejabberd}] [-A USER DOMAIN PASSWORD]
-                         [-I USER DOMAIN] [--version]
+usage: external_cloud.py [-h] [-c CONFIG_FILE] -u URL -s SECRET [-l LOG]
+                         [-p PER_DOMAIN_CONFIG] [-b DOMAIN_DB] [-d] [-i]
+                         [-t {generic,prosody,ejabberd}]
+                         [-A USER DOMAIN PASSWORD] [-I USER DOMAIN] [-G GET]
+                         [-P KEY VALUE] [-D DELETE] [-L] [-U] [--version]
 
 XMPP server authentication against JSXC>=3.2.0 on Nextcloud. See
 https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth. Args that start
@@ -94,22 +96,33 @@ optional arguments:
   -s SECRET, --secret SECRET
                         secure api token
   -l LOG, --log LOG     log directory (default: /var/log/ejabberd)
+  -p PER_DOMAIN_CONFIG, --per-domain-config PER_DOMAIN_CONFIG
+                        name of file containing whitespace-separated (domain,
+                        secret, url) tuples
+  -b DOMAIN_DB, --domain-db DOMAIN_DB
+                        persistent domain database; manipulated with -G, -P,
+                        -D, -L, -U
   -d, --debug           enable debug mode
+  -i, --interactive     log to stdout
   -t {generic,prosody,ejabberd}, --type {generic,prosody,ejabberd}
-                        XMPP server type; implies reading requests from stdin
-                        until EOF. 'generic' is identical to 'prosody'.
+                        XMPP server type (prosody=generic); implies reading
+                        requests from stdin
   -A USER DOMAIN PASSWORD, --auth-test USER DOMAIN PASSWORD
                         single, one-shot query of the user, domain, and
                         password triple
   -I USER DOMAIN, --isuser-test USER DOMAIN
                         single, one-shot query of the user and domain tuple
-  -p PER_DOMAIN_CONFIG, --per-domain-config PER_DOMAIN_CONFIG
-                        Name of file containing whitespace-separated (domain,
-                        secret, url) tuples
+  -G GET, --get GET     retrieve (get) a database entry
+  -P KEY VALUE, --put KEY VALUE
+                        store (put) a database entry (insert or update)
+  -D DELETE, --delete DELETE
+                        delete a database entry
+  -L, --load            load multiple database entries from stdin
+  -U, --unload          unload (dump) the database contents to stdout
   --version             show program's version number and exit
 
-One of -A, -I, and -t is required. If more than one is given, -A takes
-precedence over -I over -t. -A and -I imply -d.
+-A takes precedence over -I over -t. -A and -I imply -d. -A, -I, -G, -P, -D,
+-L, and -U imply -i. The database operations require -b.
 ```
 
 Note that `-t generic` is identical to `-t prosody`. This is just to indicate

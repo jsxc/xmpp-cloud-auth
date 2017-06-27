@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.2.2+ - [Unreleased]
 ### Added
 - Can now authenticate against multiple cloud instances
+  as defined by a static text file or a dynamic database
 - Experimental support for talking over a socket
 - *systemd* configuration files for sending the authentication requests/responses over a socket
   with `multi-user.target` depending on it
