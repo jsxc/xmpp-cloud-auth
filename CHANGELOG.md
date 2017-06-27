@@ -6,14 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 0.2.2+ - [Unreleased]
 ### Added
-- "quit" and "exit" commands (useful, when used behind a socket)
+- Can now authenticate against multiple cloud instances
+- Experimental support for talking over a socket
 - *systemd* configuration files for sending the authentication requests/responses over a socket
   with `multi-user.target` depending on it
-- Experimental support for talking over a socket
-- Use HTTP/1.1 persistent connections for higher throughput
-- `-t generic` (equivalent to `-t prosody`) is now default
+- "quit" and "exit" commands (useful, when used behind a socket)
 ### Fixed
 ### Changed
+- Use HTTP/1.1 persistent connections for higher throughput
+- The new `-t generic` (equivalent to `-t prosody`) is now default
 
 ## 0.2.2 - 2017-06-23
 ### Added

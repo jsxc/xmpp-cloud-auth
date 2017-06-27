@@ -20,22 +20,23 @@ from base64 import b64decode
 from string import maketrans
 
 DEFAULT_LOG_DIR = '/var/log/ejabberd'
-URL = ''
-SECRET = ''
+FALLBACK_URL = ''
+FALLBACK_SECRET = ''
 VERSION = '0.2.2+'
+DOMAINS = {}
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
-def send_request(s, data):
+def send_request(s, data, secret, url):
     payload = urllib.urlencode(data)
-    signature = hmac.new(SECRET, msg=payload, digestmod=hashlib.sha1).hexdigest();
+    signature = hmac.new(secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
     headers = {
         'X-JSXC-SIGNATURE': 'sha1=' + signature,
-        'content-type': 'application/x-www-form-urlencoded'
+        'content-type':     'application/x-www-form-urlencoded'
     }
 
     try:
-        r = s.post(URL, data = payload, headers = headers, allow_redirects = False)
+        r = s.post(url, data = payload, headers = headers, allow_redirects = False)
     except requests.exceptions.HTTPError as err:
         logging.warn(err)
         return False
@@ -55,7 +56,7 @@ def send_request(s, data):
 
 # First try if it is a valid token
 # Failure may just indicate that we were passed a password
-def verify_token(username, server, password):
+def verify_token(username, server, password, secret):
     try:
         token = b64decode(password.translate(usersafe_encoding) + "=======")
     except:
@@ -79,17 +80,17 @@ def verify_token(username, server, password):
         return False
 
     challenge = pack("> B 6s %ds" % len(jid), version, header, jid)
-    response = hmac.new(SECRET, challenge, hashlib.sha256).digest()
+    response = hmac.new(secret, challenge, hashlib.sha256).digest()
 
     return hmac.compare_digest(mac, response[:16])
 
-def verify_cloud(s, username, server, password):
+def verify_cloud(s, username, server, password, secret, url):
     response = send_request(s, {
         'operation':'auth',
-        'username':username,
-	'domain':server,
-        'password':password
-    });
+        'username': username,
+        'domain':   server,
+        'password': password
+    }, secret, url);
 
     if not response:
         return False
@@ -99,12 +100,12 @@ def verify_cloud(s, username, server, password):
 
     return False
 
-def is_user_cloud(s, username, server):
+def is_user_cloud(s, username, domain, secret, url):
     response = send_request(s, {
         'operation':'isuser',
-        'username':username,
-	'domain':server
-    });
+        'username':  username,
+        'domain':    domain
+    }, secret, url);
 
     if not response:
         return False
@@ -167,21 +168,23 @@ def to_ejabberd(bool):
     sys.stdout.write(token)
     sys.stdout.flush()
 
-def auth(s, username, server, password):
-    if verify_token(username, server, password):
-        logging.info('SUCCESS: Token for %s@%s is valid' % (username, server))
+def auth(s, username, domain, password):
+    secret, url = per_domain(domain)
+    if verify_token(username, domain, password, secret):
+        logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
         return True
 
-    if verify_cloud(s, username, server, password):
-        logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, server))
+    if verify_cloud(s, username, domain, password, secret, url):
+        logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, domain))
         return True
 
-    logging.info('FAILURE: Neither token nor cloud approves user %s@%s' % (username, server))
+    logging.info('FAILURE: Neither token nor cloud approves user %s@%s' % (username, domain))
     return False
 
-def is_user(s, username, server):
-    if is_user_cloud(s, username, server):
-        logging.info('Cloud says user %s@%s exists' % (username, server))
+def is_user(s, username, domain):
+    secret, url = per_domain(domain)
+    if is_user_cloud(s, username, domain, secret, url):
+        logging.info('Cloud says user %s@%s exists' % (username, domain))
         return True
 
     return False
@@ -228,12 +231,15 @@ def getArgs():
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
 
     parser.add_argument('-A', '--auth-test',
-	nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
+        nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='single, one-shot query of the user, domain, and password triple')
 
     parser.add_argument('-I', '--isuser-test',
-	nargs=2, metavar=("USER", "DOMAIN"),
+        nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
+
+    parser.add_argument('-p', '--per-domain-config',
+        help='name of file containing whitespace-separated (domain, secret, url) tuples')
 
     parser.add_argument('--version', action='version', version=VERSION)
 
@@ -241,26 +247,53 @@ def getArgs():
     if args.type is None and args.auth_test is None and args.isuser_test is None:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    return args.type, args.url, args.secret, args.debug, args.log, args.auth_test, args.isuser_test
+    return args.type, args.url, args.secret, args.debug, args.log, args.auth_test, args.isuser_test, args.per_domain_config
 
+def read_pdc(filename):
+    if not filename:
+        return
+    lines = 0
+    with open(filename, "r") as f:
+        for line in f:
+            lines += 1
+            sys.stderr.write(line)
+            line = line.rstrip("\r\n")
+            if len(line) == 0 or line[0] == "#":
+                continue
+            try:
+		dom, sec, url = line.split()
+            except ValueError as err:
+                logging.error('Missing fields in %s:%d: "%s"' % (filename, lines, line))
+		raise
+            DOMAINS[dom] = (sec, url)
+    logging.info('Read %d lines, %d domains from %s' % (lines, len(dom), filename))
+
+def per_domain(dom):
+    if dom in DOMAINS:
+        d = DOMAINS[dom]
+        return d[0], d[1]
+    else:
+        return FALLBACK_SECRET, FALLBACK_URL
 
 if __name__ == '__main__':
-    TYPE, URL, SECRET, DEBUG, LOG, AUTH_TEST, ISUSER_TEST = getArgs()
+    TYPE, FALLBACK_URL, FALLBACK_SECRET, DEBUG, LOGDIR, AUTH_TEST, ISUSER_TEST, PDC = getArgs()
 
-    LOGFILE = LOG + '/extauth.log'
+    LOGFILE = LOGDIR + '/extauth.log'
     LEVEL = logging.DEBUG if DEBUG or AUTH_TEST or ISUSER_TEST else logging.INFO
 
     if not AUTH_TEST and not ISUSER_TEST:
         logging.basicConfig(filename=LOGFILE,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
         # redirect stderr
-        ERRFILE = LOG + '/extauth.err'
+        ERRFILE = LOGDIR + '/extauth.err'
         sys.stderr = open(ERRFILE, 'a+')
     else:
         logging.basicConfig(stream=sys.stdout,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
 
-    logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, TYPE, URL)
+    logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, TYPE, FALLBACK_URL)
     logging.debug('Log level: %s', 'DEBUG' if LEVEL == logging.DEBUG else 'INFO')
+
+    read_pdc(PDC)
 
     s = requests.Session()
     if ISUSER_TEST:

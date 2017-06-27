@@ -103,6 +103,9 @@ optional arguments:
                         password triple
   -I USER DOMAIN, --isuser-test USER DOMAIN
                         single, one-shot query of the user and domain tuple
+  -p PER_DOMAIN_CONFIG, --per-domain-config PER_DOMAIN_CONFIG
+                        Name of file containing whitespace-separated (domain,
+                        secret, url) tuples
   --version             show program's version number and exit
 
 One of -A, -I, and -t is required. If more than one is given, -A takes
@@ -113,6 +116,11 @@ Note that `-t generic` is identical to `-t prosody`. This is just to indicate
 that new applications should pick the line-based protocol instead of the `ejabberd`
 length-prefixed protocol. (*Prosody* `mod_auth_external.lua` calls the protocol
 `generic` as well.)
+
+If only a single (API secret, API url) tuple is defined (the one in the configuration file or on the command line), then this one will be used for all requests.
+If additional per-domain-configuration entries are given (via the `-p` option), then if the domain equals one in this per-domain configuration, the parameters
+there will take precedence over the global, fallback tuple. You generally will only need this if you operate a single XMPP server providing service
+to multiple cloud instances.
 
 ## Commands
 When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the following commands are recognized:
@@ -139,7 +147,7 @@ by *Prosody* on port 23664. [systemd/README.md](systemd/README.md) explains how 
 such a process using *systemd*.
 
 ## How does it work?
-Your XMPP server sends the authentication data in a [special format](https://www.ejabberd.im/files/doc/dev.html#htoc9) on the standard input to the authentication script. The script will first try to verify the given password as time-limited token and if this fails, it will send a HTTP request to your cloud installation to verify this data. To protect your Nextcloud/Owncloud against different attacks, every request has a signature similar to the  [github webhook signature]( https://developer.github.com/webhooks/securing/).
+Your XMPP server sends the authentication data in a [special format](https://www.ejabberd.im/files/doc/dev.html#htoc9) on the standard input to the authentication script, length-prefixed (`-t ejabberd`) for *ejabberd*, newline-terminated (`-t prosody` aka `-t generic`) for *Prosody* (and maybe others). The script will first try to verify the given password as time-limited token and if this fails, it will send a HTTP request to your cloud installation to verify this data. To protect your Nextcloud/Owncloud against different attacks, every request has a signature similar to the  [github webhook signature]( https://developer.github.com/webhooks/securing/).
 
 ### Time-limited token
 The time-limited token has the following structure:

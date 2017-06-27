@@ -1,0 +1,12 @@
+# Which XMPP domains are to be verified by which (secret, url) tuples
+#
+# For anything not listed here, the default (secret, url) tuple in the configuration
+# file (or given on the command line) will be used.
+#
+# :warning: Make sure this file is only readable by trusted accounts. Anyone knowing
+# a domain's API secret can impersonate any XMPP user on that domain.
+#
+# XMPP Domain		API Secret		API URL
+example.com		ahZTH6YF+0etkpwxvmu9YZl	https://example.com/index.php/apps/ojsxc/ajax/externalApi.php
+example.ch		H6YF+0etkpwxvmu9YZlahZT	https://example.ch/index.php/apps/ojsxc/ajax/externalApi.php
+example.de		9YZlahZTH6YF+0etkpwxvmu	https://example.de/index.php/apps/ojsxc/ajax/externalApi.php
