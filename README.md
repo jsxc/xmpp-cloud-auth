@@ -145,7 +145,7 @@ When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the 
 
 
 ## Troubleshooting
-In case you are need some additional debugging, you can try and run `external_cloud.py` from the command line with the usual options and then add '-A jane.doe example.com p4ssw0rd' to test the connection to the ownCloud/Nextcloud server.
+In case you are need some additional debugging, you can try and run `external_cloud.py` from the command line with the usual options and then add `-A jane.doe example.com p4ssw0rd` to test the connection to the ownCloud/Nextcloud server.
 
 If Conversations cannot connect and complains about "Downgrade attack", see the following issue:
 [No (obvious?) way to accept SASL downgrade (Conversations#2498)](https://github.com/siacs/Conversations/issues/2498).
