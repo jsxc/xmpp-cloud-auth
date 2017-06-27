@@ -13,8 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - "quit" and "exit" commands (useful, when used behind a socket)
 ### Fixed
 ### Changed
+- Now requires "configargparse"
 - Use HTTP/1.1 persistent connections for higher throughput
 - The new `-t generic` (equivalent to `-t prosody`) is now default
+- Minor refactoring
 
 ## 0.2.2 - 2017-06-23
 ### Added

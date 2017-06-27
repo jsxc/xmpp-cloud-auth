@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
 import logging
-try:
-    import configargparse
-    parseclass = "configargparse"
-except ImportError:
-    import argparse
-    parseclass = "argparse"
+import configargparse
 import argparse
 import urllib
 import requests
@@ -202,18 +197,15 @@ def get_args():
     epilog = '''-A takes precedence over -I over -t.
         -A and -I imply -d.'''
 
-    if parseclass == "argparse":
-        parser = argparse.ArgumentParser(description=desc,
-            epilog=epilog)
-    else:
-	# Config file in /etc or the program directory
-        cfpath = sys.argv[0][:-3] + ".conf"
-        parser = configargparse.ArgumentParser(description=desc,
-            epilog=epilog,
-	    default_config_files=['/etc/external_cloud.conf', cfpath])
-        parser.add_argument('-c', '--config-file',
-            is_config_file=True,
-	    help='config file path')
+    # Config file in /etc or the program directory
+    cfpath = sys.argv[0][:-3] + ".conf"
+    parser = configargparse.ArgumentParser(description=desc,
+        epilog=epilog,
+    default_config_files=['/etc/external_cloud.conf', cfpath])
+
+    parser.add_argument('-c', '--config-file',
+        is_config_file=True,
+        help='config file path')
 
     parser.add_argument('-u', '--url',
         required=True,
