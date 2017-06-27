@@ -256,7 +256,6 @@ def read_pdc(filename):
     with open(filename, "r") as f:
         for line in f:
             lines += 1
-            sys.stderr.write(line)
             line = line.rstrip("\r\n")
             if len(line) == 0 or line[0] == "#":
                 continue
