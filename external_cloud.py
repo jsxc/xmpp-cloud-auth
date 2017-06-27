@@ -27,101 +27,15 @@ DOMAINS = {}
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
-def send_request(s, data, secret, url):
-    payload = urllib.urlencode(data)
-    signature = hmac.new(secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
-    headers = {
-        'X-JSXC-SIGNATURE': 'sha1=' + signature,
-        'content-type':     'application/x-www-form-urlencoded'
-    }
+### Handling requests from/responses to XMPP server
 
-    try:
-        r = s.post(url, data = payload, headers = headers, allow_redirects = False)
-    except requests.exceptions.HTTPError as err:
-        logging.warn(err)
-        return False
-    except requests.exceptions.RequestException as err:
-        try:
-            logging.warn('An error occured during the request: %s' % err)
-        except TypeError as err:
-            logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.')
-        return False
-
-    if r.status_code != requests.codes.ok:
-        return False
-
-    json = r.json();
-
-    return json;
-
-# First try if it is a valid token
-# Failure may just indicate that we were passed a password
-def verify_token(username, server, password, secret):
-    try:
-        token = b64decode(password.translate(usersafe_encoding) + "=======")
-    except:
-        logging.debug('Could not decode token (maybe not a token?)')
-        return False
-
-    jid = username + '@' + server
-
-    if len(token) != 23:
-        logging.debug('Token is too short: %d != 23 (maybe not a token?)' % len(token))
-        return False
-
-    (version, mac, header) = unpack("> B 16s 6s", token)
-    if version != 0:
-        logging.debug('Wrong token version (maybe not a token?)')
-        return False;
-
-    (secretID, expiry) = unpack("> H I", header)
-    if expiry < time():
-        logging.debug('Token has expired')
-        return False
-
-    challenge = pack("> B 6s %ds" % len(jid), version, header, jid)
-    response = hmac.new(secret, challenge, hashlib.sha256).digest()
-
-    return hmac.compare_digest(mac, response[:16])
-
-def verify_cloud(s, username, server, password, secret, url):
-    response = send_request(s, {
-        'operation':'auth',
-        'username': username,
-        'domain':   server,
-        'password': password
-    }, secret, url);
-
-    if not response:
-        return False
-
-    if response['result'] == 'success':
-        return True
-
-    return False
-
-def is_user_cloud(s, username, domain, secret, url):
-    response = send_request(s, {
-        'operation':'isuser',
-        'username':  username,
-        'domain':    domain
-    }, secret, url);
-
-    if not response:
-        return False
-
-    if response['result'] == 'success' and response['data']['isUser']:
-        return True
-
-    return False
-
-def from_server(type):
+def from_xmpp(type):
     if type == 'ejabberd':
         return from_ejabberd();
     else:
         return from_prosody();
 
-def to_server(type, bool):
+def to_xmpp(type, bool):
     if type == 'ejabberd':
         return to_ejabberd(bool);
     else:
@@ -168,28 +82,120 @@ def to_ejabberd(bool):
     sys.stdout.write(token)
     sys.stdout.flush()
 
+### Handling requests to/responses from the cloud server
+
+def cloud_request(s, data, secret, url):
+    payload = urllib.urlencode(data)
+    signature = hmac.new(secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
+    headers = {
+        'X-JSXC-SIGNATURE': 'sha1=' + signature,
+        'content-type':     'application/x-www-form-urlencoded'
+    }
+
+    try:
+        r = s.post(url, data = payload, headers = headers, allow_redirects = False)
+    except requests.exceptions.HTTPError as err:
+        logging.warn(err)
+        return False
+    except requests.exceptions.RequestException as err:
+        try:
+            logging.warn('An error occured during the request: %s' % err)
+        except TypeError as err:
+            logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.')
+        return False
+
+    if r.status_code != requests.codes.ok:
+        return False
+
+    json = r.json();
+
+    return json;
+
+# First try if it is a valid token
+# Failure may just indicate that we were passed a password
+def auth_token(username, domain, password, secret):
+    try:
+        token = b64decode(password.translate(usersafe_encoding) + "=======")
+    except:
+        logging.debug('Could not decode token (maybe not a token?)')
+        return False
+
+    jid = username + '@' + domain
+
+    if len(token) != 23:
+        logging.debug('Token is too short: %d != 23 (maybe not a token?)' % len(token))
+        return False
+
+    (version, mac, header) = unpack("> B 16s 6s", token)
+    if version != 0:
+        logging.debug('Wrong token version (maybe not a token?)')
+        return False;
+
+    (secretID, expiry) = unpack("> H I", header)
+    if expiry < time():
+        logging.debug('Token has expired')
+        return False
+
+    challenge = pack("> B 6s %ds" % len(jid), version, header, jid)
+    response = hmac.new(secret, challenge, hashlib.sha256).digest()
+
+    return hmac.compare_digest(mac, response[:16])
+
+def auth_cloud(s, username, domain, password, secret, url):
+    response = cloud_request(s, {
+        'operation':'auth',
+        'username': username,
+        'domain':   domain,
+        'password': password
+    }, secret, url);
+
+    if not response:
+        return False
+
+    if response['result'] == 'success':
+        return True
+
+    return False
+
 def auth(s, username, domain, password):
     secret, url = per_domain(domain)
-    if verify_token(username, domain, password, secret):
+    if auth_token(username, domain, password, secret):
         logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
         return True
 
-    if verify_cloud(s, username, domain, password, secret, url):
+    if auth_cloud(s, username, domain, password, secret, url):
         logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, domain))
         return True
 
     logging.info('FAILURE: Neither token nor cloud approves user %s@%s' % (username, domain))
     return False
 
-def is_user(s, username, domain):
+def isuser_cloud(s, username, domain, secret, url):
+    response = cloud_request(s, {
+        'operation':'isuser',
+        'username':  username,
+        'domain':    domain
+    }, secret, url);
+
+    if not response:
+        return False
+
+    if response['result'] == 'success' and response['data']['isUser']:
+        return True
+
+    return False
+
+def isuser(s, username, domain):
     secret, url = per_domain(domain)
-    if is_user_cloud(s, username, domain, secret, url):
+    if isuser_cloud(s, username, domain, secret, url):
         logging.info('Cloud says user %s@%s exists' % (username, domain))
         return True
 
     return False
 
-def getArgs():
+### Configuration-related functions
+
+def get_args():
     # build command line argument parser
     desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
         See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
@@ -275,7 +281,7 @@ def per_domain(dom):
         return FALLBACK_SECRET, FALLBACK_URL
 
 if __name__ == '__main__':
-    TYPE, FALLBACK_URL, FALLBACK_SECRET, DEBUG, LOGDIR, AUTH_TEST, ISUSER_TEST, PDC = getArgs()
+    TYPE, FALLBACK_URL, FALLBACK_SECRET, DEBUG, LOGDIR, AUTH_TEST, ISUSER_TEST, PDC = get_args()
 
     LOGFILE = LOGDIR + '/extauth.log'
     LEVEL = logging.DEBUG if DEBUG or AUTH_TEST or ISUSER_TEST else logging.INFO
@@ -296,7 +302,7 @@ if __name__ == '__main__':
 
     s = requests.Session()
     if ISUSER_TEST:
-        success = is_user(s, ISUSER_TEST[0], ISUSER_TEST[1])
+        success = isuser(s, ISUSER_TEST[0], ISUSER_TEST[1])
         print(success)
         sys.exit(0)
 
@@ -305,19 +311,19 @@ if __name__ == '__main__':
         print(success)
         sys.exit(0)
 
-    for data in from_server(TYPE):
+    for data in from_xmpp(TYPE):
         logging.debug('Receive operation ' + data[0]);
 
         success = False
         if data[0] == "auth" and len(data) == 4:
             success = auth(s, data[1], data[2], data[3])
         elif data[0] == "isuser" and len(data) == 3:
-            success = is_user(s, data[1], data[2])
+            success = isuser(s, data[1], data[2])
         elif data[0] == "quit" or data[0] == "exit":
             break
 
-        to_server(TYPE, success)
+        to_xmpp(TYPE, success)
 
     logging.info('Shutting down...');
 
-# vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab
+# vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4
