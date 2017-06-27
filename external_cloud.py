@@ -22,60 +22,56 @@ DOMAINS = {}
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
+
 ### Handling requests from/responses to XMPP server
 
-def from_xmpp(type):
-    if type == 'ejabberd':
-        return from_ejabberd();
-    else:
-        return from_prosody();
+class prosody_io:
+    @classmethod
+    def read_request(cls):
+        # "for line in sys.stdin:" would be more concise but adds unwanted buffering
+        while True:
+            line = sys.stdin.readline()
+            if not line:
+                break
+            line = line.rstrip("\r\n")
+            logging.debug("from_prosody got %s" % line)
+            yield line.split(':', 3)
 
-def to_xmpp(type, bool):
-    if type == 'ejabberd':
-        return to_ejabberd(bool);
-    else:
-        return to_prosody(bool);
+    @classmethod
+    def write_response(cls, bool):
+        answer = '0'
+        if bool:
+            answer = '1'
+        sys.stdout.write(answer+"\n")
+        sys.stdout.flush()
 
-def from_prosody():
-    # "for line in sys.stdin:" would be more concise but adds unwanted buffering
-    while True:
-        line = sys.stdin.readline()
-        if not line:
-            break
-        line = line.rstrip("\r\n")
-        logging.debug("from_prosody got %s" % line)
-        yield line.split(':', 3)
-
-def to_prosody(bool):
-    answer = '0'
-    if bool:
-        answer = '1'
-    sys.stdout.write(answer+"\n")
-    sys.stdout.flush()
-
-def from_ejabberd():
-    length_field = sys.stdin.read(2)
-    while len(length_field) == 2:
-        (size,) = unpack('>h', length_field)
-        if size == 0:
-           logging.info("command length 0, treating as logical EOF")
-           return
-        cmd = sys.stdin.read(size)
-        if len(cmd) != size:
-           logging.warn("premature EOF while reading cmd: %d != %d" % (len(cmd), size))
-           return
-        logging.debug("from_ejabberd got %s" % cmd)
-        x = cmd.split(':', 3)
-        yield x
+class ejabberd_io:
+    @classmethod
+    def read_request(cls):
         length_field = sys.stdin.read(2)
+        while len(length_field) == 2:
+            (size,) = unpack('>h', length_field)
+            if size == 0:
+               logging.info("command length 0, treating as logical EOF")
+               return
+            cmd = sys.stdin.read(size)
+            if len(cmd) != size:
+               logging.warn("premature EOF while reading cmd: %d != %d" % (len(cmd), size))
+               return
+            logging.debug("from_ejabberd got %s" % cmd)
+            x = cmd.split(':', 3)
+            yield x
+            length_field = sys.stdin.read(2)
 
-def to_ejabberd(bool):
-    answer = 0
-    if bool:
-        answer = 1
-    token = pack('>hh', 2, answer)
-    sys.stdout.write(token)
-    sys.stdout.flush()
+    @classmethod
+    def write_response(cls, bool):
+        answer = 0
+        if bool:
+            answer = 1
+        token = pack('>hh', 2, answer)
+        sys.stdout.write(token)
+        sys.stdout.flush()
+
 
 ### Handling requests to/responses from the cloud server
 
@@ -303,7 +299,12 @@ if __name__ == '__main__':
         print(success)
         sys.exit(0)
 
-    for data in from_xmpp(TYPE):
+    if TYPE == "ejabberd":
+        xmpp = ejabberd_io
+    else:
+        xmpp = prosody_io
+
+    for data in xmpp.read_request():
         logging.debug('Receive operation ' + data[0]);
 
         success = False
@@ -314,7 +315,7 @@ if __name__ == '__main__':
         elif data[0] == "quit" or data[0] == "exit":
             break
 
-        to_xmpp(TYPE, success)
+        xmpp.write_response(success)
 
     logging.info('Shutting down...');
 
