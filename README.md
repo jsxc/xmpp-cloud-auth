@@ -138,8 +138,8 @@ to multiple cloud instances.
 ## Commands
 When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the following commands are recognized:
 
-* `auth:<USER>:<DOMAIN>:<PASSWORD>`: Is this the <PASSWORD> for the given <USER> (in the given <DOMAIN>)?
-* `isuser:<USER>:<DOMAIN>`: Does this <USER> exist (in the given <DOMAIN>)?
+* `auth:<USER>:<DOMAIN>:<PASSWORD>`: Is this the PASSWORD for the given USER (in the given DOMAIN)?
+* `isuser:<USER>:<DOMAIN>`: Does this USER exist (in the given DOMAIN)?
 * `quit` and `exit`: Terminate (for interactive commands, especially over a socket connection)
 * EOF: Terminate
 
