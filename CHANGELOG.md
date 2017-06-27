@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Now requires "configargparse"
 - Use HTTP/1.1 persistent connections for higher throughput
 - The new `-t generic` (equivalent to `-t prosody`) is now default
-- Minor refactoring
+- Some refactoring
 
 ## 0.2.2 - 2017-06-23
 ### Added

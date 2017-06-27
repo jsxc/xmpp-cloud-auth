@@ -82,7 +82,6 @@ def cloud_request(s, data, secret, url):
         'X-JSXC-SIGNATURE': 'sha1=' + signature,
         'content-type':     'application/x-www-form-urlencoded'
     }
-
     try:
         r = s.post(url, data = payload, headers = headers, allow_redirects = False)
     except requests.exceptions.HTTPError as err:
@@ -94,13 +93,9 @@ def cloud_request(s, data, secret, url):
         except TypeError as err:
             logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.')
         return False
-
     if r.status_code != requests.codes.ok:
         return False
-
-    json = r.json();
-
-    return json;
+    return r.json();
 
 # First try if it is a valid token
 # Failure may just indicate that we were passed a password
@@ -139,14 +134,7 @@ def auth_cloud(s, username, domain, password, secret, url):
         'domain':   domain,
         'password': password
     }, secret, url);
-
-    if not response:
-        return False
-
-    if response['result'] == 'success':
-        return True
-
-    return False
+    return response and response['result'] == 'success'
 
 def auth(s, username, domain, password):
     secret, url = per_domain(domain)
@@ -167,22 +155,15 @@ def isuser_cloud(s, username, domain, secret, url):
         'username':  username,
         'domain':    domain
     }, secret, url);
-
-    if not response:
-        return False
-
-    if response['result'] == 'success' and response['data']['isUser']:
-        return True
-
-    return False
+    return response and response['result'] == 'success' and response['data']['isUser']
 
 def isuser(s, username, domain):
     secret, url = per_domain(domain)
     if isuser_cloud(s, username, domain, secret, url):
         logging.info('Cloud says user %s@%s exists' % (username, domain))
         return True
-
     return False
+
 
 ### Configuration-related functions
 
@@ -202,40 +183,32 @@ def get_args():
     parser.add_argument('-c', '--config-file',
         is_config_file=True,
         help='config file path')
-
     parser.add_argument('-u', '--url',
         required=True,
         help='base URL')
-
     parser.add_argument('-s', '--secret',
         required=True,
         help='secure api token')
-
     parser.add_argument('-l', '--log',
         default=DEFAULT_LOG_DIR,
         help='log directory (default: %(default)s)')
-
     parser.add_argument('-d', '--debug',
         action='store_true',
         help='enable debug mode')
-
     parser.add_argument('-t', '--type',
         choices=['generic', 'prosody', 'ejabberd'],
         default='generic',
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
-
     parser.add_argument('-A', '--auth-test',
         nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='single, one-shot query of the user, domain, and password triple')
-
     parser.add_argument('-I', '--isuser-test',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
-
     parser.add_argument('-p', '--per-domain-config',
         help='name of file containing whitespace-separated (domain, secret, url) tuples')
-
-    parser.add_argument('--version', action='version', version=VERSION)
+    parser.add_argument('--version',
+        action='version', version=VERSION)
 
     args = parser.parse_args()
     if args.type is None and args.auth_test is None and args.isuser_test is None:
@@ -267,6 +240,7 @@ def per_domain(dom):
         return d[0], d[1]
     else:
         return FALLBACK_SECRET, FALLBACK_URL
+
 
 if __name__ == '__main__':
     TYPE, FALLBACK_URL, FALLBACK_SECRET, DEBUG, LOGDIR, AUTH_TEST, ISUSER_TEST, PDC = get_args()
