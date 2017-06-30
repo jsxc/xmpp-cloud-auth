@@ -2,7 +2,6 @@
 
 import logging
 import configargparse
-import argparse
 import urllib
 import requests
 import hmac
