@@ -10,7 +10,6 @@ import sys
 import anydbm
 from struct import *
 from time import time
-import hmac, hashlib
 from base64 import b64decode
 from string import maketrans
 
