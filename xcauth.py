@@ -214,27 +214,11 @@ def get_args():
     parser.add_argument('-I', '--isuser-test',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
-    parser.add_argument('-G', '--get',
-        help='retrieve (get) a database entry')
-    parser.add_argument('-P', '--put',
-        nargs=2, metavar=('KEY', 'VALUE'),
-        help='store (put) a database entry (insert or update)')
-    parser.add_argument('-D', '--delete',
-        help='delete a database entry')
-    parser.add_argument('-L', '--load',
-        action='store_true',
-        help='load multiple database entries from stdin')
-    parser.add_argument('-U', '--unload',
-        action='store_true',
-        help='unload (dump) the database contents to stdout')
     parser.add_argument('--version',
         action='version', version=VERSION)
 
     args = parser.parse_args()
     if args.type is None and args.auth_test is None and args.isuser_test is None:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
-    if (args.get or args.put or args.delete or args.load or args.unload) and not args.domain_db:
         parser.print_help(sys.stderr)
         sys.exit(1)
     return args
@@ -278,8 +262,7 @@ if __name__ == '__main__':
     FALLBACK_URL = args.url
 
     logfile = args.log + '/xcauth.log'
-    if (args.interactive or args.auth_test or args.isuser_test or
-        args.get or args.put or args.delete or args.load or args.unload):
+    if (args.interactive or args.auth_test or args.isuser_test):
         logging.basicConfig(stream=sys.stderr,
             level=logging.DEBUG,
             format='%(asctime)s %(levelname)s: %(message)s')
@@ -309,32 +292,6 @@ if __name__ == '__main__':
     elif args.auth_test:
         success = auth(s, args.auth_test[0], args.auth_test[1], args.auth_test[2])
         print(success)
-        close_db(args.domain_db)
-        sys.exit(0)
-    elif args.get:
-        print(DOMAIN_DB[args.get])
-        close_db(args.domain_db)
-        sys.exit(0)
-    elif args.put:
-        DOMAIN_DB[args.put[0]] = args.put[1]
-        close_db(args.domain_db)
-        sys.exit(0)
-    elif args.delete:
-        del DOMAIN_DB[args.delete]
-        close_db(args.domain_db)
-        sys.exit(0)
-    elif args.unload:
-        for k in DOMAIN_DB.keys():
-            print k, '\t', DOMAIN_DB[k]
-        # Should work according to documentation, but doesn't
-        # for k, v in DOMAIN_DB.iteritems():
-        #     print k, '\t', v
-        close_db(args.domain_db)
-        sys.exit(0)
-    elif args.load:
-        for line in sys.stdin:
-            k, v = line.rstrip().split('\t', 1)
-            DOMAIN_DB[k] = v
         close_db(args.domain_db)
         sys.exit(0)
 
