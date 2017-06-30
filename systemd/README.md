@@ -4,14 +4,14 @@ For some environments, it might be advantageous to use *xmpp-cloud-auth* over a 
 
 ## Installation (as root)
 
-1. Perform the *xmpp-cloud-auth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xmpp-cloud-auth/wiki). Especially install source into `/opt/xmpp-cloud-auth` and put the configuration in `/etc/external_cloud.conf`.
+1. Perform the *xmpp-cloud-auth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xmpp-cloud-auth/wiki). Especially install source into `/opt/xmpp-cloud-auth` and put the configuration in `/etc/xcauth.conf`.
 1. Copy `xmpp-cloud-auth@.service` and `xmpp-cloud-auth.socket` to `/etc/systemd/system` (if no modifications to these files are needed, you may also symlink them)
 1. Modify the `User=prosody` line in `xmpp-cloud-auth@.service` if you do not have a `prosody` user or want to run as an even less privileged user (does not require file I/O besides Python and libraries, and the configuration file; network connection to your Nextcloud web server only).
 1. Activate the service: `systemctl enable xmpp-cloud-auth.socket` and `systemctl start xmpp-cloud-auth.socket`
 
 ## Testing
 
-When you have set `type=ejabberd` in `/etc/external_cloud.conf`, then the following should work (`$` indicates the command line prompt, `<` is data received and `>` data sent):
+When you have set `type=ejabberd` in `/etc/xcauth.conf`, then the following should work (`$` indicates the command line prompt, `<` is data received and `>` data sent):
 
 ```
 $ telnet localhost 23664

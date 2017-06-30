@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - "quit" and "exit" commands (useful, when used behind a socket)
 ### Fixed
 ### Changed
+- `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will need to rename your configuration file, the old name will only be supported for a short period of time.
 - Now requires "configargparse"
 - Use HTTP/1.1 persistent connections for higher throughput
 - The new `-t generic` (equivalent to `-t prosody`) is now default

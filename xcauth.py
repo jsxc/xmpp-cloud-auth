@@ -182,7 +182,7 @@ def get_args():
     cfpath = sys.argv[0][:-3] + ".conf"
     parser = configargparse.ArgumentParser(description=desc,
         epilog=epilog,
-    default_config_files=['/etc/external_cloud.conf', cfpath])
+    default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf', cfpath])
 
     parser.add_argument('-c', '--config-file',
         is_config_file=True,
@@ -279,7 +279,7 @@ if __name__ == '__main__':
     FALLBACK_SECRET = args.secret
     FALLBACK_URL = args.url
 
-    logfile = args.log + '/extauth.log'
+    logfile = args.log + '/xcauth.log'
     if (args.interactive or args.auth_test or args.isuser_test or
         args.get or args.put or args.delete or args.load or args.unload):
         logging.basicConfig(stream=sys.stderr,
@@ -291,7 +291,7 @@ if __name__ == '__main__':
             format='%(asctime)s %(levelname)s: %(message)s')
 
         # redirect stderr
-        errfile = args.log + '/extauth.err'
+        errfile = args.log + '/xcauth.err'
         sys.stderr = open(errfile, 'a+')
 
     logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, FALLBACK_URL)
