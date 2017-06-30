@@ -246,7 +246,8 @@ def per_domain(dom):
         d = DOMAINS[dom]
         return d[0], d[1]
     elif dom in DOMAIN_DB:
-        return DOMAIN_DB[dom].split('\t', 1)
+        secret, url, extra = DOMAIN_DB[dom].split('\t', 2)
+        return secret, url
     else:
         return FALLBACK_SECRET, FALLBACK_URL
 
