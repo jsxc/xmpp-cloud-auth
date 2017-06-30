@@ -180,7 +180,7 @@ def get_args():
     cfpath = sys.argv[0][:-3] + ".conf"
     parser = configargparse.ArgumentParser(description=desc,
         epilog=epilog,
-    default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf', cfpath])
+        default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf', cfpath])
 
     parser.add_argument('-c', '--config-file',
         is_config_file=True,
