@@ -72,6 +72,34 @@ class ejabberd_io:
         sys.stdout.write(token)
         sys.stdout.flush()
 
+class saslauthd_io:
+    @classmethod
+    def read_request(cls):
+        field_no = 0
+        fields = [None, None, None, None]
+        length_field = sys.stdin.read(2)
+        while len(length_field) == 2:
+            (size,) = unpack('>h', length_field)
+            val = sys.stdin.read(size)
+            if len(val) != size:
+               logging.warn("premature EOF while reading field %d: %d != %d" % (field_no, len(cmd), size))
+               return
+            fields[field_no] = val
+            field_no = (field_no + 1) % 4
+            if field_no == 0:
+                logging.debug("from_saslauthd got %s, %s, %s, %s" % tuple(fields))
+                yield ('auth', fields[0], fields[3], fields[1])
+            length_field = sys.stdin.read(2)
+
+    @classmethod
+    def write_response(cls, bool):
+        answer = 'NO xcauth authentication failure'
+        if bool:
+            answer = 'OK success'
+        token = pack('>h', len(answer)) + answer
+        sys.stdout.write(token)
+        sys.stdout.flush()
+
 
 ### Handling requests to/responses from the cloud server
 
@@ -205,7 +233,7 @@ def get_args():
         action='store_true',
         help='log to stdout')
     parser.add_argument('-t', '--type',
-        choices=['generic', 'prosody', 'ejabberd'],
+        choices=['generic', 'prosody', 'ejabberd', 'saslauthd'],
         default='generic',
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
     parser.add_argument('-A', '--auth-test',
@@ -296,9 +324,11 @@ if __name__ == '__main__':
         close_db(args.domain_db)
         sys.exit(0)
 
-    if args.type == "ejabberd":
+    if args.type == 'ejabberd':
         xmpp = ejabberd_io
-    else:
+    elif args.type == 'saslauthd':
+        xmpp = saslauthd_io
+    else: # 'generic' or 'prosody'
         xmpp = prosody_io
 
     for data in xmpp.read_request():

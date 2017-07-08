@@ -9,12 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Can now authenticate against multiple cloud instances
   as defined by a static text file or a dynamic database
 - Experimental support for talking over a socket
-- *systemd* configuration files for sending the authentication requests/responses over a socket
+- Experimental support for saslauthd protocol
+- *systemd* configuration files for sending the XMPP authentication requests/responses over a socket
   with `multi-user.target` depending on it
+- *systemd* configuration files for posing as `saslauthd`
 - "quit" and "exit" commands (useful, when used behind a socket)
 ### Fixed
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will need to rename your configuration file, the old name will only be supported for a short period of time.
+- Running under user `xcauth`
 - Now requires "configargparse"
 - Use HTTP/1.1 persistent connections for higher throughput
 - The new `-t generic` (equivalent to `-t prosody`) is now default

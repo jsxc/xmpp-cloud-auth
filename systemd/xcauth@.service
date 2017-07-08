@@ -4,4 +4,4 @@ Description=XMPP to Nextcloud+JSXC authentication bridge
 [Service]
 ExecStart=/opt/xmpp-cloud-auth/xcauth.py
 StandardInput=socket
-User=prosody
+User=xcauth
