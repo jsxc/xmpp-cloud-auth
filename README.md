@@ -20,7 +20,7 @@ chmod u+x xmpp-cloud-auth/external_cloud.py
 chown USER:GROUP -R xmpp-cloud-auth
 ```
 
-Install python and all desired libraries.
+Install Python and all desired libraries.
 ```
 sudo apt-get install python python-requests python-configargparse
 ```
@@ -58,6 +58,11 @@ preventing HTTPS access from within Python. The shell wrapper prevents this conf
 ([ejabberd#1756](https://github.com/processone/ejabberd/issues/1756))
 
 ### Prosody
+Install *lua-pty* (not necessary when using the new (experimental) *socket mode*):
+```
+apt install lua-pty
+```
+
 Add the following to your config:
 ```
 authentication = "external"
