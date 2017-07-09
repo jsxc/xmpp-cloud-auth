@@ -2,23 +2,23 @@
 
 import logging
 import configargparse
-import argparse
 import urllib
 import requests
 import hmac
 import hashlib
 import sys
+import anydbm
 from struct import *
 from time import time
-import hmac, hashlib
 from base64 import b64decode
 from string import maketrans
 
-DEFAULT_LOG_DIR = '/var/log/ejabberd'
+DEFAULT_LOG_DIR = '/var/log/xcauth'
 FALLBACK_URL = ''
 FALLBACK_SECRET = ''
-VERSION = '0.2.3'
+VERSION = '0.9.0+'
 DOMAINS = {}
+DOMAIN_DB = None
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
@@ -172,13 +172,15 @@ def get_args():
     desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
         See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
     epilog = '''-A takes precedence over -I over -t.
-        -A and -I imply -d.'''
+        -A and -I imply -d.
+        -A, -I, -G, -P, -D, -L, and -U imply -i.
+        The database operations require -b.'''
 
     # Config file in /etc or the program directory
     cfpath = sys.argv[0][:-3] + ".conf"
     parser = configargparse.ArgumentParser(description=desc,
         epilog=epilog,
-    default_config_files=['/etc/external_cloud.conf', cfpath])
+        default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf', cfpath])
 
     parser.add_argument('-c', '--config-file',
         is_config_file=True,
@@ -192,9 +194,16 @@ def get_args():
     parser.add_argument('-l', '--log',
         default=DEFAULT_LOG_DIR,
         help='log directory (default: %(default)s)')
+    parser.add_argument('-p', '--per-domain-config',
+        help='name of file containing whitespace-separated (domain, secret, url) tuples')
+    parser.add_argument('-b', '--domain-db',
+        help='persistent domain database; manipulated with -G, -P, -D, -L, -U')
     parser.add_argument('-d', '--debug',
         action='store_true',
         help='enable debug mode')
+    parser.add_argument('-i', '--interactive',
+        action='store_true',
+        help='log to stdout')
     parser.add_argument('-t', '--type',
         choices=['generic', 'prosody', 'ejabberd'],
         default='generic',
@@ -205,8 +214,6 @@ def get_args():
     parser.add_argument('-I', '--isuser-test',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
-    parser.add_argument('-p', '--per-domain-config',
-        help='name of file containing whitespace-separated (domain, secret, url) tuples')
     parser.add_argument('--version',
         action='version', version=VERSION)
 
@@ -214,7 +221,7 @@ def get_args():
     if args.type is None and args.auth_test is None and args.isuser_test is None:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    return args.type, args.url, args.secret, args.debug, args.log, args.auth_test, args.isuser_test, args.per_domain_config
+    return args
 
 def read_pdc(filename):
     if not filename:
@@ -227,10 +234,10 @@ def read_pdc(filename):
             if len(line) == 0 or line[0] == "#":
                 continue
             try:
-		dom, sec, url = line.split()
+                dom, sec, url = line.split()
             except ValueError as err:
                 logging.error('Missing fields in %s:%d: "%s"' % (filename, lines, line))
-		raise
+                raise
             DOMAINS[dom] = (sec, url)
     logging.info('Read %d lines, %d domains from %s' % (lines, len(dom), filename))
 
@@ -238,42 +245,58 @@ def per_domain(dom):
     if dom in DOMAINS:
         d = DOMAINS[dom]
         return d[0], d[1]
+    elif dom in DOMAIN_DB:
+        secret, url, extra = DOMAIN_DB[dom].split('\t', 2)
+        return secret, url
     else:
         return FALLBACK_SECRET, FALLBACK_URL
 
+def close_db(path):
+    if path:
+        DOMAIN_DB.close()
+
 
 if __name__ == '__main__':
-    TYPE, FALLBACK_URL, FALLBACK_SECRET, DEBUG, LOGDIR, AUTH_TEST, ISUSER_TEST, PDC = get_args()
+    args = get_args()
 
-    LOGFILE = LOGDIR + '/extauth.log'
-    LEVEL = logging.DEBUG if DEBUG or AUTH_TEST or ISUSER_TEST else logging.INFO
+    FALLBACK_SECRET = args.secret
+    FALLBACK_URL = args.url
 
-    if not AUTH_TEST and not ISUSER_TEST:
-        logging.basicConfig(filename=LOGFILE,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
+    logfile = args.log + '/xcauth.log'
+    if (args.interactive or args.auth_test or args.isuser_test):
+        logging.basicConfig(stream=sys.stderr,
+            level=logging.DEBUG,
+            format='%(asctime)s %(levelname)s: %(message)s')
+    else:
+        logging.basicConfig(filename=logfile,
+            level=logging.DEBUG if args.debug else logging.INFO,
+            format='%(asctime)s %(levelname)s: %(message)s')
 
         # redirect stderr
-        ERRFILE = LOGDIR + '/extauth.err'
-        sys.stderr = open(ERRFILE, 'a+')
+        errfile = args.log + '/xcauth.err'
+        sys.stderr = open(errfile, 'a+')
+
+    logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, FALLBACK_URL)
+
+    read_pdc(args.per_domain_config)
+    if args.domain_db:
+        DOMAIN_DB = anydbm.open(args.domain_db, 'c', 0600)
     else:
-        logging.basicConfig(stream=sys.stdout,level=LEVEL,format='%(asctime)s %(levelname)s: %(message)s')
-
-    logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, TYPE, FALLBACK_URL)
-    logging.debug('Log level: %s', 'DEBUG' if LEVEL == logging.DEBUG else 'INFO')
-
-    read_pdc(PDC)
+        DOMAIN_DB = {}
 
     s = requests.Session()
-    if ISUSER_TEST:
-        success = isuser(s, ISUSER_TEST[0], ISUSER_TEST[1])
+    if args.isuser_test:
+        success = isuser(s, args.isuser_test[0], args.isuser_test[1])
         print(success)
+        close_db(args.domain_db)
+        sys.exit(0)
+    elif args.auth_test:
+        success = auth(s, args.auth_test[0], args.auth_test[1], args.auth_test[2])
+        print(success)
+        close_db(args.domain_db)
         sys.exit(0)
 
-    if AUTH_TEST:
-        success = auth(s, AUTH_TEST[0], AUTH_TEST[1], AUTH_TEST[2])
-        print(success)
-        sys.exit(0)
-
-    if TYPE == "ejabberd":
+    if args.type == "ejabberd":
         xmpp = ejabberd_io
     else:
         xmpp = prosody_io
@@ -291,6 +314,7 @@ if __name__ == '__main__':
 
         xmpp.write_response(success)
 
+    close_db(args.domain_db)
     logging.info('Shutting down...');
 
 # vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4

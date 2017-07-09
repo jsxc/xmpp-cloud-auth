@@ -7,17 +7,16 @@ This authentication script for [ejabberd](https://www.ejabberd.im) and [prosody]
 ## Quick installation
 [Full step-by-step instructions to install *Nextcloud* with an external XMPP server](https://github.com/jsxc/xmpp-cloud-auth/wiki/) are in the wiki.
 
-Download [external_cloud.py](https://raw.githubusercontent.com/jsxc/xmpp-cloud-auth/master/external_cloud.py) and
+Download [xcauth.py](https://raw.githubusercontent.com/jsxc/xmpp-cloud-auth/master/xcauth.py) and
 put it to your desired location or clone this repository to simplify updates:
 ```
 cd /opt
 git clone https://github.com/jsxc/xmpp-cloud-auth
 ```
 
-Make the script executable and give your ejabberd/prosody user sufficient rights:
+Create the `xcauth` user and directories:
 ```
-chmod u+x xmpp-cloud-auth/external_cloud.py
-chown USER:GROUP -R xmpp-cloud-auth
+sudo install.sh
 ```
 
 Install Python and all desired libraries.
@@ -36,9 +35,9 @@ sudo -u USER -H pip install requests ConfigArgParse
 Anyone knowing it can authenticate as any user to the XMPP server
 (and create arbitrary new users).
 
-1. Copy `external_cloud.conf` to `/etc` as root and restrict the access rights
-   (e.g., `chown ejabberd /etc/external_cloud.conf; chmod 600 /etc/external_cloud.conf`)
-1. Modify `/etc/external_cloud.conf` according to your environment. The values for 
+1. Copy `xcauth.conf` to `/etc` as root and restrict the access rights
+   (e.g., `chown ejabberd /etc/xcauth.conf; chmod 600 /etc/xcauth.conf`)
+1. Modify `/etc/xcauth.conf` according to your environment. The values for
    API URL and API SECRET can be found in your Nextcloud/ownCloud JSXC admin page.
 1. Adapt your ejabberd/prosody configuration to use this authentication script:
 
@@ -48,12 +47,12 @@ Adjust your configuration as described in the [admin manual](https://docs.ejabbe
 vim /etc/ejabberd/ejabberd.yml
 
 auth_method: external
-extauth_program: "/opt/xmpp-cloud-auth/external_cloud.sh"
+extauth_program: "/opt/xmpp-cloud-auth/xcauth.sh"
 ```
 :warning: On Ubuntu, `ejabberd` will come with an **apparmor** profile which will block the external authentication script.
 See also the related issue [ejabberd#1598](https://github.com/processone/ejabberd/issues/1598).
 
-:warning: This starts `external_cloud.sh`, as some **ejabberd** installations will lead to shared library conflicts,
+:warning: This starts `xcauth.sh`, as some **ejabberd** installations will lead to shared library conflicts,
 preventing HTTPS access from within Python. The shell wrapper prevents this conflict.
 ([ejabberd#1756](https://github.com/processone/ejabberd/issues/1756))
 
@@ -66,7 +65,7 @@ apt install lua-pty
 Add the following to your config:
 ```
 authentication = "external"
-external_auth_command = "/opt/ejabberd-cloud-auth/external_cloud.py"
+external_auth_command = "/opt/ejabberd-cloud-auth/xcauth.py"
 ```
 :warning: The Prosody `mod_auth_external.lua` only accepts a command name, no parameters
 ([xmpp-cloud-auth#2](https://github.com/jsxc/xmpp-cloud-auth/issues/2), [Prosody#841](https://prosody.im/issues/issue/841)).
@@ -78,15 +77,17 @@ This fixes a bug with treating an echo of the request as the answer
 
 ## Options
 ```
-$ ./external_cloud.py --help
-usage: external_cloud.py [-h] [-c CONFIG_FILE] -u URL -s SECRET [-l LOG] [-d]
-                         [-t {generic,prosody,ejabberd}] [-A USER DOMAIN PASSWORD]
-                         [-I USER DOMAIN] [--version]
+$ ./xcauth.py --help
+usage: xcauth.py [-h] [-c CONFIG_FILE] -u URL -s SECRET [-l LOG]
+                         [-p PER_DOMAIN_CONFIG] [-b DOMAIN_DB] [-d] [-i]
+                         [-t {generic,prosody,ejabberd}]
+                         [-A USER DOMAIN PASSWORD] [-I USER DOMAIN] [-G GET]
+                         [-P KEY VALUE] [-D DELETE] [-L] [-U] [--version]
 
 XMPP server authentication against JSXC>=3.2.0 on Nextcloud. See
 https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth. Args that start
-with '--' (eg. -u) can also be set in a config file (/etc/external_cloud.conf
-or ./external_cloud.conf or specified via -c). Config file syntax allows:
+with '--' (eg. -u) can also be set in a config file (/etc/xcauth.conf
+or ./xcauth.conf or specified via -c). Config file syntax allows:
 key=value, flag=true, stuff=[a,b,c] (for details, see syntax at
 https://goo.gl/R74nmi). If an arg is specified in more than one place, then
 commandline values override config file values which override defaults.
@@ -99,22 +100,33 @@ optional arguments:
   -s SECRET, --secret SECRET
                         secure api token
   -l LOG, --log LOG     log directory (default: /var/log/ejabberd)
+  -p PER_DOMAIN_CONFIG, --per-domain-config PER_DOMAIN_CONFIG
+                        name of file containing whitespace-separated (domain,
+                        secret, url) tuples
+  -b DOMAIN_DB, --domain-db DOMAIN_DB
+                        persistent domain database; manipulated with -G, -P,
+                        -D, -L, -U
   -d, --debug           enable debug mode
+  -i, --interactive     log to stdout
   -t {generic,prosody,ejabberd}, --type {generic,prosody,ejabberd}
-                        XMPP server type; implies reading requests from stdin
-                        until EOF. 'generic' is identical to 'prosody'.
+                        XMPP server type (prosody=generic); implies reading
+                        requests from stdin
   -A USER DOMAIN PASSWORD, --auth-test USER DOMAIN PASSWORD
                         single, one-shot query of the user, domain, and
                         password triple
   -I USER DOMAIN, --isuser-test USER DOMAIN
                         single, one-shot query of the user and domain tuple
-  -p PER_DOMAIN_CONFIG, --per-domain-config PER_DOMAIN_CONFIG
-                        Name of file containing whitespace-separated (domain,
-                        secret, url) tuples
+  -G GET, --get GET     retrieve (get) a database entry
+  -P KEY VALUE, --put KEY VALUE
+                        store (put) a database entry (insert or update)
+  -D DELETE, --delete DELETE
+                        delete a database entry
+  -L, --load            load multiple database entries from stdin
+  -U, --unload          unload (dump) the database contents to stdout
   --version             show program's version number and exit
 
-One of -A, -I, and -t is required. If more than one is given, -A takes
-precedence over -I over -t. -A and -I imply -d.
+-A takes precedence over -I over -t. -A and -I imply -d. -A, -I, -G, -P, -D,
+-L, and -U imply -i. The database operations require -b.
 ```
 
 Note that `-t generic` is identical to `-t prosody`. This is just to indicate
@@ -130,14 +142,14 @@ to multiple cloud instances.
 ## Commands
 When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the following commands are recognized:
 
-* `auth:<USER>:<DOMAIN>:<PASSWORD>`: Is this the <PASSWORD> for the given <USER> (in the given <DOMAIN>)?
-* `isuser:<USER>:<DOMAIN>`: Does this <USER> exist (in the given <DOMAIN>)?
+* `auth:<USER>:<DOMAIN>:<PASSWORD>`: Is this the PASSWORD for the given USER (in the given DOMAIN)?
+* `isuser:<USER>:<DOMAIN>`: Does this USER exist (in the given DOMAIN)?
 * `quit` and `exit`: Terminate (for interactive commands, especially over a socket connection)
 * EOF: Terminate
 
 
 ## Troubleshooting
-In case you are need some additional debugging, you can try and run `external_cloud.py` from the command line with the usual options and then add '-A jane.doe example.com p4ssw0rd' to test the connection to the ownCloud/Nextcloud server.
+In case you need some additional debugging, you can try and run `xcauth.py` from the command line with the usual options and then add `-A jane.doe example.com p4ssw0rd` to test the connection to the ownCloud/Nextcloud server.
 
 If Conversations cannot connect and complains about "Downgrade attack", see the following issue:
 [No (obvious?) way to accept SASL downgrade (Conversations#2498)](https://github.com/siacs/Conversations/issues/2498).

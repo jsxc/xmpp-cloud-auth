@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.9.0+ - [Unreleased]
+### Added
+- Authentication against multiple cloud instances also against
+  a dynamic database in addition to the static text file
+### Fixed
+### Changed
+- `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.
+- Now runs under user `xcauth` with directories `/var/log/xcauth` and `/var/cache/xcauth`
+
 ## 0.2.3 - 2017-07-09
 ### Added
 - Can now authenticate against multiple cloud instances
@@ -15,7 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Now requires "configargparse"
 - Use HTTP/1.1 persistent connections for higher throughput
-- The new `-t generic` (equivalent to `-t prosody`) is now default
+- The new `-t generic` (equivalent to `-t prosody`) is now default (simplifies interactive testing)
 - Some refactoring
 
 ## 0.2.2 - 2017-06-23
