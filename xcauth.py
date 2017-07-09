@@ -7,6 +7,7 @@ import requests
 import hmac
 import hashlib
 import sys
+import atexit
 import anydbm
 from struct import *
 from time import time
@@ -111,7 +112,7 @@ def cloud_request(s, data, secret, url):
         'content-type':     'application/x-www-form-urlencoded'
     }
     try:
-        r = s.post(url, data = payload, headers = headers, allow_redirects = False)
+        r = s[0].post(url, data = payload, headers = headers, allow_redirects = False, timeout = s[1])
     except requests.exceptions.HTTPError as err:
         logging.warn(err)
         return False
@@ -236,6 +237,9 @@ def get_args():
         choices=['generic', 'prosody', 'ejabberd', 'saslauthd'],
         default='generic',
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
+    parser.add_argument('--timeout',
+        type=int, default=5,
+        help='Timeout for each of connection setup and request processing')
     parser.add_argument('-A', '--auth-test',
         nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='single, one-shot query of the user, domain, and password triple')
@@ -279,10 +283,6 @@ def per_domain(dom):
     else:
         return FALLBACK_SECRET, FALLBACK_URL
 
-def close_db(path):
-    if path:
-        DOMAIN_DB.close()
-
 
 if __name__ == '__main__':
     args = get_args()
@@ -304,24 +304,23 @@ if __name__ == '__main__':
         errfile = args.log + '/xcauth.err'
         sys.stderr = open(errfile, 'a+')
 
-    logging.info('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, FALLBACK_URL)
+    logging.debug('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, FALLBACK_URL)
 
     read_pdc(args.per_domain_config)
     if args.domain_db:
         DOMAIN_DB = anydbm.open(args.domain_db, 'c', 0600)
+        atexit.register(DOMAIN_DB.close)
     else:
         DOMAIN_DB = {}
 
-    s = requests.Session()
+    s = (requests.Session(), args.timeout)
     if args.isuser_test:
         success = isuser(s, args.isuser_test[0], args.isuser_test[1])
         print(success)
-        close_db(args.domain_db)
         sys.exit(0)
     elif args.auth_test:
         success = auth(s, args.auth_test[0], args.auth_test[1], args.auth_test[2])
         print(success)
-        close_db(args.domain_db)
         sys.exit(0)
 
     if args.type == 'ejabberd':
@@ -344,7 +343,6 @@ if __name__ == '__main__':
 
         xmpp.write_response(success)
 
-    close_db(args.domain_db)
     logging.info('Shutting down...');
 
 # vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4
