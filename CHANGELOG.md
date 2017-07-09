@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Authentication against multiple cloud instances also against
   a dynamic database in addition to the static text file
+- Experimental support for saslauthd protocol
 ### Fixed
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.

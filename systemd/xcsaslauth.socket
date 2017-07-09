@@ -1,0 +1,10 @@
+[Unit]
+Description=SASL to Nextcloud+JSXC authentication bridge
+PartOf=xcsaslauth.service
+
+[Socket]
+ListenStream=/var/run/saslauthd/mux
+Accept=yes
+
+[Install]
+WantedBy=multi-user.target
