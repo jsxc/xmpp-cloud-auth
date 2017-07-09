@@ -1,0 +1,7 @@
+[Unit]
+Description=SASL to Nextcloud+JSXC authentication bridge
+
+[Service]
+ExecStart=/opt/xmpp-cloud-auth/xcauth.py -t saslauthd
+StandardInput=socket
+User=xcauth

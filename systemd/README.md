@@ -6,7 +6,7 @@ For some environments, it might be advantageous to use *xcauth* over a network s
 
 1. Perform the *xcauth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xcauth/wiki). Especially install source into `/opt/xcauth` and put the configuration in `/etc/xcauth.conf`.
 1. Copy `xcauth@.service` and `xcauth.socket` to `/etc/systemd/system` (if no modifications to these files are needed, you may also symlink them manually or using `systemctl link`; beware that some versions of *systemd* have problems with symlinks ([systemd#3010](https://github.com/systemd/systemd/issues/3010))
-1. Modify the `User=prosody` line in `xcauth@.service` if you do not have a `prosody` user or want to run as an even less privileged user (does not require file I/O besides Python and libraries, and the configuration file; network connection to your Nextcloud web server only).
+1. Create the user `xcauth`: `adduser --system --group xcauth`
 1. Activate the service: `systemctl enable xcauth.socket` and `systemctl start xcauth.socket`
 
 ## Testing
