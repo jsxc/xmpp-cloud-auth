@@ -79,16 +79,19 @@ This fixes a bug with treating an echo of the request as the answer
 ```
 $ ./xcauth.py --help
 usage: xcauth.py [-h] [-c CONFIG_FILE] -u URL -s SECRET [-l LOG]
-                         [-p PER_DOMAIN_CONFIG] [-b DOMAIN_DB] [-d] [-i]
-                         [-t {generic,prosody,ejabberd}]
-                         [-A USER DOMAIN PASSWORD] [-I USER DOMAIN] [-G GET]
-                         [-P KEY VALUE] [-D DELETE] [-L] [-U] [--version]
+                 [-p PER_DOMAIN_CONFIG] [-b DOMAIN_DB] [-d] [-i]
+                 [-t {generic,prosody,ejabberd,saslauthd}] [--timeout TIMEOUT]
+                 [--cache-db CACHE_DB] [--cache-query-ttl CACHE_QUERY_TTL]
+                 [--cache-verification-ttl CACHE_VERIFICATION_TTL]
+                 [--cache-unreachable-ttl CACHE_UNREACHABLE_TTL]
+                 [--cache-bcrypt-rounds CACHE_BCRYPT_ROUNDS]
+                 [-A USER DOMAIN PASSWORD] [-I USER DOMAIN] [--version]
 
 XMPP server authentication against JSXC>=3.2.0 on Nextcloud. See
 https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth. Args that start
-with '--' (eg. -u) can also be set in a config file (/etc/xcauth.conf
-or ./xcauth.conf or specified via -c). Config file syntax allows:
-key=value, flag=true, stuff=[a,b,c] (for details, see syntax at
+with '--' (eg. -u) can also be set in a config file (/etc/xcauth.conf or
+/etc/external_cloud.conf or ./xcauth.conf or specified via -c). Config file
+syntax allows: key=value, flag=true, stuff=[a,b,c] (for details, see syntax at
 https://goo.gl/R74nmi). If an arg is specified in more than one place, then
 commandline values override config file values which override defaults.
 
@@ -99,7 +102,7 @@ optional arguments:
   -u URL, --url URL     base URL
   -s SECRET, --secret SECRET
                         secure api token
-  -l LOG, --log LOG     log directory (default: /var/log/ejabberd)
+  -l LOG, --log LOG     log directory (default: /var/log/xcauth)
   -p PER_DOMAIN_CONFIG, --per-domain-config PER_DOMAIN_CONFIG
                         name of file containing whitespace-separated (domain,
                         secret, url) tuples
@@ -108,21 +111,28 @@ optional arguments:
                         -D, -L, -U
   -d, --debug           enable debug mode
   -i, --interactive     log to stdout
-  -t {generic,prosody,ejabberd}, --type {generic,prosody,ejabberd}
+  -t {generic,prosody,ejabberd,saslauthd}, --type {generic,prosody,ejabberd,saslauthd}
                         XMPP server type (prosody=generic); implies reading
                         requests from stdin
+  --timeout TIMEOUT     Timeout for each of connection setup and request
+                        processing
+  --cache-db CACHE_DB   Database path for the user cache; enables cache if set
+  --cache-query-ttl CACHE_QUERY_TTL
+                        Maximum time between queries
+  --cache-verification-ttl CACHE_VERIFICATION_TTL
+                        Maximum time between backend verifications
+  --cache-unreachable-ttl CACHE_UNREACHABLE_TTL
+                        Maximum cache time when backend is unreachable
+                        (overrides the other TTLs)
+  --cache-bcrypt-rounds CACHE_BCRYPT_ROUNDS
+                        Encrypt passwords with 2^ROUNDS before storing (i.e.,
+                        every increasing ROUNDS takes twice as much
+                        computation time)
   -A USER DOMAIN PASSWORD, --auth-test USER DOMAIN PASSWORD
                         single, one-shot query of the user, domain, and
                         password triple
   -I USER DOMAIN, --isuser-test USER DOMAIN
                         single, one-shot query of the user and domain tuple
-  -G GET, --get GET     retrieve (get) a database entry
-  -P KEY VALUE, --put KEY VALUE
-                        store (put) a database entry (insert or update)
-  -D DELETE, --delete DELETE
-                        delete a database entry
-  -L, --load            load multiple database entries from stdin
-  -U, --unload          unload (dump) the database contents to stdout
   --version             show program's version number and exit
 
 -A takes precedence over -I over -t. -A and -I imply -d. -A, -I, -G, -P, -D,
@@ -138,6 +148,8 @@ If only a single (API secret, API url) tuple is defined (the one in the configur
 If additional per-domain-configuration entries are given (via the `-p` option), then if the domain equals one in this per-domain configuration, the parameters
 there will take precedence over the global, fallback tuple. You generally will only need this if you operate a single XMPP server providing service
 to multiple cloud instances.
+
+For information about the caching system, see [Cache.md](Cache.md)
 
 ## Commands
 When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the following commands are recognized:
@@ -162,6 +174,15 @@ When using the `mod_auth_external.lua` bundled here (together with `pseudolpty.l
 the `external_auth_command = "@localhost:23664";` option to talk over a socket to a process not spawned
 by *Prosody* on port 23664. [systemd/README.md](systemd/README.md) explains how to automatically start
 such a process using *systemd*.
+
+### Experimental *saslauthd* compatibility
+
+In an attempt to move toward Nextcloud as the main authentication source,
+a new `-t saslauthd` mode is supported, which allows to run services
+which can authenticate against Cyrus *saslauthd* to authenticate against
+JSXC and Nextcloud. It has been successfully tested against *Postfix*
+and *Cyrus IMAP*. More information can be found in
+[systemd/README.md (*saslauthd* mode)](systemd/README.md#saslauthd-mode)
 
 ## How does it work?
 Your XMPP server sends the authentication data in a [special format](https://www.ejabberd.im/files/doc/dev.html#htoc9) on the standard input to the authentication script, length-prefixed (`-t ejabberd`) for *ejabberd*, newline-terminated (`-t prosody` aka `-t generic`) for *Prosody* (and maybe others). The script will first try to verify the given password as time-limited token and if this fails, it will send a HTTP request to your cloud installation to verify this data. To protect your Nextcloud/Owncloud against different attacks, every request has a signature similar to the  [github webhook signature]( https://developer.github.com/webhooks/securing/).
