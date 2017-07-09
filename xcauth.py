@@ -13,7 +13,7 @@ from time import time
 from base64 import b64decode
 from string import maketrans
 
-DEFAULT_LOG_DIR = '/var/log/ejabberd'
+DEFAULT_LOG_DIR = '/var/log/xcauth'
 FALLBACK_URL = ''
 FALLBACK_SECRET = ''
 VERSION = '0.2.2+'

@@ -14,10 +14,9 @@ cd /opt
 git clone https://github.com/jsxc/xmpp-cloud-auth
 ```
 
-Make the script executable and give your ejabberd/prosody user sufficient rights:
+Create the `xcauth` user and directories:
 ```
-chmod u+x xmpp-cloud-auth/xcauth.py
-chown USER:GROUP -R xmpp-cloud-auth
+sudo install.sh
 ```
 
 Install python and all desired libraries.

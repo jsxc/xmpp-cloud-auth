@@ -16,8 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will need to rename your configuration file, the old name will only be supported for a short period of time.
 - Now requires "configargparse"
+- Now runs under user `xcauth` with directories `/var/log/xcauth` and `/var/cache/xcauth`
 - Use HTTP/1.1 persistent connections for higher throughput
-- The new `-t generic` (equivalent to `-t prosody`) is now default
+- The new `-t generic` (equivalent to `-t prosody`) is now default (simplifies interactive testing)
 - Some refactoring
 
 ## 0.2.2 - 2017-06-23
