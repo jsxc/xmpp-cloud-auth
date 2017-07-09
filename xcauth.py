@@ -16,7 +16,7 @@ from string import maketrans
 DEFAULT_LOG_DIR = '/var/log/xcauth'
 FALLBACK_URL = ''
 FALLBACK_SECRET = ''
-VERSION = '0.2.2+'
+VERSION = '0.9.0+'
 DOMAINS = {}
 DOMAIN_DB = None
 

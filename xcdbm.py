@@ -4,7 +4,7 @@ import configargparse
 import sys
 import anydbm
 
-VERSION = '0.2.2+'
+VERSION = '0.9.0+'
 
 def get_args():
     # build command line argument parser

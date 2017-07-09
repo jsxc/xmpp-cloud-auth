@@ -19,7 +19,7 @@ Create the `xcauth` user and directories:
 sudo install.sh
 ```
 
-Install python and all desired libraries.
+Install Python and all desired libraries.
 ```
 sudo apt-get install python python-requests python-configargparse
 ```
@@ -37,7 +37,7 @@ Anyone knowing it can authenticate as any user to the XMPP server
 
 1. Copy `xcauth.conf` to `/etc` as root and restrict the access rights
    (e.g., `chown ejabberd /etc/xcauth.conf; chmod 600 /etc/xcauth.conf`)
-1. Modify `/etc/xcauth.conf` according to your environment. The values for 
+1. Modify `/etc/xcauth.conf` according to your environment. The values for
    API URL and API SECRET can be found in your Nextcloud/ownCloud JSXC admin page.
 1. Adapt your ejabberd/prosody configuration to use this authentication script:
 
@@ -57,6 +57,11 @@ preventing HTTPS access from within Python. The shell wrapper prevents this conf
 ([ejabberd#1756](https://github.com/processone/ejabberd/issues/1756))
 
 ### Prosody
+Install *lua-pty* (not necessary when using the new (experimental) *socket mode*):
+```
+apt install lua-pty
+```
+
 Add the following to your config:
 ```
 authentication = "external"
@@ -144,7 +149,7 @@ When using `xmpp-cloud-auth.py` in `-t` mode (reading commands from stdin), the 
 
 
 ## Troubleshooting
-In case you are need some additional debugging, you can try and run `xcauth.py` from the command line with the usual options and then add `-A jane.doe example.com p4ssw0rd` to test the connection to the ownCloud/Nextcloud server.
+In case you need some additional debugging, you can try and run `xcauth.py` from the command line with the usual options and then add `-A jane.doe example.com p4ssw0rd` to test the connection to the ownCloud/Nextcloud server.
 
 If Conversations cannot connect and complains about "Downgrade attack", see the following issue:
 [No (obvious?) way to accept SASL downgrade (Conversations#2498)](https://github.com/siacs/Conversations/issues/2498).
