@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python -tt
 
 import logging
 import configargparse
@@ -20,6 +20,7 @@ FALLBACK_SECRET = ''
 VERSION = '0.9.0+'
 DOMAINS = {}
 DOMAIN_DB = None
+CACHE_DB = None
 
 usersafe_encoding = maketrans('-$%', 'OIl')
 
@@ -112,7 +113,8 @@ def cloud_request(s, data, secret, url):
         'content-type':     'application/x-www-form-urlencoded'
     }
     try:
-        r = s[0].post(url, data = payload, headers = headers, allow_redirects = False, timeout = s[1])
+        r = s['session'].post(url, data=payload, headers=headers,
+                              allow_redirects=False, timeout=s['timeout'])
     except requests.exceptions.HTTPError as err:
         logging.warn(err)
         return False
@@ -163,20 +165,62 @@ def auth_cloud(s, username, domain, password, secret, url):
         'domain':   domain,
         'password': password
     }, secret, url);
-    return response and response['result'] == 'success'
+    if response:
+        return response['result'] # 'error', 'success', 'noauth'
+    return False
+
+def checkpw(pw, pwhash):
+    if 'checkpw' in dir(bcrypt):
+        return bcrypt.checkpw(pw, pwhash)
+    else:
+        ret = bcrypt.hashpw(pw, pwhash)
+        return ret == pwhash
+
+def auth_cache(s, username, domain, password, unreach):
+    key = username + ":" + domain
+    if key in CACHE_DB:
+        now = int(time())
+        (pwhash, ts1, tsv, tsa, rest) = CACHE_DB[key].split("\t", 4)
+        if ((int(tsa) + s['query_ttl'] > now and int(tsv) + s['verify_ttl'] > now)
+           or (unreach and int(tsv) + s['unreach_ttl'] > now)):
+            if checkpw(password, pwhash):
+                CACHE_DB[key] = "\t".join((pwhash, ts1, tsv, str(now), rest))
+                return True
+    return False
+
+def auth_update_cache(s, username, domain, password):
+    if '' in CACHE_DB: # Cache disabled?
+        return
+    key = username + ":" + domain
+    now = int(time())
+    snow = str(now)
+    pwhash = bcrypt.hashpw(password, bcrypt.gensalt(rounds=s['bcrypt_rounds']))
+    if key in CACHE_DB:
+        (ignored, ts1, tsv, tsa, rest) = CACHE_DB[key].split("\t", 4)
+        CACHE_DB[key] = "\t".join((pwhash, ts1, snow, snow, rest))
+    else:
+        CACHE_DB[key] = "\t".join((pwhash, snow, snow, snow, ''))
 
 def auth(s, username, domain, password):
     secret, url = per_domain(domain)
     if auth_token(username, domain, password, secret):
         logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
         return True
-
-    if auth_cloud(s, username, domain, password, secret, url):
-        logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, domain))
+    if auth_cache(s, username, domain, password, False):
+        logging.info('SUCCESS: Cache says password for %s@%s is valid' % (username, domain))
         return True
-
-    logging.info('FAILURE: Neither token nor cloud approves user %s@%s' % (username, domain))
-    return False
+    r = auth_cloud(s, username, domain, password, secret, url)
+    if not r or r == 'error': # Request did not get through (connect, HTTP, signature check)
+        cache = auth_cache(s, username, domain, password, True)
+        logging.info('UNREACHABLE: Cache says password for %s@%s is %r' % (username, domain, cache))
+        return cache
+    elif r == 'success':
+        logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, domain))
+        auth_update_cache(s, username, domain, password)
+        return True
+    else: # 'noauth'
+        logging.info('FAILURE: Could not authenticate user %s@%s: %s' % (username, domain, r))
+        return False
 
 def isuser_cloud(s, username, domain, secret, url):
     response = cloud_request(s, {
@@ -195,6 +239,13 @@ def isuser(s, username, domain):
 
 
 ### Configuration-related functions
+
+def parse_timespan(span):
+    multipliers = {'s': 1, 'm': 60, 'h': 60*60, 'd': 60*60*24, 'w': 60*60*24*7}
+    if span[-1] in multipliers:
+        return int(span[:-1]) * multipliers[span[-1]]
+    else:
+        return int(span)
 
 def get_args():
     # build command line argument parser
@@ -240,6 +291,22 @@ def get_args():
     parser.add_argument('--timeout',
         type=int, default=5,
         help='Timeout for each of connection setup and request processing')
+    parser.add_argument('--cache-db',
+        help='Database path for the user cache; enables cache if set')
+    parser.add_argument('--cache-query-ttl',
+        default='1h',
+        help='Maximum time between queries')
+    parser.add_argument('--cache-verification-ttl',
+        default='1d',
+        help='Maximum time between backend verifications')
+    parser.add_argument('--cache-unreachable-ttl',
+        default='1w',
+        help='Maximum cache time when backend is unreachable (overrides the other TTLs)')
+    parser.add_argument('--cache-bcrypt-rounds',
+        type=int, default=12,
+        help='''Encrypt passwords with 2^ROUNDS before storing
+            (i.e., every increasing ROUNDS takes twice as much
+            computation time)''')
     parser.add_argument('-A', '--auth-test',
         nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='single, one-shot query of the user, domain, and password triple')
@@ -250,6 +317,9 @@ def get_args():
         action='version', version=VERSION)
 
     args = parser.parse_args()
+    args.cache_query_ttl        = parse_timespan(args.cache_query_ttl)
+    args.cache_verification_ttl = parse_timespan(args.cache_verification_ttl)
+    args.cache_unreachable_ttl  = parse_timespan(args.cache_unreachable_ttl)
     if args.type is None and args.auth_test is None and args.isuser_test is None:
         parser.print_help(sys.stderr)
         sys.exit(1)
@@ -312,8 +382,19 @@ if __name__ == '__main__':
         atexit.register(DOMAIN_DB.close)
     else:
         DOMAIN_DB = {}
+    if args.cache_db:
+        import bcrypt
+        CACHE_DB = anydbm.open(args.cache_db, 'c', 0600)
+        atexit.register(CACHE_DB.close)
+    else:
+        CACHE_DB = {'': ''} # "Do not use" marker
 
-    s = (requests.Session(), args.timeout)
+    s = {'session': requests.Session(),
+         'timeout': args.timeout,
+         'query_ttl': args.cache_query_ttl,
+         'verify_ttl': args.cache_verification_ttl,
+         'unreach_ttl': args.cache_unreachable_ttl,
+         'bcrypt_rounds': args.cache_bcrypt_rounds}
     if args.isuser_test:
         success = isuser(s, args.isuser_test[0], args.isuser_test[1])
         print(success)

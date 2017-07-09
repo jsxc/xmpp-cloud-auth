@@ -21,12 +21,12 @@ sudo install.sh
 
 Install Python and all desired libraries.
 ```
-sudo apt install python python-requests python-configargparse
+sudo apt install python python-requests python-configargparse python-bcrypt
 ```
-OR
+OR (with `pip` packages):
 ```
-sudo apt install python python-pip
-sudo -u USER -H pip install requests ConfigArgParse
+sudo apt install python python-pip build-essential libffi-dev python-dev
+sudo -u USER -H pip install requests ConfigArgParse bcrypt
 ```
 
 ## Configuration

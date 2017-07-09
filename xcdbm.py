@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python -tt
 
 import configargparse
 import sys
@@ -39,6 +39,18 @@ def get_args():
         action='store_true',
         help='(ignored for compatibility)')
     parser.add_argument('-t', '--type',
+        help='(ignored for compatibility)')
+    parser.add_argument('--timeout',
+        help='(ignored for compatibility)')
+    parser.add_argument('--cache-db',
+        help='(ignored for compatibility)')
+    parser.add_argument('--cache-query-ttl',
+        help='(ignored for compatibility)')
+    parser.add_argument('--cache-verification-ttl',
+        help='(ignored for compatibility)')
+    parser.add_argument('--cache-unreachable-ttl',
+        help='(ignored for compatibility)')
+    parser.add_argument('--cache-bcrypt-rounds',
         help='(ignored for compatibility)')
     parser.add_argument('-G', '--get',
         help='retrieve (get) a database entry')
