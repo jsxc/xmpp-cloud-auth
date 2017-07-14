@@ -11,22 +11,17 @@ Download [xcauth.py](https://raw.githubusercontent.com/jsxc/xmpp-cloud-auth/mast
 put it to your desired location or clone this repository to simplify updates:
 ```
 cd /opt
-git clone https://github.com/jsxc/xmpp-cloud-auth
+sudo git clone https://github.com/jsxc/xmpp-cloud-auth
 ```
 
 Create the `xcauth` user and directories:
 ```
-sudo install.sh
+sudo ./install.sh
 ```
 
 Install Python and all desired libraries.
 ```
 sudo apt install python python-requests python-configargparse python-bcrypt
-```
-OR (with `pip` packages):
-```
-sudo apt install python python-pip build-essential libffi-dev python-dev
-sudo -u USER -H pip install requests ConfigArgParse bcrypt
 ```
 
 ## Configuration
