@@ -65,7 +65,7 @@ apt install lua-lpty
 Add the following to your config:
 ```
 authentication = "external"
-external_auth_command = "/opt/ejabberd-cloud-auth/xcauth.py"
+external_auth_command = "/opt/xmpp-cloud-auth/xcauth.py"
 ```
 :warning: The Prosody `mod_auth_external.lua` only accepts a command name, no parameters
 ([xmpp-cloud-auth#2](https://github.com/jsxc/xmpp-cloud-auth/issues/2), [Prosody#841](https://prosody.im/issues/issue/841)).
