@@ -57,7 +57,7 @@ preventing HTTPS access from within Python. The shell wrapper prevents this conf
 ([ejabberd#1756](https://github.com/processone/ejabberd/issues/1756))
 
 ### Prosody
-Install *lua-pty* (not necessary when using the new (experimental) *socket mode*):
+Install *lua-lpty* (not necessary when using the new (experimental) *socket mode*):
 ```
 apt install lua-lpty
 ```
