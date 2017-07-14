@@ -59,7 +59,7 @@ preventing HTTPS access from within Python. The shell wrapper prevents this conf
 ### Prosody
 Install *lua-pty* (not necessary when using the new (experimental) *socket mode*):
 ```
-apt install lua-pty
+apt install lua-lpty
 ```
 
 Add the following to your config:
