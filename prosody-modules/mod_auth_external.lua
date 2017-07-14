@@ -116,7 +116,7 @@ function do_query(kind, username, password)
 	end
 
 	local response, err = send_query(query);
-	if response then log("debug", "Reponse %s", response ); end
+	if response then log("debug", "Response: %s", response ); end
 	if not response then
 		log("warn", "Error while waiting for result from auth process: %s", err or "unknown error");
 	elseif (script_type == "ejabberd" and response == "\0\2\0\0") or

@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   a dynamic database in addition to the static text file
 - Experimental support for saslauthd protocol
 - Credentails caching
-- Connection/request timout option (default: 5s)
+- Connection/request timeout option (default: 5s)
 ### Fixed
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.
