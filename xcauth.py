@@ -277,7 +277,7 @@ def get_args():
     parser.add_argument('-p', '--per-domain-config',
         help='name of file containing whitespace-separated (domain, secret, url) tuples')
     parser.add_argument('-b', '--domain-db',
-        help='persistent domain database; manipulated with -G, -P, -D, -L, -U')
+        help='persistent domain database; manipulated with xcdbm.py')
     parser.add_argument('-d', '--debug',
         action='store_true',
         help='enable debug mode')
