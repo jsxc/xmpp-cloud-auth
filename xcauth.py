@@ -237,6 +237,16 @@ def isuser(s, username, domain):
         return True
     return False
 
+def verify_with_isuser(url, secret, host, user, timeout):
+  response = cloud_request({
+        'session':   requests.Session(),
+        'timeout':   timeout
+    }, {
+        'operation': 'isuser',
+        'username':  user,
+        'domain':    host
+    }, secret, url);
+
 
 ### Configuration-related functions
 
