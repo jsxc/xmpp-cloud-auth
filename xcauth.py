@@ -105,7 +105,7 @@ class saslauthd_io:
 
 ### Handling requests to/responses from the cloud server
 
-def cloud_request(s, data, secret, url):
+def verbose_cloud_request(s, data, secret, url):
     payload = urllib.urlencode(data)
     signature = hmac.new(secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
     headers = {
@@ -117,16 +117,23 @@ def cloud_request(s, data, secret, url):
                               allow_redirects=False, timeout=s['timeout'])
     except requests.exceptions.HTTPError as err:
         logging.warn(err)
-        return False
+        return False, err
     except requests.exceptions.RequestException as err:
         try:
             logging.warn('An error occured during the request: %s' % err)
         except TypeError as err:
             logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.')
-        return False
+        return False, err
     if r.status_code != requests.codes.ok:
+        return False, r.status_code
+    return True, r.json();
+
+def cloud_request(s, data, secret, url):
+    success, message = verbose_cloud_request(s, data, secret, url)
+    if success:
+        return message
+    else:
         return False
-    return r.json();
 
 # First try if it is a valid token
 # Failure may just indicate that we were passed a password
@@ -238,7 +245,7 @@ def isuser(s, username, domain):
     return False
 
 def verify_with_isuser(url, secret, host, user, timeout):
-  response = cloud_request({
+    success, response = verbose_cloud_request({
         'session':   requests.Session(),
         'timeout':   timeout
     }, {
@@ -246,7 +253,7 @@ def verify_with_isuser(url, secret, host, user, timeout):
         'username':  user,
         'domain':    host
     }, secret, url);
-
+    return success, response
 
 ### Configuration-related functions
 
