@@ -117,21 +117,31 @@ def verbose_cloud_request(s, data, secret, url):
                               allow_redirects=False, timeout=s['timeout'])
     except requests.exceptions.HTTPError as err:
         logging.warn(err)
-        return False, err
+        return False, None, err
     except requests.exceptions.RequestException as err:
         try:
             logging.warn('An error occured during the request: %s' % err)
         except TypeError as err:
             logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.')
-        return False, err
+        return False, None, err
     if r.status_code != requests.codes.ok:
-        return False, r.status_code
-    return True, r.json();
+        try:
+            return False, r.status_code, r.json()
+        except ValueError: # Not a valid JSON response
+            return False, r.status_code, None
+    try:
+        # Return True only for HTTP 200 with JSON body, False for everything else
+        return True, None, r.json()
+    except ValueError: # Not a valid JSON response
+        return False, r.status_code, None
 
 def cloud_request(s, data, secret, url):
-    success, message = verbose_cloud_request(s, data, secret, url)
+    success, code, message = verbose_cloud_request(s, data, secret, url)
     if success:
-        return message
+        if code != requests.codes.ok:
+            return code
+        else:
+            return message
     else:
         return False
 
@@ -245,7 +255,7 @@ def isuser(s, username, domain):
     return False
 
 def verify_with_isuser(url, secret, host, user, timeout):
-    success, response = verbose_cloud_request({
+    success, code, response = verbose_cloud_request({
         'session':   requests.Session(),
         'timeout':   timeout
     }, {
@@ -253,7 +263,7 @@ def verify_with_isuser(url, secret, host, user, timeout):
         'username':  user,
         'domain':    host
     }, secret, url);
-    return success, response
+    return success, code, response
 
 ### Configuration-related functions
 
