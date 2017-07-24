@@ -219,7 +219,7 @@ def auth_update_cache(s, username, domain, password):
         CACHE_DB[key] = "\t".join((pwhash, snow, snow, snow, ''))
 
 def auth(s, username, domain, password):
-    secret, url = per_domain(domain)
+    secret, url, domain = per_domain(domain)
     if auth_token(username, domain, password, secret):
         logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
         return True
@@ -248,7 +248,7 @@ def isuser_cloud(s, username, domain, secret, url):
     return response and response['result'] == 'success' and response['data']['isUser']
 
 def isuser(s, username, domain):
-    secret, url = per_domain(domain)
+    secret, url, domain = per_domain(domain)
     if isuser_cloud(s, username, domain, secret, url):
         logging.info('Cloud says user %s@%s exists' % (username, domain))
         return True
@@ -373,12 +373,14 @@ def read_pdc(filename):
 def per_domain(dom):
     if dom in DOMAINS:
         d = DOMAINS[dom]
-        return d[0], d[1]
+        return d[0], d[1], dom
     elif dom in DOMAIN_DB:
-        secret, url, extra = DOMAIN_DB[dom].split('\t', 2)
-        return secret, url
+        secret, url, queryDomain, extra = DOMAIN_DB[dom].split('\t', 3)
+	if queryDomain is None or queryDomain == '':
+            queryDomain = $dom
+        return secret, url, queryDomain
     else:
-        return FALLBACK_SECRET, FALLBACK_URL
+        return FALLBACK_SECRET, FALLBACK_URL, dom
 
 
 if __name__ == '__main__':
