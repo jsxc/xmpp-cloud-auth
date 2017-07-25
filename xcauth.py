@@ -376,8 +376,8 @@ def per_domain(dom):
         return d[0], d[1], dom
     elif dom in DOMAIN_DB:
         secret, url, queryDomain, extra = DOMAIN_DB[dom].split('\t', 3)
-	if queryDomain is None or queryDomain == '':
-            queryDomain = $dom
+        if queryDomain is None or queryDomain == '':
+            queryDomain = dom
         return secret, url, queryDomain
     else:
         return FALLBACK_SECRET, FALLBACK_URL, dom
