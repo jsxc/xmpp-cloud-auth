@@ -18,7 +18,6 @@ DEFAULT_LOG_DIR = '/var/log/xcauth'
 FALLBACK_URL = ''
 FALLBACK_SECRET = ''
 VERSION = '0.9.0+'
-DOMAINS = {}
 DOMAIN_DB = None
 CACHE_DB = None
 
@@ -301,8 +300,6 @@ def get_args():
     parser.add_argument('-l', '--log',
         default=DEFAULT_LOG_DIR,
         help='log directory (default: %(default)s)')
-    parser.add_argument('-p', '--per-domain-config',
-        help='name of file containing whitespace-separated (domain, secret, url) tuples')
     parser.add_argument('-b', '--domain-db',
         help='persistent domain database; manipulated with xcdbm.py')
     parser.add_argument('-d', '--debug',
@@ -352,29 +349,8 @@ def get_args():
         sys.exit(1)
     return args
 
-def read_pdc(filename):
-    if not filename:
-        return
-    lines = 0
-    with open(filename, "r") as f:
-        for line in f:
-            lines += 1
-            line = line.rstrip("\r\n")
-            if len(line) == 0 or line[0] == "#":
-                continue
-            try:
-                dom, sec, url = line.split()
-            except ValueError as err:
-                logging.error('Missing fields in %s:%d: "%s"' % (filename, lines, line))
-                raise
-            DOMAINS[dom] = (sec, url)
-    logging.info('Read %d lines, %d domains from %s' % (lines, len(dom), filename))
-
 def per_domain(dom):
-    if dom in DOMAINS:
-        d = DOMAINS[dom]
-        return d[0], d[1], dom
-    elif dom in DOMAIN_DB:
+    if dom in DOMAIN_DB:
         secret, url, queryDomain, extra = DOMAIN_DB[dom].split('\t', 3)
         if queryDomain is None or queryDomain == '':
             queryDomain = dom
@@ -405,7 +381,6 @@ if __name__ == '__main__':
 
     logging.debug('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, FALLBACK_URL)
 
-    read_pdc(args.per_domain_config)
     if args.domain_db:
         DOMAIN_DB = anydbm.open(args.domain_db, 'c', 0600)
         atexit.register(DOMAIN_DB.close)

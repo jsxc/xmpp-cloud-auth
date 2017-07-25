@@ -27,8 +27,6 @@ def get_args():
         help='(ignored for compatibility)')
     parser.add_argument('-l', '--log',
         help='(ignored for compatibility)')
-    parser.add_argument('-p', '--per-domain-config',
-        help='(ignored for compatibility)')
     parser.add_argument('-b', '--domain-db',
         required=True,
         help='persistent domain database; manipulated with -G, -P, -D, -L, -U')

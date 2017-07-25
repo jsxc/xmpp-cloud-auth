@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.
 - `xcauth.conf` in the installation directory will no longer be considered
 - Now runs under user `xcauth` with directories `/var/log/xcauth` and `/var/cache/xcauth`
+- Removed support for `--per-domain-config`. The more powerful `--domain-db` remains
 
 ## 0.2.3 - 2017-07-09
 ### Added
