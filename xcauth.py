@@ -351,9 +351,14 @@ def get_args():
 
 def per_domain(dom):
     if dom in DOMAIN_DB:
-        secret, url, queryDomain, extra = DOMAIN_DB[dom].split('\t', 3)
-        if queryDomain is None or queryDomain == '':
+        try:
+            # Already 4-value database format? Great!
+            secret, url, queryDomain, extra = DOMAIN_DB[dom].split('\t', 3)
+        except ValueError:
+            # No, fall back to 3-value format (and update DB)
+            secret, url, extra = DOMAIN_DB[dom].split('\t', 2)
             queryDomain = dom
+            DOMAIN_DB[dom] = '\t'.join((secret, url, queryDomain, extra))
         return secret, url, queryDomain
     else:
         return FALLBACK_SECRET, FALLBACK_URL, dom
