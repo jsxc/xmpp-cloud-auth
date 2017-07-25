@@ -137,7 +137,7 @@ def verbose_cloud_request(s, data, secret, url):
 def cloud_request(s, data, secret, url):
     success, code, message = verbose_cloud_request(s, data, secret, url)
     if success:
-        if code != requests.codes.ok:
+        if code is not None and code != requests.codes.ok:
             return code
         else:
             return message
