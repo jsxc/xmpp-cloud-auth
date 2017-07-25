@@ -6,11 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 0.9.0+ - [Unreleased]
 ### Added
-- Authentication against multiple cloud instances also against
-  a dynamic database in addition to the static text file
-- Experimental support for saslauthd protocol
+- Authentication against multiple cloud instances based on
+  a dynamic database
+- Experimental support for *saslauthd* protocol
 - Credentails caching
 - Connection/request timeout option (default: 5s)
+- Support for managed servers: Externally callable
+  `verify_with_isuser()` function, differing XMPP and
+  authentication domains
 ### Fixed
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.
