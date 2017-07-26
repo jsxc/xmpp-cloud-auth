@@ -432,6 +432,6 @@ if __name__ == '__main__':
 
         xmpp.write_response(success)
 
-    logging.info('Shutting down...');
+    logging.debug('Shutting down...');
 
 # vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4
