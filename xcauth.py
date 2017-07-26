@@ -103,6 +103,7 @@ class saslauthd_io:
 ### Handling requests to/responses from the cloud server
 
 def verbose_cloud_request(s, data, secret, url):
+#   logging.debug("Sending %s to %s" % (data, url))
     payload = urllib.urlencode(data)
     signature = hmac.new(secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
     headers = {
@@ -216,14 +217,14 @@ def auth_update_cache(s, username, domain, password):
         CACHE_DB[key] = "\t".join((pwhash, snow, snow, snow, ''))
 
 def auth(s, username, domain, password):
-    secret, url, domain = per_domain(domain)
+    secret, url, queryDomain = per_domain(domain)
     if auth_token(username, domain, password, secret):
         logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
         return True
     if auth_cache(s, username, domain, password, False):
         logging.info('SUCCESS: Cache says password for %s@%s is valid' % (username, domain))
         return True
-    r = auth_cloud(s, username, domain, password, secret, url)
+    r = auth_cloud(s, username, queryDomain, password, secret, url)
     if not r or r == 'error': # Request did not get through (connect, HTTP, signature check)
         cache = auth_cache(s, username, domain, password, True)
         logging.info('UNREACHABLE: Cache says password for %s@%s is %r' % (username, domain, cache))
