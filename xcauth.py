@@ -35,7 +35,6 @@ class prosody_io:
             if not line:
                 break
             line = line.rstrip("\r\n")
-            logging.debug("from_prosody got %s" % line)
             yield line.split(':', 3)
 
     @classmethod
@@ -59,7 +58,6 @@ class ejabberd_io:
             if len(cmd) != size:
                logging.warn("premature EOF while reading cmd: %d != %d" % (len(cmd), size))
                return
-            logging.debug("from_ejabberd got %s" % cmd)
             x = cmd.split(':', 3)
             yield x
             length_field = sys.stdin.read(2)
