@@ -56,7 +56,7 @@ so please update to 17.07 or later), *ejabberd* uses a built-in authentication
 cache, which is enabled by default, but not (yet) documented in the
 [*ejabberd* configuration documentation](https://docs.ejabberd.im/admin/configuration/).
 This cache interferes with multiple valid passwords (app passwords, tokens)
-and thus needs to be deactivated with `use_auth_cache: false`.
+and thus needs to be deactivated with `auth_use_cache: false`.
 
 ### Prosody
 Install *lua-lpty* (not necessary when using the new (experimental) *socket mode*):
