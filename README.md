@@ -51,6 +51,13 @@ See also the related issue [ejabberd#1598](https://github.com/processone/ejabber
 preventing HTTPS access from within Python. The shell wrapper prevents this conflict.
 ([ejabberd#1756](https://github.com/processone/ejabberd/issues/1756))
 
+:warning: Starting with *ejabberd 17.06* (which has a security problem,
+so please update to 17.07 or later), *ejabberd* uses a built-in authentication
+cache, which is enabled by default, but not (yet) documented in the
+[*ejabberd* configuration documentation](https://docs.ejabberd.im/admin/configuration/).
+This cache interferes with multiple valid passwords (app passwords, tokens)
+and thus needs to be deactivated with `use_auth_cache: false`.
+
 ### Prosody
 Install *lua-lpty* (not necessary when using the new (experimental) *socket mode*):
 ```
