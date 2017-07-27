@@ -118,9 +118,9 @@ def verbose_cloud_request(s, data, secret, url):
         return False, None, err
     except requests.exceptions.RequestException as err:
         try:
-            logging.warn('An error occured during the request: %s' % err)
+            logging.warn('An error occured during the request to %s for domain %s: %s' % (url, data['domain'], err))
         except TypeError as err:
-            logging.warn('An unknown error occured during the request, probably an SSL error. Try updating your "requests" and "urllib" libraries.')
+            logging.warn('An unknown error occured during the request to %s, probably an SSL error. Try updating your "requests" and "urllib" libraries.' % url)
         return False, None, err
     if r.status_code != requests.codes.ok:
         try:
