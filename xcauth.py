@@ -209,7 +209,12 @@ def auth_update_cache(s, username, domain, password):
     key = username + ":" + domain
     now = int(time())
     snow = str(now)
-    pwhash = bcrypt.hashpw(password, bcrypt.gensalt(rounds=s['bcrypt_rounds']))
+    try:
+        salt = bcrypt.gensalt(rounds=s['bcrypt_rounds'])
+    except TypeError:
+        # Old versions of bcrypt() do not support the rounds option
+        salt = bcrypt.gensalt()
+    pwhash = bcrypt.hashpw(password, salt)
     if key in CACHE_DB:
         (ignored, ts1, tsv, tsa, rest) = CACHE_DB[key].split("\t", 4)
         CACHE_DB[key] = "\t".join((pwhash, ts1, snow, snow, rest))
