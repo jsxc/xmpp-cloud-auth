@@ -50,7 +50,7 @@ class ejabberd_io:
     def read_request(cls):
         length_field = sys.stdin.read(2)
         while len(length_field) == 2:
-            (size,) = unpack('>h', length_field)
+            (size,) = unpack('>H', length_field)
             if size == 0:
                logging.info("command length 0, treating as logical EOF")
                return
@@ -67,7 +67,7 @@ class ejabberd_io:
         answer = 0
         if bool:
             answer = 1
-        token = pack('>hh', 2, answer)
+        token = pack('>HH', 2, answer)
         sys.stdout.write(token)
         sys.stdout.flush()
 
@@ -78,7 +78,7 @@ class saslauthd_io:
         fields = [None, None, None, None]
         length_field = sys.stdin.read(2)
         while len(length_field) == 2:
-            (size,) = unpack('>h', length_field)
+            (size,) = unpack('>H', length_field)
             val = sys.stdin.read(size)
             if len(val) != size:
                logging.warn("premature EOF while reading field %d: %d != %d" % (field_no, len(cmd), size))
@@ -95,7 +95,7 @@ class saslauthd_io:
         answer = 'NO xcauth authentication failure'
         if bool:
             answer = 'OK success'
-        token = pack('>h', len(answer)) + answer
+        token = pack('>H', len(answer)) + answer
         sys.stdout.write(token)
         sys.stdout.flush()
 
