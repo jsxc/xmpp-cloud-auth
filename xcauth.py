@@ -226,6 +226,9 @@ def auth(s, username, domain, password):
     if auth_token(username, domain, password, secret):
         logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
         return True
+    if auth_token('%s@%s' % (username, domain), domain, password, secret):
+        logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
+        return True
     if auth_cache(s, username, domain, password, False):
         logging.info('SUCCESS: Cache says password for %s@%s is valid' % (username, domain))
         return True
