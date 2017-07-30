@@ -268,6 +268,22 @@ def verify_with_isuser(url, secret, host, user, timeout):
     }, secret, url);
     return success, code, response
 
+def roster_test(s, username, domain):
+    secret, url, domain = per_domain(domain)
+    response = cloud_request(s, {
+        'operation':'sharedroster',
+        'username':  username,
+        'domain':    domain
+    }, secret, url);
+    if response:
+        if ('result' in response and response['result'] == 'success'
+            'data' in response and 'sharedRoster' in response['data']):
+            print response['data']['sharedRoster']
+        else:
+            print response['data']['sharedRoster']
+    else:
+        print "error"
+
 ### Configuration-related functions
 
 def parse_timespan(span):
@@ -341,6 +357,9 @@ def get_args():
     parser.add_argument('-I', '--isuser-test',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
+    parser.add_argument('-R', '--roster-test',
+        nargs=2, metavar=("USER", "DOMAIN"),
+        help='single, one-shot query of the user\'s shared roster')
     parser.add_argument('--version',
         action='version', version=VERSION)
 
@@ -375,7 +394,7 @@ if __name__ == '__main__':
     FALLBACK_URL = args.url
 
     logfile = args.log + '/xcauth.log'
-    if (args.interactive or args.auth_test or args.isuser_test):
+    if (args.interactive or args.auth_test or args.isuser_test or args.roster_test):
         logging.basicConfig(stream=sys.stderr,
             level=logging.DEBUG,
             format='%(asctime)s %(levelname)s: %(message)s')
@@ -411,6 +430,9 @@ if __name__ == '__main__':
     if args.isuser_test:
         success = isuser(s, args.isuser_test[0], args.isuser_test[1])
         print(success)
+        sys.exit(0)
+    if args.roster_test:
+        roster_test(s, args.roster_test[0], args.roster_test[1])
         sys.exit(0)
     elif args.auth_test:
         success = auth(s, args.auth_test[0], args.auth_test[1], args.auth_test[2])
