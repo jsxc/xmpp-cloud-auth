@@ -268,6 +268,38 @@ def verify_with_isuser(url, secret, host, user, timeout):
     }, secret, url);
     return success, code, response
 
+def ejabberdctl(args):
+    # Dummy for now
+    print "ejabberdctl " + str(args)
+
+def jidsplit(jid, defaultDomain):
+    (node, at, dom) = jid.partition('@')
+    if at == '':
+        return (node, defaultDomain)
+    else:
+        return (node, dom)
+
+def roster_groups(s, secret, host, user, sr):
+    groups = {}
+    for u in sr:
+        if 'groups' in sr[u]:
+            for g in sr[u]['groups']:
+                if g in groups:
+                        groups[g] += (u,)
+                else:
+                        groups[g] = (u,)
+        if 'name' in sr[u]:
+            ejabberdctl(('set_vcard', u, host, 'FN', sr[u]['name']))
+    hashname = {}
+    for g in groups:
+        hashname[g] = hashlib.sha256(secret + '\t' + g).hexdigest()
+        ejabberdctl(('srg_create', hashname[g], 'jsxc.org', g, g, hashname[g]))
+        for u in groups[g]:
+            (lhs, rhs) = jidsplit(u, host)
+            ejabberdctl(('srg_user_add', lhs, rhs, hashname[g], 'jsxc.org'))
+            
+    return groups
+
 def roster_test(s, username, domain):
     secret, url, domain = per_domain(domain)
     response = cloud_request(s, {
@@ -276,11 +308,13 @@ def roster_test(s, username, domain):
         'domain':    domain
     }, secret, url);
     if response:
-        if ('result' in response and response['result'] == 'success'
-            'data' in response and 'sharedRoster' in response['data']):
-            print response['data']['sharedRoster']
-        else:
-            print response['data']['sharedRoster']
+        try:
+            sr = response['data']['sharedRoster']
+            print sr
+            print roster_groups(s, secret, domain, username, sr)
+        except Exception, e:
+            print "Weird response: " + str(e)
+            print response
     else:
         print "error"
 
@@ -297,10 +331,8 @@ def get_args():
     # build command line argument parser
     desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
         See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
-    epilog = '''-A takes precedence over -I over -t.
-        -A and -I imply -d.
-        -A, -I, -G, -P, -D, -L, and -U imply -i.
-        The database operations require -b.'''
+    epilog = '''-I, -R, and -A take precedence over -t. One of them is required.
+        -I, -R, and -A imply -i and -d.'''
 
     # Config file in /etc or the program directory
     cfpath = sys.argv[0][:-3] + ".conf"
@@ -351,6 +383,12 @@ def get_args():
         help='''Encrypt passwords with 2^ROUNDS before storing
             (i.e., every increasing ROUNDS takes twice as much
             computation time)''')
+    parser.add_argument('--ejabberdctl',
+        metavar="PATH",
+        help='Enables shared roster updates on authentication; use ejabberdctl command at PATH to modify them')
+    parser.add_argument('--shared-roster-domain',
+        metavar="DOMAIN",
+        help='Put all shared rosters to DOMAIN instead of the authentication user\'s domain (necessary for virtual domain configurations)')
     parser.add_argument('-A', '--auth-test',
         nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='single, one-shot query of the user, domain, and password triple')
@@ -367,7 +405,8 @@ def get_args():
     args.cache_query_ttl        = parse_timespan(args.cache_query_ttl)
     args.cache_verification_ttl = parse_timespan(args.cache_verification_ttl)
     args.cache_unreachable_ttl  = parse_timespan(args.cache_unreachable_ttl)
-    if args.type is None and args.auth_test is None and args.isuser_test is None:
+    if (args.type is None and args.auth_test is None and
+        args.isuser_test is None and args.roster_test is None):
         parser.print_help(sys.stderr)
         sys.exit(1)
     return args

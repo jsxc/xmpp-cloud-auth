@@ -50,6 +50,10 @@ def get_args():
         help='(ignored for compatibility)')
     parser.add_argument('--cache-bcrypt-rounds',
         help='(ignored for compatibility)')
+    parser.add_argument('--ejabberdctl',
+        help='(ignored for compatibility)')
+    parser.add_argument('--shared-roster-domain',
+        help='(ignored for compatibility)')
     parser.add_argument('-G', '--get',
         help='retrieve (get) a database entry')
     parser.add_argument('-P', '--put',
