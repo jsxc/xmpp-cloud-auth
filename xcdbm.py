@@ -19,35 +19,35 @@ def get_args():
         help='config file path')
     parser.add_argument('--url', '-u',
         required=True,
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--secret', '-s',
         required=True,
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--log', '-l',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--domain-db', '-b',
         required=True,
         help='persistent domain database; manipulated with -G, -P, -D, -L, -U')
     parser.add_argument('--debug', '-d',
         action='store_true',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--interactive', '-i',
         action='store_true',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--type', '-t',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--timeout',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--cache-db',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--cache-query-ttl',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--cache-verification-ttl',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--cache-unreachable-ttl',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--cache-bcrypt-rounds',
-        help='(ignored for compatibility)')
+        help='(ignored for config file compatibility)')
     parser.add_argument('--get', '-G',
         help='retrieve (get) a database entry')
     parser.add_argument('--put', '-P',
