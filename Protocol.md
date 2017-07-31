@@ -54,14 +54,14 @@ expiry := 'end of lifetime as unix timestamp'
 user := 'user identifier'
 secret := 'shared secret'
 name[x] := 'first x bit of name'
-, := 'concatenation'
+. := 'concatenation'
 
 # Calculation
 version = hexToBin(0x00)
 id = sha256(secret)
-challenge = version[8],id[16],expiry[32],user
+challenge = version[8] . id[16] . expiry[32] . user
 mac = sha256_mac(challenge, secret)
-token = version[8],mac[128],id[16],expiry[32]
+token = version[8] . mac[128] . id[16] . expiry[32]
 
 # Improve readability
 token = base64_encode(token)
