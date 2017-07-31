@@ -11,10 +11,8 @@ def get_args():
     desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud: Database manipulation.
         See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
 
-    # Config file in /etc or the program directory
-    cfpath = sys.argv[0][:-3] + ".conf"
     parser = configargparse.ArgumentParser(description=desc,
-        default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf', cfpath])
+        default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf'])
 
     parser.add_argument('-c', '--config-file',
         is_config_file=True,
