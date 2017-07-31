@@ -14,27 +14,27 @@ def get_args():
     parser = configargparse.ArgumentParser(description=desc,
         default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf'])
 
-    parser.add_argument('-c', '--config-file',
+    parser.add_argument('--config-file', '-c',
         is_config_file=True,
         help='config file path')
-    parser.add_argument('-u', '--url',
+    parser.add_argument('--url', '-u',
         required=True,
         help='(ignored for compatibility)')
-    parser.add_argument('-s', '--secret',
+    parser.add_argument('--secret', '-s',
         required=True,
         help='(ignored for compatibility)')
-    parser.add_argument('-l', '--log',
+    parser.add_argument('--log', '-l',
         help='(ignored for compatibility)')
-    parser.add_argument('-b', '--domain-db',
+    parser.add_argument('--domain-db', '-b',
         required=True,
         help='persistent domain database; manipulated with -G, -P, -D, -L, -U')
-    parser.add_argument('-d', '--debug',
+    parser.add_argument('--debug', '-d',
         action='store_true',
         help='(ignored for compatibility)')
-    parser.add_argument('-i', '--interactive',
+    parser.add_argument('--interactive', '-i',
         action='store_true',
         help='(ignored for compatibility)')
-    parser.add_argument('-t', '--type',
+    parser.add_argument('--type', '-t',
         help='(ignored for compatibility)')
     parser.add_argument('--timeout',
         help='(ignored for compatibility)')
@@ -48,17 +48,17 @@ def get_args():
         help='(ignored for compatibility)')
     parser.add_argument('--cache-bcrypt-rounds',
         help='(ignored for compatibility)')
-    parser.add_argument('-G', '--get',
+    parser.add_argument('--get', '-G',
         help='retrieve (get) a database entry')
-    parser.add_argument('-P', '--put',
+    parser.add_argument('--put', '-P',
         nargs=2, metavar=('KEY', 'VALUE'),
         help='store (put) a database entry (insert or update)')
-    parser.add_argument('-D', '--delete',
+    parser.add_argument('--delete', '-D',
         help='delete a database entry')
-    parser.add_argument('-L', '--load',
+    parser.add_argument('--load', '-L',
         action='store_true',
         help='load multiple database entries from stdin')
-    parser.add_argument('-U', '--unload',
+    parser.add_argument('--unload', '-U',
         action='store_true',
         help='unload (dump) the database contents to stdout')
     parser.add_argument('--version',

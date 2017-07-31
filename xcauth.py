@@ -292,27 +292,27 @@ def get_args():
         epilog=epilog,
         default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf'])
 
-    parser.add_argument('-c', '--config-file',
+    parser.add_argument('--config-file', '-c',
         is_config_file=True,
         help='config file path')
-    parser.add_argument('-u', '--url',
+    parser.add_argument('--url', '-u',
         required=True,
         help='base URL')
-    parser.add_argument('-s', '--secret',
+    parser.add_argument('--secret', '-s',
         required=True,
         help='secure api token')
-    parser.add_argument('-l', '--log',
+    parser.add_argument('--log', '-l',
         default=DEFAULT_LOG_DIR,
         help='log directory (default: %(default)s)')
-    parser.add_argument('-b', '--domain-db',
+    parser.add_argument('--domain-db', '-b',
         help='persistent domain database; manipulated with xcdbm.py')
-    parser.add_argument('-d', '--debug',
+    parser.add_argument('--debug', '-d',
         action='store_true',
         help='enable debug mode')
-    parser.add_argument('-i', '--interactive',
+    parser.add_argument('--interactive', '-i',
         action='store_true',
         help='log to stdout')
-    parser.add_argument('-t', '--type',
+    parser.add_argument('--type', '-t',
         choices=['generic', 'prosody', 'ejabberd', 'saslauthd'],
         default='generic',
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
@@ -335,10 +335,10 @@ def get_args():
         help='''Encrypt passwords with 2^ROUNDS before storing
             (i.e., every increasing ROUNDS takes twice as much
             computation time)''')
-    parser.add_argument('-A', '--auth-test',
+    parser.add_argument('--auth-test', '-A',
         nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='single, one-shot query of the user, domain, and password triple')
-    parser.add_argument('-I', '--isuser-test',
+    parser.add_argument('--isuser-test', '-I',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
     parser.add_argument('--version',
