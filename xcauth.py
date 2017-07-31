@@ -280,11 +280,11 @@ class xcauth:
             return True
         return False
 
-    def verify_with_isuser(self, url, secret, host, user, timeout):
+    def verify_with_isuser(self, url, secret, domain, user, timeout):
         success, code, response = self.verbose_cloud_request({
             'operation': 'isuser',
             'username':  user,
-            'domain':    host
+            'domain':    domain
         }, secret, url);
         return success, code, response
 
