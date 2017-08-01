@@ -280,13 +280,14 @@ class xcauth:
             return True
         return False
 
-    def verify_with_isuser(self, url, secret, domain, user, timeout):
-        success, code, response = self.verbose_cloud_request({
-            'operation': 'isuser',
-            'username':  user,
-            'domain':    domain
-        }, secret, url);
-        return success, code, response
+def verify_with_isuser(url, secret, domain, user, timeout):
+    xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
+    success, code, response = xc.verbose_cloud_request({
+        'operation': 'isuser',
+        'username':  user,
+        'domain':    domain
+    }, secret, url);
+    return success, code, response
 
 def ejabberdctl(args):
     # Dummy for now
