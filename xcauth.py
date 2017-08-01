@@ -280,6 +280,56 @@ class xcauth:
             return True
         return False
 
+    def ejabberdctl(self, args):
+        # Dummy for now
+        print "ejabberdctl " + str(args)
+
+    def jidsplit(self, jid, defaultDomain):
+        (node, at, dom) = jid.partition('@')
+        if at == '':
+            return (node, defaultDomain)
+        else:
+            return (node, dom)
+
+    def roster_groups(self, secret, host, user, sr):
+        groups = {}
+        for u in sr:
+            if 'groups' in sr[u]:
+                for g in sr[u]['groups']:
+                    if g in groups:
+                            groups[g] += (u,)
+                    else:
+                            groups[g] = (u,)
+            if 'name' in sr[u]:
+                self.ejabberdctl(('set_vcard', u, host, 'FN', sr[u]['name']))
+        hashname = {}
+        for g in groups:
+            hashname[g] = hashlib.sha256(secret + '\t' + g).hexdigest()
+            self.ejabberdctl(('srg_create', hashname[g], 'jsxc.org', g, g, hashname[g]))
+            for u in groups[g]:
+                (lhs, rhs) = self.jidsplit(u, host)
+                self.ejabberdctl(('srg_user_add', lhs, rhs, hashname[g], 'jsxc.org'))
+        return groups
+
+    def roster_test(self, username, domain):
+        secret, url, domain = self.per_domain(domain)
+        response = self.cloud_request({
+            'operation':'sharedroster',
+            'username':  username,
+            'domain':    domain
+        }, secret, url);
+        if response:
+            try:
+                sr = response['data']['sharedRoster']
+                print sr
+                print self.roster_groups(secret, domain, username, sr)
+            except Exception, e:
+                print "Weird response: " + str(e)
+                print response
+        else:
+            print "error"
+
+
 def verify_with_isuser(url, secret, domain, user, timeout):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
     success, code, response = xc.verbose_cloud_request({
@@ -288,55 +338,6 @@ def verify_with_isuser(url, secret, domain, user, timeout):
         'domain':    domain
     }, secret, url);
     return success, code, response
-
-def ejabberdctl(args):
-    # Dummy for now
-    print "ejabberdctl " + str(args)
-
-def jidsplit(jid, defaultDomain):
-    (node, at, dom) = jid.partition('@')
-    if at == '':
-        return (node, defaultDomain)
-    else:
-        return (node, dom)
-
-def roster_groups(s, secret, host, user, sr):
-    groups = {}
-    for u in sr:
-        if 'groups' in sr[u]:
-            for g in sr[u]['groups']:
-                if g in groups:
-                        groups[g] += (u,)
-                else:
-                        groups[g] = (u,)
-        if 'name' in sr[u]:
-            ejabberdctl(('set_vcard', u, host, 'FN', sr[u]['name']))
-    hashname = {}
-    for g in groups:
-        hashname[g] = hashlib.sha256(secret + '\t' + g).hexdigest()
-        ejabberdctl(('srg_create', hashname[g], 'jsxc.org', g, g, hashname[g]))
-        for u in groups[g]:
-            (lhs, rhs) = jidsplit(u, host)
-            ejabberdctl(('srg_user_add', lhs, rhs, hashname[g], 'jsxc.org'))
-    return groups
-
-def roster_test(s, username, domain):
-    secret, url, domain = per_domain(domain)
-    response = cloud_request(s, {
-        'operation':'sharedroster',
-        'username':  username,
-        'domain':    domain
-    }, secret, url);
-    if response:
-        try:
-            sr = response['data']['sharedRoster']
-            print sr
-            print roster_groups(s, secret, domain, username, sr)
-        except Exception, e:
-            print "Weird response: " + str(e)
-            print response
-    else:
-        print "error"
 
 ### Configuration-related functions
 
@@ -477,7 +478,7 @@ if __name__ == '__main__':
         print(success)
         sys.exit(0)
     if args.roster_test:
-        roster_test(s, args.roster_test[0], args.roster_test[1])
+        xc.roster_test(args.roster_test[0], args.roster_test[1])
         sys.exit(0)
     elif args.auth_test:
         success = xc.auth(args.auth_test[0], args.auth_test[1], args.auth_test[2])
