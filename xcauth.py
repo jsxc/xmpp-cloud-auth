@@ -416,7 +416,7 @@ def get_args():
     parser.add_argument('--isuser-test', '-I',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
-    parser.add_argument('-R', '--roster-test',
+    parser.add_argument('--roster-test', '-R',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user\'s shared roster')
     parser.add_argument('--version',
