@@ -253,21 +253,25 @@ class xcauth:
         secret, url, queryDomain = self.per_domain(domain)
         if self.auth_token(username, domain, password, secret):
             logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
+            self.try_roster(username, domain)
             return True
         if self.auth_token('%s@%s' % (username, domain), domain, password, secret):
             logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
             return True
         if self.auth_cache(username, domain, password, False):
             logging.info('SUCCESS: Cache says password for %s@%s is valid' % (username, domain))
+            self.try_roster(username, domain)
             return True
         r = self.auth_cloud(username, queryDomain, password, secret, url)
         if not r or r == 'error': # Request did not get through (connect, HTTP, signature check)
             cache = self.auth_cache(username, domain, password, True)
             logging.info('UNREACHABLE: Cache says password for %s@%s is %r' % (username, domain, cache))
+            # The roster request would be futile
             return cache
         elif r == 'success':
             logging.info('SUCCESS: Cloud says password for %s@%s is valid' % (username, domain))
             self.auth_update_cache(username, domain, password)
+            self.try_roster(username, domain)
             return True
         else: # 'noauth'
             logging.info('FAILURE: Could not authenticate user %s@%s: %s' % (username, domain, r))
@@ -298,7 +302,8 @@ class xcauth:
             return None
 
     def ejabberdctl_set_fn(self, user, domain, name):
-        if self.ejabberdctl(['get_vcard', user, domain, 'FN']) == 'error_no_vcard_found\n':
+        fullname = self.ejabberdctl(['get_vcard', user, domain, 'FN']).rstrip('\r\n')
+        if fullname == 'error_no_vcard_found' or fullname == '':
             self.ejabberdctl(['set_vcard', user, domain, 'FN', name])
 
     def ejabberdctl_members(self, group, domain):
@@ -378,7 +383,7 @@ class xcauth:
             shared_roster_db[key] = '\t'.join(sorted(hashname.values()))
         return groups
 
-    def roster_test(self, username, domain):
+    def roster_cloud(self, username, domain):
         secret, url, domain = self.per_domain(domain)
         response = self.cloud_request({
             'operation':'sharedroster',
@@ -389,15 +394,20 @@ class xcauth:
             sr = None
             try:
                 sr = response['data']['sharedRoster']
-                print sr
+                return sr
             except Exception, e:
-                print "Weird response: " + str(e)
-                print response
-            if sr is not None and self.ejabberdctl_path is not None:
-                print self.roster_groups(secret, domain, username, sr)
-        else:
-            print "error"
+                logging.warn("Weird response: " + str(e))
+        return False
 
+    def try_roster(self, username, domain):
+        if (self.ejabberdctl_path is not None):
+            try:
+                secret, url, domain = self.per_domain(domain)
+                response = self.roster_cloud(username, domain)
+                if response is not None and response != False:
+                    self.roster_groups(secret, domain, username, response)
+            except Exception, err:
+                logging.warn('try_roster: ' + str(err))
 
 def verify_with_isuser(url, secret, domain, user, timeout):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
@@ -561,7 +571,8 @@ if __name__ == '__main__':
         print(success)
         sys.exit(0)
     if args.roster_test:
-        xc.roster_test(args.roster_test[0], args.roster_test[1])
+        success = xc.roster_cloud(args.roster_test[0], args.roster_test[1])
+        print(success)
         sys.exit(0)
     elif args.auth_test:
         success = xc.auth(args.auth_test[0], args.auth_test[1], args.auth_test[2])
