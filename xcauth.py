@@ -9,6 +9,7 @@ import hashlib
 import sys
 import atexit
 import anydbm
+import subprocess
 from struct import *
 from time import time
 from base64 import b64decode
@@ -99,11 +100,15 @@ class saslauthd_io:
 ### Handling requests to/responses from the cloud server
 class xcauth:
     def __init__(self, default_url=None, default_secret=None,
+                ejabberdctl=None,
+                shared_roster_db=None, shared_roster_domain=None,
                 domain_db=None, cache_db=None,
                 ttls={'query': 3600, 'verify': 86400, 'unreach': 7*86400},
                 bcrypt_rounds=12, timeout=5):
         self.default_url=default_url
         self.default_secret=default_secret
+        self.shared_roster_domain=shared_roster_domain
+        self.ejabberdctl_path=ejabberdctl
         self.domain_db=domain_db
         self.cache_db=cache_db
         self.ttls=ttls
@@ -283,6 +288,117 @@ class xcauth:
             return True
         return False
 
+    def ejabberdctl(self, args):
+        logging.debug(self.ejabberdctl_path + str(args))
+        try:
+            return subprocess.check_output([self.ejabberdctl_path] + args)
+        except subprocess.CalledProcessError, err:
+            logging.warn("ejabberdctl %s failed with %s"
+                % (self.ejabberdctl_path + str(args), str(err)))
+            return None
+
+    def ejabberdctl_set_fn(self, user, domain, name):
+        if self.ejabberdctl(['get_vcard', user, domain, 'FN']) == 'error_no_vcard_found\n':
+            self.ejabberdctl(['set_vcard', user, domain, 'FN', name])
+
+    def ejabberdctl_members(self, group, domain):
+        membership = self.ejabberdctl(['srg_get_members', group, domain]).split('\n')
+        # Delete empty values (e.g. from empty output)
+        mem = {}
+        for m in membership:
+            if m != '':
+                mem = mem + [m]
+        return mem
+
+    def jidsplit(self, jid, defaultDomain):
+        (node, at, dom) = jid.partition('@')
+        if at == '':
+            return (node, defaultDomain)
+        else:
+            return (node, dom)
+
+    def roster_domain(self, domain):
+        if self.shared_roster_domain is None:
+            return domain
+        else:
+            return self.shared_roster_domain
+
+    # Ensure this is unique, has no problems with weird characters,
+    # and does not conflict with other instances (identified by the secret)
+    def hashname(self, secret, name):
+        return hashlib.sha256(secret + '\t' + name).hexdigest()
+
+    def roster_groups(self, secret, domain, user, sr):
+        # For all users we have information about:
+        # - collect the shared roster groups they belong to
+        # - set their full names if not yet defined
+        groups = {}
+        for u in sr:
+            if 'groups' in sr[u]:
+                for g in sr[u]['groups']:
+                    if g in groups:
+                            groups[g] += (u,)
+                    else:
+                            groups[g] = (u,)
+            if 'name' in sr[u]:
+                self.ejabberdctl_set_fn(u, domain, sr[u]['name'])
+        # For all the groups we have information about:
+        # - create the group (idempotent)
+        # - delete the users that we do not know about anymore
+        # - add the users we know about
+        hashname = {}
+        hashdomain = domain if self.shared_roster_domain is None else self.shared_roster_domain
+        for g in groups:
+            hashname[g] = self.hashname(secret, g)
+            self.ejabberdctl(['srg_create', hashname[g], hashdomain, g, g, hashname[g]])
+            previous_users = self.ejabberdctl_members(hashname[g], hashdomain)
+            new_users = {}
+            for u in groups[g]:
+                (lhs, rhs) = self.jidsplit(u, domain)
+                new_users['%s@%s' % (lhs, rhs)] = True
+                self.ejabberdctl(['srg_user_add', lhs, rhs, hashname[g], hashdomain])
+            for p in previous_users:
+                (lhs, rhs) = self.jidsplit(p, domain) # Should always have a domain...
+                if p not in new_users:
+                    self.ejabberdctl(['srg_user_del', lhs, rhs, hashname[g], hashdomain])
+        # For all the groups the login user was previously a member of:
+        # - delete her from the shared roster group if no longer a member
+        key = '%s:%s' % (user, domain)
+        if key in shared_roster_db:
+            # Was previously there as well, need to be removed from one?
+            previous = shared_roster_db[key].split('\t')
+            for p in previous:
+                if p not in hashname.values():
+                    self.ejabberdctl(['srg_user_del', user, domain, p, hashdomain])
+            # Only update when necessary
+            new = '\t'.join(sorted(hashname.values()))
+            if previous != new:
+                shared_roster_db[key] = new
+        else: # New, always set
+            shared_roster_db[key] = '\t'.join(sorted(hashname.values()))
+        return groups
+
+    def roster_test(self, username, domain):
+        secret, url, domain = self.per_domain(domain)
+        response = self.cloud_request({
+            'operation':'sharedroster',
+            'username':  username,
+            'domain':    domain
+        }, secret, url);
+        if response:
+            sr = None
+            try:
+                sr = response['data']['sharedRoster']
+                print sr
+            except Exception, e:
+                print "Weird response: " + str(e)
+                print response
+            if sr is not None and self.ejabberdctl_path is not None:
+                print self.roster_groups(secret, domain, username, sr)
+        else:
+            print "error"
+
+
 def verify_with_isuser(url, secret, domain, user, timeout):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
     success, code, response = xc.verbose_cloud_request({
@@ -305,10 +421,8 @@ def get_args():
     # build command line argument parser
     desc = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
         See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
-    epilog = '''-A takes precedence over -I over -t.
-        -A and -I imply -d.
-        -A, -I, -G, -P, -D, -L, and -U imply -i.
-        The database operations require -b.'''
+    epilog = '''-I, -R, and -A take precedence over -t. One of them is required.
+        -I, -R, and -A imply -i and -d.'''
 
     # Config file in /etc or the program directory
     cfpath = sys.argv[0][:-3] + ".conf"
@@ -359,12 +473,22 @@ def get_args():
         help='''Encrypt passwords with 2^ROUNDS before storing
             (i.e., every increasing ROUNDS takes twice as much
             computation time)''')
+    parser.add_argument('--ejabberdctl',
+        metavar="PATH",
+        help='Enables shared roster updates on authentication; use ejabberdctl command at PATH to modify them')
+    parser.add_argument('--shared-roster-domain',
+        help='Put all shared rosters to DOMAIN instead of the authentication user\'s domain (necessary for virtual domain configurations)')
+    parser.add_argument('--shared-roster-db',
+        help='Which groups a user has been added to (to ensure proper deletion)')
     parser.add_argument('--auth-test', '-A',
         nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
         help='single, one-shot query of the user, domain, and password triple')
     parser.add_argument('--isuser-test', '-I',
         nargs=2, metavar=("USER", "DOMAIN"),
         help='single, one-shot query of the user and domain tuple')
+    parser.add_argument('--roster-test', '-R',
+        nargs=2, metavar=("USER", "DOMAIN"),
+        help='single, one-shot query of the user\'s shared roster')
     parser.add_argument('--version',
         action='version', version=VERSION)
 
@@ -372,9 +496,14 @@ def get_args():
     args.cache_query_ttl        = parse_timespan(args.cache_query_ttl)
     args.cache_verification_ttl = parse_timespan(args.cache_verification_ttl)
     args.cache_unreachable_ttl  = parse_timespan(args.cache_unreachable_ttl)
-    if args.type is None and args.auth_test is None and args.isuser_test is None:
-        parser.print_help(sys.stderr)
+    # There is no logical XOR in Python
+    if ('ejabberdctl' in args)*1 + ('shared_roster_db' in args)*1 == 1:
+        sys.stderr.write('Define either both --ejabberdctl and --shared-roster-db, or neither\n')
         sys.exit(1)
+    if (args.auth_test is None and args.isuser_test is None and args.roster_test is None):
+        if args.type is None: # No work to do
+            parser.print_help(sys.stderr)
+            sys.exit(1)
     return args
 
 
@@ -383,7 +512,7 @@ if __name__ == '__main__':
     args = get_args()
 
     logfile = args.log + '/xcauth.log'
-    if (args.interactive or args.auth_test or args.isuser_test):
+    if (args.interactive or args.auth_test or args.isuser_test or args.roster_test):
         logging.basicConfig(stream=sys.stderr,
             level=logging.DEBUG,
             format='%(asctime)s %(levelname)s: %(message)s')
@@ -409,11 +538,20 @@ if __name__ == '__main__':
         atexit.register(cache_db.close)
     else:
         cache_db = {'': ''} # "Do not use" marker
+    if args.shared_roster_db:
+        shared_roster_db = anydbm.open(args.shared_roster_db, 'c', 0600)
+        atexit.register(shared_roster_db.close)
+    else:
+        # Will never be accessed, as `ejabberdctl` will not be set
+        shared_roster_db = None
 
     ttls = {'query': args.cache_query_ttl,
             'verify': args.cache_verification_ttl,
             'unreach': args.cache_unreachable_ttl}
     xc = xcauth(default_url = args.url, default_secret = args.secret,
+            ejabberdctl = args.ejabberdctl if 'ejabberdctl' in args else None,
+            shared_roster_domain = args.shared_roster_domain if 'shared_roster_domain' in args else None,
+            shared_roster_db = shared_roster_db,
             domain_db = domain_db, cache_db = cache_db,
             timeout = args.timeout, ttls = ttls,
             bcrypt_rounds = args.cache_bcrypt_rounds)
@@ -421,6 +559,9 @@ if __name__ == '__main__':
     if args.isuser_test:
         success = xc.isuser(args.isuser_test[0], args.isuser_test[1])
         print(success)
+        sys.exit(0)
+    if args.roster_test:
+        xc.roster_test(args.roster_test[0], args.roster_test[1])
         sys.exit(0)
     elif args.auth_test:
         success = xc.auth(args.auth_test[0], args.auth_test[1], args.auth_test[2])

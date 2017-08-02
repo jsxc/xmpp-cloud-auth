@@ -48,7 +48,11 @@ def get_args():
         help='(ignored for config file compatibility)')
     parser.add_argument('--cache-bcrypt-rounds',
         help='(ignored for config file compatibility)')
-    parser.add_argument('--get', '-G',
+    parser.add_argument('--ejabberdctl',
+        help='(ignored for config file compatibility)')
+    parser.add_argument('--shared-roster-domain',
+        help='(ignored for config file compatibility)')
+    parser.add_argument('-G', '--get',
         help='retrieve (get) a database entry')
     parser.add_argument('--put', '-P',
         nargs=2, metavar=('KEY', 'VALUE'),
