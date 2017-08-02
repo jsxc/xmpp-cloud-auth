@@ -10,6 +10,7 @@ import sys
 import atexit
 import anydbm
 import subprocess
+import traceback
 from struct import *
 from time import time
 from base64 import b64decode
@@ -143,26 +144,26 @@ class xcauth:
                                   allow_redirects=False, timeout=self.timeout)
         except requests.exceptions.HTTPError as err:
             logging.warn(err)
-            return False, None, err
+            return False, None, err, None
         except requests.exceptions.RequestException as err:
             try:
                 logging.warn('An error occured during the request to %s for domain %s: %s' % (url, data['domain'], err))
             except TypeError as err:
                 logging.warn('An unknown error occured during the request to %s, probably an SSL error. Try updating your "requests" and "urllib" libraries.' % url)
-            return False, None, err
+            return False, None, err, None
         if r.status_code != requests.codes.ok:
             try:
-                return False, r.status_code, r.json()
+                return False, r.status_code, r.json(), r.text
             except ValueError: # Not a valid JSON response
-                return False, r.status_code, None
+                return False, r.status_code, None, None
         try:
             # Return True only for HTTP 200 with JSON body, False for everything else
-            return True, None, r.json()
+            return True, None, r.json(), r.text
         except ValueError: # Not a valid JSON response
-            return False, r.status_code, None
+            return False, r.status_code, None, None
 
     def cloud_request(self, data, secret, url):
-        success, code, message = self.verbose_cloud_request(data, secret, url)
+        success, code, message, text = self.verbose_cloud_request(data, secret, url)
         if success:
             if code is not None and code != requests.codes.ok:
                 return code
@@ -382,29 +383,41 @@ class xcauth:
 
     def roster_cloud(self, username, domain):
         secret, url, domain = self.per_domain(domain)
-        response = self.cloud_request({
+        success, code, message, text = self.verbose_cloud_request({
             'operation':'sharedroster',
             'username':  username,
             'domain':    domain
-        }, secret, url);
-        if response:
-            sr = None
-            try:
-                sr = response['data']['sharedRoster']
-                return sr
-            except Exception, e:
-                logging.warn("Weird response: " + str(e))
-        return False
+        }, secret, url)
+        if success:
+            if code is not None and code != requests.codes.ok:
+                return code, None
+            else:
+                sr = None
+                try:
+                    sr = message['data']['sharedRoster']
+                    return sr, text
+                except Exception, e:
+                    logging.warn("Weird response: " + str(e))
+                    return message, text
+        else:
+            return False, None
 
     def try_roster(self, username, domain):
         if (self.ejabberdctl_path is not None):
             try:
                 secret, url, domain = self.per_domain(domain)
-                response = self.roster_cloud(username, domain)
+                response, text = self.roster_cloud(username, domain)
                 if response is not None and response != False:
-                    self.roster_groups(secret, domain, username, response)
+                    texthash = hashlib.sha256(text).hexdigest()
+                    userhash = self.hashname(secret, username)
+                    # Response changed or first response for that user?
+                    if not userhash in shared_roster_db or shared_roster_db[userhash] != texthash:
+                        shared_roster_db[userhash] = texthash
+                        self.roster_groups(secret, domain, username, response)
             except Exception, err:
-                logging.warn('try_roster: ' + str(err))
+                (etype, value, tb) = sys.exc_info()
+                traceback.print_exception(etype, value, tb)
+                logging.warn('try_roster: ' + str(err) + traceback.format_tb(tb))
 
 def verify_with_isuser(url, secret, domain, user, timeout):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
@@ -568,8 +581,8 @@ if __name__ == '__main__':
         print(success)
         sys.exit(0)
     if args.roster_test:
-        success = xc.roster_cloud(args.roster_test[0], args.roster_test[1])
-        print(success)
+        response, text = xc.roster_cloud(args.roster_test[0], args.roster_test[1])
+        print(response)
         sys.exit(0)
     elif args.auth_test:
         success = xc.auth(args.auth_test[0], args.auth_test[1], args.auth_test[2])
