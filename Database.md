@@ -24,7 +24,7 @@ Location specified by `--cache-db`, this database is an `andydbm`-based key/valu
 ## Shared Roster
 Location specified by `--shared-roster-db`, this database is an `andydbm`-based key/value storage.
 
-It contains two types of key/value pairs, differentiated whether the key contains a colon (`:`):
+It contains two types of key/value pairs, differentiated whether the key contains one or two colons (`:`):
 
 ### User memberships
 
@@ -39,5 +39,5 @@ deleted unless they become empty
 This is used to avoid the many expensive `ejabberdctl` calls required otherwise.
 They can be deleted without affecting functionality, but affecting performance.
 
-- key: SHA256(`login name` + '\t' + `domain secret`)
+- key: `CACHE:`username`:`domain (a bare JID with ':' instead of '@', prefixed with 'CACHE:')
 - value: SHA256(`response body`)
