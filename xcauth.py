@@ -300,8 +300,9 @@ class xcauth:
             return None
 
     def ejabberdctl_set_fn(self, user, domain, name):
-        fullname = self.ejabberdctl(['get_vcard', user, domain, 'FN']).rstrip('\r\n')
-        if fullname == 'error_no_vcard_found' or fullname == '':
+        fullname = self.ejabberdctl(['get_vcard', user, domain, 'FN'])
+        # error_no_vcard is exitcode 1 is None
+        if fullname is None or fullname == '' or fullname == '\n':
             self.ejabberdctl(['set_vcard', user, domain, 'FN', name])
 
     def ejabberdctl_members(self, group, domain):
