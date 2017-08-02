@@ -308,7 +308,7 @@ class xcauth:
     def ejabberdctl_members(self, group, domain):
         membership = self.ejabberdctl(['srg_get_members', group, domain]).split('\n')
         # Delete empty values (e.g. from empty output)
-        mem = {}
+        mem = []
         for m in membership:
             if m != '':
                 mem = mem + [m]
