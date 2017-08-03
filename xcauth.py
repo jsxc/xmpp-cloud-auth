@@ -12,6 +12,7 @@ import anydbm
 import subprocess
 import traceback
 import unicodedata
+import threading
 from struct import *
 from time import time
 from base64 import b64decode
@@ -412,7 +413,8 @@ class xcauth:
                     # Response changed or first response for that user?
                     if not userhash in shared_roster_db or shared_roster_db[userhash] != texthash:
                         shared_roster_db[userhash] = texthash
-                        self.roster_groups(secret, domain, username, response)
+                        threading.Thread(target=self.roster_groups,
+                            args=(secret, domain, username, response)).start()
             except Exception, err:
                 (etype, value, tb) = sys.exc_info()
                 traceback.print_exception(etype, value, tb)
