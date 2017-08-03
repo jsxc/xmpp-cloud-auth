@@ -511,8 +511,7 @@ def get_args():
     args.cache_query_ttl        = parse_timespan(args.cache_query_ttl)
     args.cache_verification_ttl = parse_timespan(args.cache_verification_ttl)
     args.cache_unreachable_ttl  = parse_timespan(args.cache_unreachable_ttl)
-    # There is no logical XOR in Python
-    if ('ejabberdctl' in args)*1 + ('shared_roster_db' in args)*1 == 1:
+    if ('ejabberdctl' in args) != ('shared_roster_db' in args):
         sys.stderr.write('Define either both --ejabberdctl and --shared-roster-db, or neither\n')
         sys.exit(1)
     if (args.auth_test is None and args.isuser_test is None and args.roster_test is None):
