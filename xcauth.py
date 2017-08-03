@@ -355,8 +355,10 @@ class xcauth:
             new_users = {}
             for u in groups[g]:
                 (lhs, rhs) = self.jidsplit(u, domain)
-                new_users['%s@%s' % (lhs, rhs)] = True
-                self.ejabberdctl(['srg_user_add', lhs, rhs, hashname[g], domain])
+                fulljid = '%s@%s' % (lhs, rhs)
+                new_users[fulljid] = True
+                if not fulljid in previous_users:
+                    self.ejabberdctl(['srg_user_add', lhs, rhs, hashname[g], domain])
             for p in previous_users:
                 (lhs, rhs) = self.jidsplit(p, domain) # Should always have a domain...
                 if p not in new_users:
