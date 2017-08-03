@@ -12,6 +12,7 @@ import anydbm
 import subprocess
 import traceback
 import unicodedata
+import threading
 from struct import *
 from time import time
 from base64 import b64decode
@@ -359,8 +360,10 @@ class xcauth:
             new_users = {}
             for u in groups[g]:
                 (lhs, rhs) = self.jidsplit(u, domain)
-                new_users['%s@%s' % (lhs, rhs)] = True
-                self.ejabberdctl(['srg_user_add', lhs, rhs, hashname[g], domain])
+                fulljid = '%s@%s' % (lhs, rhs)
+                new_users[fulljid] = True
+                if not fulljid in previous_users:
+                    self.ejabberdctl(['srg_user_add', lhs, rhs, hashname[g], domain])
             for p in previous_users:
                 (lhs, rhs) = self.jidsplit(p, domain) # Should always have a domain...
                 if p not in new_users:
@@ -414,7 +417,8 @@ class xcauth:
                     # Response changed or first response for that user?
                     if not userhash in shared_roster_db or shared_roster_db[userhash] != texthash:
                         shared_roster_db[userhash] = texthash
-                        self.roster_groups(secret, domain, username, response)
+                        threading.Thread(target=self.roster_groups,
+                            args=(secret, domain, username, response)).start()
             except Exception, err:
                 (etype, value, tb) = sys.exc_info()
                 traceback.print_exception(etype, value, tb)
