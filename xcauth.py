@@ -258,6 +258,7 @@ class xcauth:
             return True
         if self.auth_token('%s@%s' % (username, domain), domain, password, secret):
             logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
+            self.try_roster(username, domain)
             return True
         if self.auth_cache(username, domain, password, False):
             logging.info('SUCCESS: Cache says password for %s@%s is valid' % (username, domain))
