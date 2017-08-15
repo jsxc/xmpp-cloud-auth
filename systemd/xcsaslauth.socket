@@ -4,6 +4,9 @@ PartOf=xcsaslauth.service
 
 [Socket]
 ListenStream=/var/run/saslauthd/mux
+SocketUser=root
+SocketGroup=sasl
+SocketMode=660
 Accept=yes
 
 [Install]
