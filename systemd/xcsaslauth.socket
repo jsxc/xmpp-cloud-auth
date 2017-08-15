@@ -7,6 +7,7 @@ ListenStream=/var/run/saslauthd/mux
 SocketUser=root
 SocketGroup=sasl
 SocketMode=660
+DirectoryMode=710
 Accept=yes
 
 [Install]
