@@ -127,8 +127,10 @@ class xcauth:
                 secret, url, extra = self.domain_db[dom].split('\t', 2)
                 queryDomain = dom
                 self.domain_db[dom] = '\t'.join((secret, url, queryDomain, extra))
+            logging.debug('per_domain(%s) --DB--> (%s, %s, %s)' % (dom, secret, url, queryDomain))
             return secret, url, queryDomain
         else:
+            logging.debug('per_domain(%s) --CFG--> (%s, %s, %s)' % (dom, self.default_secret, self.default_url, dom))
             return self.default_secret, self.default_url, dom
 
     def verbose_cloud_request(self, data, secret, url):
@@ -251,6 +253,7 @@ class xcauth:
             self.cache_db[key] = "\t".join((pwhash, snow, snow, snow, ''))
 
     def auth(self, username, domain, password):
+        logging.debug('auth(%s, %s, ...)' % (username, domain))
         secret, url, queryDomain = self.per_domain(domain)
         if self.auth_token(username, domain, password, secret):
             logging.info('SUCCESS: Token for %s@%s is valid' % (username, domain))
@@ -331,6 +334,7 @@ class xcauth:
         return ''.join(c for c in name if unicodedata.category(c) in printable and c != '@')
 
     def roster_groups(self, secret, domain, user, sr):
+        logging.debug('roster_groups %s %s@%s %s' % (secret, domain, user, str(sr)))
         # For all users we have information about:
         # - collect the shared roster groups they belong to
         # - set their full names if not yet defined
@@ -395,6 +399,8 @@ class xcauth:
                 sr = None
                 try:
                     sr = message['data']['sharedRoster']
+                    logging.debug(sr)
+                    logging.debug(message)
                     return sr, text
                 except Exception, e:
                     logging.warn("Weird response: " + str(e))
@@ -403,9 +409,9 @@ class xcauth:
             return False, None
 
     def try_roster(self, username, domain):
+        logging.debug("try_roster %s@%s" % (username, domain))
         if (self.ejabberdctl_path is not None):
             try:
-                secret, url, domain = self.per_domain(domain)
                 response, text = self.roster_cloud(username, domain)
                 if response is not None and response != False:
                     texthash = hashlib.sha256(text).hexdigest()
@@ -413,12 +419,13 @@ class xcauth:
                     # Response changed or first response for that user?
                     if not userhash in shared_roster_db or shared_roster_db[userhash] != texthash:
                         shared_roster_db[userhash] = texthash
+                        secret, url, queryDomain = self.per_domain(domain)
                         threading.Thread(target=self.roster_groups,
                             args=(secret, domain, username, response)).start()
             except Exception, err:
                 (etype, value, tb) = sys.exc_info()
                 traceback.print_exception(etype, value, tb)
-                logging.warn('try_roster: ' + str(err) + traceback.format_tb(tb))
+                logging.warn('try_roster: ' + str(err) + str(traceback.format_tb(tb)))
 
 def verify_with_isuser(url, secret, domain, user, timeout):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
