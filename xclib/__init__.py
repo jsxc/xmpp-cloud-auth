@@ -99,7 +99,7 @@ class xcauth:
     # Failure may just indicate that we were passed a password
     def auth_token(self, username, domain, password, secret):
         try:
-            token = b64decode(password.translate(usersafe_encoding) + "=======")
+            token = b64decode(password.translate(usersafe_encoding) + '=======')
         except:
             logging.debug('Could not decode token (maybe not a token?)')
             return False
@@ -110,17 +110,17 @@ class xcauth:
             logging.debug('Token is too short: %d != 23 (maybe not a token?)' % len(token))
             return False
 
-        (version, mac, header) = unpack("> B 16s 6s", token)
+        (version, mac, header) = unpack('> B 16s 6s', token)
         if version != 0:
             logging.debug('Wrong token version (maybe not a token?)')
             return False;
 
-        (secretID, expiry) = unpack("> H I", header)
+        (secretID, expiry) = unpack('> H I', header)
         if expiry < time():
             logging.debug('Token has expired')
             return False
 
-        challenge = pack("> B 6s %ds" % len(jid), version, header, jid)
+        challenge = pack('> B 6s %ds' % len(jid), version, header, jid)
         response = hmac.new(secret, challenge, hashlib.sha256).digest()
 
         return hmac.compare_digest(mac, response[:16])
@@ -144,7 +144,7 @@ class xcauth:
             return ret == pwhash
 
     def auth_cache(self, username, domain, password, unreach):
-        key = username + ":" + domain
+        key = username + ':' + domain
         if key in self.cache_db:
             now = int(time())
             (pwhash, ts1, tsv, tsa, rest) = self.cache_db[key].split("\t", 4)
@@ -158,7 +158,7 @@ class xcauth:
     def auth_update_cache(self, username, domain, password):
         if '' in self.cache_db: # Cache disabled?
             return
-        key = username + ":" + domain
+        key = username + ':' + domain
         now = int(time())
         snow = str(now)
         try:
@@ -218,7 +218,7 @@ class xcauth:
         try:
             return subprocess.check_output([self.ejabberdctl_path] + args)
         except subprocess.CalledProcessError, err:
-            logging.warn("ejabberdctl %s failed with %s"
+            logging.warn('ejabberdctl %s failed with %s'
                 % (self.ejabberdctl_path + str(args), str(err)))
             return None
 
@@ -320,7 +320,7 @@ class xcauth:
                     sr = message['data']['sharedRoster']
                     return sr, text
                 except Exception, e:
-                    logging.warn("Weird response: " + str(e))
+                    logging.warn('Weird response: ' + str(e))
                     return message, text
         else:
             return False, None

@@ -9,11 +9,11 @@ class ejabberd_io:
         while len(length_field) == 2:
             (size,) = unpack('>H', length_field)
             if size == 0:
-               logging.info("command length 0, treating as logical EOF")
+               logging.info('command length 0, treating as logical EOF')
                return
             cmd = sys.stdin.read(size)
             if len(cmd) != size:
-               logging.warn("premature EOF while reading cmd: %d != %d" % (len(cmd), size))
+               logging.warn('premature EOF while reading cmd: %d != %d' % (len(cmd), size))
                return
             x = cmd.split(':', 3)
             yield x
