@@ -18,7 +18,7 @@ class saslauthd_io:
             field_no = (field_no + 1) % 4
             if field_no == 0:
                 logging.debug('from_saslauthd got %s, %s, %s, %s' % tuple(fields))
-                yield ('auth', fields[0], fields[3], fields[1])
+                yield ['auth', fields[0], fields[3], fields[1]]
             length_field = sys.stdin.read(2)
 
     @classmethod
