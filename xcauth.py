@@ -127,10 +127,8 @@ class xcauth:
                 secret, url, extra = self.domain_db[dom].split('\t', 2)
                 queryDomain = dom
                 self.domain_db[dom] = '\t'.join((secret, url, queryDomain, extra))
-            logging.debug('per_domain(%s) --DB--> (%s, %s, %s)' % (dom, secret, url, queryDomain))
             return secret, url, queryDomain
         else:
-            logging.debug('per_domain(%s) --CFG--> (%s, %s, %s)' % (dom, self.default_secret, self.default_url, dom))
             return self.default_secret, self.default_url, dom
 
     def verbose_cloud_request(self, data, secret, url):
