@@ -20,6 +20,33 @@ class TestEjabberd(unittest.TestCase, iostub):
     except StopIteration:
       pass
 
+  def test_input_fake_eof(self):
+    self.stub_stdin('\000\000')
+    tester = iter(ejabberd_io.read_request())
+    try:
+      output = tester.next()
+      assert False # Should raise StopIteration
+    except StopIteration:
+      pass
+
+  def test_input_short(self):
+    self.stub_stdin('\001\000')
+    tester = iter(ejabberd_io.read_request())
+    try:
+      output = tester.next()
+      assert False # Should raise StopIteration
+    except StopIteration:
+      pass
+
+  def test_input_negative(self):
+    self.stub_stdin('\377\377')
+    tester = iter(ejabberd_io.read_request())
+    try:
+      output = tester.next()
+      assert False # Should raise StopIteration
+    except StopIteration:
+      pass
+
   def test_output_false(self):
     self.stub_stdout()
     ejabberd_io.write_response(False)

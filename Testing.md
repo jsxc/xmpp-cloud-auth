@@ -12,15 +12,15 @@ on your system. To run the tests, type
 ```sh
 nosetests
 ```
-in this directory. Some of the tests will only run, if
-`/etc/xcauth.conf` exists. They will assume that
-it points to a server accounts with the following
-username/password pairs:
-
-| Username        | Password |
-| --------------- | -------- |
-| testbed         | chilobig |
-| test@example.ch | nigorami |
-
-Please disable these accounts whenever you are not
-using them for tests, as someone might abuse them.
+or (if you also want coverage information),
+```sh
+nosetests --with-coverage --cover-package=xclib
+```
+in this directory. Some of the tests will only run,
+if `/etc/xcauth.accounts` exists. Then, it will read
+tab-separated username/password pairs from that file
+and use the settings in `/etc/xcauth.conf` to verify
+those passwords. Additionally, it will assume that
+a user `nosuchuser` **does not exist**. Please make
+sure that only authorized users can read these
+configuration files.
