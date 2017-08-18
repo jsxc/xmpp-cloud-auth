@@ -9,12 +9,13 @@ from xclib.configuration import get_args
 
 DEFAULT_LOG_DIR = '/var/log/xcauth'
 VERSION = '0.9.0+'
-
-
-
+DESC = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
+    See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''
+EPILOG = '''-I, -R, and -A take precedence over -t. One of them is required.
+    -I, -R, and -A imply -i and -d.'''
 
 if __name__ == '__main__':
-    args = get_args(VERSION, DEFAULT_LOG_DIR)
+    args = get_args(VERSION, DEFAULT_LOG_DIR, DESC, EPILOG, 'xcauth')
 
     logfile = args.log + '/xcauth.log'
     if (args.interactive or args.auth_test or args.isuser_test or args.roster_test):
