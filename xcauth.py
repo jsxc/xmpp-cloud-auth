@@ -307,7 +307,8 @@ class xcauth:
     def ejabberdctl_set_fn(self, user, domain, name):
         fullname = self.ejabberdctl(['get_vcard', user, domain, 'FN'])
         # error_no_vcard is exitcode 1 is None
-        if fullname is None or fullname == '' or fullname == '\n':
+        if (fullname is None or fullname == '' or fullname == '\n'
+            fullname == user + '\n' or fullname == ('%s@%s\n' % (user, domain))):
             self.ejabberdctl(['set_vcard', user, domain, 'FN', name])
 
     def ejabberdctl_members(self, group, domain):
