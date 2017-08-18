@@ -4,7 +4,6 @@ import requests
 import hmac
 import hashlib
 import sys
-import anydbm
 import subprocess
 import traceback
 import unicodedata

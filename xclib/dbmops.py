@@ -11,13 +11,13 @@ def perform(args):
         del domain_db[args.delete]
     elif args.unload:
         for k in domain_db.keys():
-            print k, '\t', domain_db[k]
+            print '%s\t%s' % (k, domain_db[k])
         # Should work according to documentation, but doesn't
         # for k, v in DOMAIN_DB.iteritems():
         #     print k, '\t', v
     elif args.load:
         for line in sys.stdin:
-            k, v = line.rstrip().split('\t', 1)
+            k, v = line.rstrip('\r\n').split('\t', 1)
             domain_db[k] = v
     domain_db.close()
 
