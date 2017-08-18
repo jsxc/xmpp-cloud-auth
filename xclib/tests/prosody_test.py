@@ -1,5 +1,4 @@
 import sys
-import io
 import unittest
 from xclib.prosody_io import prosody_io
 from xclib.tests.iostub import iostub

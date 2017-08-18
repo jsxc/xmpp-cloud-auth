@@ -1,5 +1,4 @@
 import sys
-import io
 import unittest
 from xclib.ejabberd_io import ejabberd_io
 from xclib.tests.iostub import iostub

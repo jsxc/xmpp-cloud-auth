@@ -1,5 +1,4 @@
 import sys
-import io
 import os
 import anydbm, dbhash
 import unittest

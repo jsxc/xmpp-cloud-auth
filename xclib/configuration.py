@@ -14,7 +14,7 @@ def add_maybe(*args, **kwargs):
         kwargs['help'] = '(ignored for config file compatibility)'
     parser.add_argument(*args, **kwargs)
 
-def get_args(logdir, desc, epilog, name):
+def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
     # Config file in /etc or the program directory
     global parser, app_name
     app_name = name
@@ -73,7 +73,6 @@ def get_args(logdir, desc, epilog, name):
         help='log to stdout')
     add_maybe('--type', '-t',
         choices=['generic', 'prosody', 'ejabberd', 'saslauthd'],
-        default='generic',
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
     add_maybe('--timeout',
         type=int, default=5,
@@ -103,18 +102,18 @@ def get_args(logdir, desc, epilog, name):
     parser.add_argument('--version',
         action='version', version=VERSION)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=args, config_file_contents=config_file_contents)
     if name != 'xcdbm':
         args.cache_query_ttl        = parse_timespan(args.cache_query_ttl)
         args.cache_verification_ttl = parse_timespan(args.cache_verification_ttl)
         args.cache_unreachable_ttl  = parse_timespan(args.cache_unreachable_ttl)
-        if ('ejabberdctl' in args) != ('shared_roster_db' in args):
+        if (args.ejabberdctl is None) != (args.shared_roster_db is None):
             sys.stderr.write('Define either both --ejabberdctl and --shared-roster-db, or neither\n')
             sys.exit(1)
-        if (args.auth_test is None and args.isuser_test is None and args.roster_test is None):
-            if args.type is None: # No work to do
-                parser.print_help(sys.stderr)
-                sys.exit(1)
+        if (args.auth_test is None and args.isuser_test is None and args.roster_test is None
+          and args.type is None): # No work to do
+            parser.print_help(sys.stderr)
+            sys.exit(1)
     else:
         command_count = 0
         for i in (args.get, args.put, args.delete, args.load, args.unload):

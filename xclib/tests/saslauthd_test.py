@@ -1,5 +1,4 @@
 import sys
-import io
 import unittest
 from xclib.saslauthd_io import saslauthd_io
 from xclib.tests.iostub import iostub
