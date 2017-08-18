@@ -11,9 +11,9 @@ class TestSaslAuthD(unittest.TestCase, iostub):
                     '\000\005login\000\004pass\000\006ignore\000\006domain')
     tester = iter(saslauthd_io.read_request())
     output = tester.next()
-    assert output == ['auth', 'login', 'domain', 'pass']
+    assert output == ('auth', 'login', 'domain', 'pass')
     output = tester.next()
-    assert output == ['auth', 'login', 'domain', 'pass']
+    assert output == ('auth', 'login', 'domain', 'pass')
     try:
       output = tester.next()
       assert False # Should raise StopIteration

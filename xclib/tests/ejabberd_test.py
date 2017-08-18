@@ -11,9 +11,9 @@ class TestEjabberd(unittest.TestCase, iostub):
       '\000\021auth:log:dom:pass')
     tester = iter(ejabberd_io.read_request())
     output = tester.next()
-    assert output == ['isuser', 'login', '']
+    assert output == ('isuser', 'login', '')
     output = tester.next()
-    assert output == ['auth', 'log', 'dom', 'pass']
+    assert output == ('auth', 'log', 'dom', 'pass')
     try:
       output = tester.next()
       assert False # Should raise StopIteration

@@ -9,7 +9,7 @@ class prosody_io:
             if not line:
                 break
             line = line.rstrip("\r\n")
-            yield line.split(':', 3)
+            yield tuple(line.split(':', 3))
 
     @classmethod
     def write_response(cls, bool):

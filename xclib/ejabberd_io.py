@@ -16,7 +16,7 @@ class ejabberd_io:
                logging.warn('premature EOF while reading cmd: %d != %d' % (len(cmd), size))
                return
             x = cmd.split(':', 3)
-            yield x
+            yield tuple(x)
             length_field = sys.stdin.read(2)
 
     @classmethod

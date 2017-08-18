@@ -12,13 +12,13 @@ class saslauthd_io:
             (size,) = unpack('>H', length_field)
             val = sys.stdin.read(size)
             if len(val) != size:
-               logging.warn('premature EOF while reading field %d: %d != %d' % (field_no, len(cmd), size))
+               logging.warn('premature EOF while reading field %d: %d != %d' % (field_no, len(val), size))
                return
             fields[field_no] = val
             field_no = (field_no + 1) % 4
             if field_no == 0:
                 logging.debug('from_saslauthd got %s, %s, %s, %s' % tuple(fields))
-                yield ['auth', fields[0], fields[3], fields[1]]
+                yield ('auth', fields[0], fields[3], fields[1])
             length_field = sys.stdin.read(2)
 
     @classmethod
