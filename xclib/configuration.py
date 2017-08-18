@@ -1,5 +1,6 @@
 import configargparse
 import sys
+from xclib.version import VERSION
 
 def parse_timespan(span):
     multipliers = {'s': 1, 'm': 60, 'h': 60*60, 'd': 60*60*24, 'w': 60*60*24*7}
@@ -13,7 +14,7 @@ def add_maybe(*args, **kwargs):
         kwargs['help'] = '(ignored for config file compatibility)'
     parser.add_argument(*args, **kwargs)
 
-def get_args(version, logdir, desc, epilog, name):
+def get_args(logdir, desc, epilog, name):
     # Config file in /etc or the program directory
     global parser, app_name
     app_name = name
@@ -100,7 +101,7 @@ def get_args(version, logdir, desc, epilog, name):
         help='Which groups a user has been added to (to ensure proper deletion)')
 
     parser.add_argument('--version',
-        action='version', version=version)
+        action='version', version=VERSION)
 
     args = parser.parse_args()
     if name != 'xcdbm':
