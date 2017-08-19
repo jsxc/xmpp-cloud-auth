@@ -52,7 +52,7 @@ class sigcloud(isuser, auth, roster):
         }
         try:
             r = self.ctx.session.post(self.url, data=payload, headers=headers,
-                                  allow_redirects=False, timeout=self.timeout)
+                                  allow_redirects=False, timeout=self.ctx.timeout)
         except requests.exceptions.HTTPError as err:
             logging.warn(err)
             return False, None, err, None

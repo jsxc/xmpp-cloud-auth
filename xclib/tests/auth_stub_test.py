@@ -6,7 +6,7 @@ cloud_count = 0
 def setup_module():
     global xc, sc
     xc = xcauth(default_url='https://localhost', default_secret='01234',
-        bcrypt_rounds=8)
+        bcrypt_rounds=6)
     sc = sigcloud(xc, 'user2', 'domain2', 'pass2')
 
 def teardown_module():
@@ -101,20 +101,45 @@ def test_10_success():
 # Test group 20: Time-limited tokens
 def sc_trap(data):
     assert False # Should not reach out to the cloud
-def test_20_token():
+def test_20_token_success():
     # ./generateTimeLimitedToken tuser tdomain 01234 3600 1000
     sc = sigcloud(xc, 'tuser', 'tdomain',
         'AMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=2000)
     sc.verbose_cloud_request = sc_trap
+    assert sc.auth() == True
+    assert 'tuser:tdomain' not in xc.cache_db
+
+def test_20_token_fail():
+    # ./generateTimeLimitedToken tuser tdomain 01234 3600 1000
+    sc = sigcloud(xc, 'tuser', 'tdomain',
+        'AMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=5000)
+    sc.verbose_cloud_request = sc_noauth
+    global cloud_count
+    cloud_count = 0
+    assert sc.auth() == False
+    assert cloud_count == 1
+
+def test_20_token_version():
+    # Wrong version
+    sc = sigcloud(xc, 'tuser', 'tdomain',
+        'BMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=5000)
+    sc.verbose_cloud_request = sc_noauth
+    global cloud_count
+    cloud_count = 0
+    assert sc.auth() == False
+    assert cloud_count == 1
 
 # Test group 30: Cache logic
 def test_30_cache():
+    global cloud_count
+    cloud_count = 0
     sc = sigcloud(xc, 'user3', 'domain3', 'pass3', now=1)
 
     # Timeout first: No cache entry
     sc.verbose_cloud_request = sc_timeout
     assert sc.auth() == False
     assert 'user3:domain3' not in xc.cache_db
+    assert cloud_count == 1
 
     # Success: Cache entry
     sc.verbose_cloud_request = sc_success
@@ -123,26 +148,100 @@ def test_30_cache():
     entry = xc.cache_db['user3:domain3']
     fields = entry.split('\t')
     cachedpw = fields[0]
-    assert fields[0].startswith('$2b$08$')
+    assert fields[0].startswith('$2b$06$')
     assert fields[1] == '1'
     assert fields[2] == '1'
     assert fields[3] == '1'
+    assert cloud_count == 2
 
-    # Same request a little bit later: Should use cache
+    # Same request a little bit later: Should use cache (and note it)
     sc.now = 100
     sc.verbose_cloud_request = sc_trap
     assert sc.auth() == True
     entry = xc.cache_db['user3:domain3']
     fields = entry.split('\t')
-    assert cachedpw == fields[0] # No password cache update
+    assert cachedpw == fields[0] # No cache password update
     assert fields[1] == '1'
     assert fields[2] == '1'
     assert fields[3] == '100'
+    assert cloud_count == 2
 
-    # Same request with different password: Should use cloud
-    global cloud_count
-    cloud_count = 0
+    # Bad password request
     sc.now = 200
+    sc.verbose_cloud_request = sc_noauth
+    sc.password = 'badpass'
+    assert sc.auth() == False
+    assert xc.cache_db['user3:domain3'] == entry # Unmodified
+    assert cloud_count == 3
+
+    # New successful password request again: Should use cloud again
+    sc.now = 300
     sc.password = 'newpass'
     sc.verbose_cloud_request = sc_success
     assert sc.auth() == True
+    entry = xc.cache_db['user3:domain3']
+    fields = entry.split('\t')
+    assert cachedpw != fields[0] # Update cached password
+    assert fields[1] == '1'
+    assert fields[2] == '300'
+    assert fields[3] == '300'
+    assert cloud_count == 4
+
+    # Token request should not change anything
+    # ./generateTimeLimitedToken user3 domain3 01234 3600 1
+    sc.password = 'ABbL+6M8K7HGF/vnfaZZi5XFZQAADhE'
+    assert sc.auth() == True
+    assert xc.cache_db['user3:domain3'] == entry # Unmodified
+    assert cloud_count == 4
+
+    # More than an hour of waiting: Go to the cloud again
+    sc.now = 4000
+    sc.password = 'newpass'
+    assert sc.auth() == True
+    assert xc.cache_db['user3:domain3'] != entry # Updated
+    entry = xc.cache_db['user3:domain3']
+    fields = entry.split('\t')
+    assert cachedpw != fields[0] # Update cached password
+    assert fields[1] == '1'
+    assert fields[2] == '4000'
+    assert fields[3] == '4000'
+    assert cloud_count == 5
+
+    # Another hour has passed, but the server is now unreachable
+    sc.now = 8000
+    sc.verbose_cloud_request = sc_timeout
+    assert sc.auth() == True
+    entry = xc.cache_db['user3:domain3']
+    fields = entry.split('\t')
+    assert cachedpw != fields[0] # Update cached password
+    assert fields[1] == '1'
+    assert fields[2] == '4000'
+    assert fields[3] == '8000'
+    assert cloud_count == 6
+
+    # Another request shortly after goes to the cache again
+    sc.now = 8100
+    assert sc.auth() == True
+    entry = xc.cache_db['user3:domain3']
+    fields = entry.split('\t')
+    assert cachedpw != fields[0] # Update cached password
+    assert fields[1] == '1'
+    assert fields[2] == '4000'
+    assert fields[3] == '8100'
+    assert cloud_count == 6
+
+    # Now 46 more requests spaced half an hour apart should all go to the cache
+    while sc.now < 4000 + 86400 - 1800:
+        sc.now += 1800
+        assert sc.auth() == True
+        assert cloud_count == 6
+
+    # The next goes to the cloud again, but as that times out, is considered OK as well
+    sc.now += 1800
+    assert sc.auth() == True
+    assert cloud_count == 7
+
+    # This could go on for the rest of a week, but then it should finally fail
+    sc.now += 6*86400
+    assert sc.auth() == False
+    assert cloud_count == 8

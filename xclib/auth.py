@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import bcrypt
 from time import time
+from struct import pack, unpack
 from base64 import b64decode
 from string import maketrans
 
@@ -33,7 +34,7 @@ class auth:
             return False;
 
         (secretID, expiry) = unpack('> H I', header)
-        if expiry < now:
+        if expiry < self.now:
             logging.debug('Token has expired')
             return False
 
@@ -46,7 +47,7 @@ class auth:
         response = self.cloud_request({
             'operation':'auth',
             'username': self.username,
-            'domain':   self.domain,
+            'domain':   self.queryDomain,
             'password': self.password
         })
         if response and 'result' in response:
@@ -69,7 +70,7 @@ class auth:
             now = self.now
             (pwhash, ts1, tsv, tsa, rest) = self.ctx.cache_db[key].split("\t", 4)
             if ((int(tsa) + self.ctx.ttls['query'] > now and int(tsv) + self.ctx.ttls['verify'] > now)
-               or (unreach and int(tsv) + self.ctx['unreach'] > now)):
+               or (unreach and int(tsv) + self.ctx.ttls['unreach'] > now)):
                 if self.checkpw(pwhash):
                     self.ctx.cache_db[key] = "\t".join((pwhash, ts1, tsv, str(now), rest))
                     return True

@@ -75,7 +75,7 @@ class roster:
         success, code, message, text = self.verbose_cloud_request({
             'operation': 'sharedroster',
             'username':  self.username,
-            'domain':    self.domain
+            'domain':    self.queryDomain
         })
         if success:
             if code is not None and code != requests.codes.ok:
