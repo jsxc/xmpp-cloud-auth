@@ -55,17 +55,17 @@ def perform(args):
         sc = sigcloud(xc, args.isuser_test[0], args.isuser_test[1])
         success = sc.isuser()
         print success
-        sys.exit(0)
+        return
     if args.roster_test:
         sc = sigcloud(xc, args.roster_test[0], args.roster_test[1])
         success, response = sc.roster_cloud()
         print response
-        sys.exit(0)
+        return
     elif args.auth_test:
         sc = sigcloud(xc, args.auth_test[0], args.auth_test[1], args.auth_test[2])
         success = sc.auth()
         print success
-        sys.exit(0)
+        return
 
     if args.type == 'ejabberd':
         from xclib.ejabberd_io import ejabberd_io
