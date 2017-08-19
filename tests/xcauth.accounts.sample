@@ -1,0 +1,6 @@
+# login	domain	password
+nosuchuser	example.ch	-
+	isuser	False
+tester	example.ch	p4ssw0rd
+	isuser	True
+	auth	True
