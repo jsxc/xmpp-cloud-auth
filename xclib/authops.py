@@ -82,9 +82,17 @@ def perform(args):
 
         success = False
         if data[0] == "auth" and len(data) == 4:
-            success = xc.auth(data[1], data[2], data[3])
+            sc = sigcloud(xc, data[1], data[2], data[3])
+            success = sc.auth()
         elif data[0] == "isuser" and len(data) == 3:
-            success = xc.isuser(data[1], data[2])
+            sc = sigcloud(xc, data[1], data[2])
+            success = sc.isuser()
+        elif data[0] == "roster" and len(data) == 3:
+            # Nonstandard extension, only useful with -t generic
+            sc = sigcloud(xc, data[1], data[2])
+            success, response = sc.roster_cloud()
+            if success:
+                success = response
         elif data[0] == "quit" or data[0] == "exit":
             break
 

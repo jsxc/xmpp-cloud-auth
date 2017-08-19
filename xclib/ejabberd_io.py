@@ -20,9 +20,9 @@ class ejabberd_io:
             length_field = sys.stdin.read(2)
 
     @classmethod
-    def write_response(cls, bool):
+    def write_response(cls, flag):
         answer = 0
-        if bool:
+        if flag:
             answer = 1
         token = pack('>HH', 2, answer)
         sys.stdout.write(token)

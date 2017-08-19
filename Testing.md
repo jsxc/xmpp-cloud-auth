@@ -25,6 +25,14 @@ a user `nosuchuser` **does not exist**. Please make
 sure that only authorized users can read these
 configuration files.
 
+The full command-line tool can be tested when typing
+```sh
+tests/run-online.pl /etc/xcauth.accounts
+```
+in the current directory.
+This will also use `/etc/xcauth.accounts`, so this
+needs to exist together with your valid `/etc/xcauth.conf`.
+
 ## Format of `/etc/xcauth.accounts`
 Line-based, tab-separated file with the following fields:
 

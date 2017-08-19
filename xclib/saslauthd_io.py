@@ -22,9 +22,9 @@ class saslauthd_io:
             length_field = sys.stdin.read(2)
 
     @classmethod
-    def write_response(cls, bool):
+    def write_response(cls, flag):
         answer = 'NO xcauth authentication failure'
-        if bool:
+        if flag:
             answer = 'OK success'
         token = pack('>H', len(answer)) + answer
         sys.stdout.write(token)
