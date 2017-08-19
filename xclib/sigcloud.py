@@ -2,6 +2,7 @@ import urllib
 import requests
 import hashlib
 import hmac
+import logging
 from time import time
 from xclib.isuser import isuser
 from xclib.auth import auth
@@ -58,7 +59,7 @@ class sigcloud(isuser, auth, roster):
             return False, None, err, None
         except requests.exceptions.RequestException as err:
             try:
-                logging.warn('An error occured during the request to %s for domain %s: %s' % (url, data['domain'], err))
+                logging.warn('An error occured during the request to %s for domain %s: %s' % (self.url, data['domain'], err))
             except TypeError as err:
                 logging.warn('An unknown error occured during the request to %s, probably an SSL error. Try updating your "requests" and "urllib" libraries.' % url)
             return False, None, err, None
