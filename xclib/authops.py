@@ -3,6 +3,7 @@ import sys
 import atexit
 import anydbm
 from xclib import xcauth
+from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
 
 def perform(args):
@@ -51,16 +52,19 @@ def perform(args):
             bcrypt_rounds = args.cache_bcrypt_rounds)
 
     if args.isuser_test:
-        success = xc.isuser(args.isuser_test[0], args.isuser_test[1])
-        print(success)
+        sc = sigcloud(xc, args.isuser_test[0], args.isuser_test[1])
+        success = sc.isuser()
+        print success
         sys.exit(0)
     if args.roster_test:
-        response, text = xc.roster_cloud(args.roster_test[0], args.roster_test[1])
-        print(response)
+        sc = sigcloud(xc, args.roster_test[0], args.roster_test[1])
+        success, response = sc.roster_cloud()
+        print response
         sys.exit(0)
     elif args.auth_test:
-        success = xc.auth(args.auth_test[0], args.auth_test[1], args.auth_test[2])
-        print(success)
+        sc = sigcloud(xc, args.auth_test[0], args.auth_test[1], args.auth_test[2])
+        success = sc.auth()
+        print success
         sys.exit(0)
 
     if args.type == 'ejabberd':

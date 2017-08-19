@@ -9,9 +9,6 @@ def sanitize(name):
     return ''.join(c for c in name if unicodedata.category(c) in printable and c != '@')
 
 class roster:
-    def __init__(self, rd):
-        self.reqdata = reqdata
-
     def jidsplit(self, jid, defaultDomain):
         (node, at, dom) = jid.partition('@')
         if at == '':

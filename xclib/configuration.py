@@ -14,7 +14,7 @@ def add_maybe(*args, **kwargs):
         kwargs['help'] = '(ignored for config file compatibility)'
     parser.add_argument(*args, **kwargs)
 
-def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
+def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
     # Config file in /etc or the program directory
     global parser, app_name
     app_name = name
