@@ -2,7 +2,6 @@
 
 from xclib.configuration import get_args
 from xclib.dbmops import perform
-import sys
 
 DESC = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud: Database manipulation.
     See https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth.'''

@@ -2,7 +2,6 @@
 
 from xclib.configuration import get_args
 from xclib.authops import perform
-import sys
 
 DEFAULT_LOG_DIR = '/var/log/xcauth'
 DESC = '''XMPP server authentication against JSXC>=3.2.0 on Nextcloud.
