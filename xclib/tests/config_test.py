@@ -20,8 +20,41 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--secret', '012345678',
                   '--url', 'https://unconfigured.example.ch',
                   '--type', 'generic',
+                  '--timeout', '5',
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
+        print args.timeout
+        assert args.timeout == 5
+
+    def test_xcauth_timeout(self):
+        args = get_args('/var/log/xcauth', None, None, 'xcauth',
+            config_file_contents='#',
+            args=['-b', '/tmp/domdb.db',
+                  '--secret', '012345678',
+                  '--url', 'https://unconfigured.example.ch',
+                  '--type', 'generic',
+                  '--timeout', '1,2',
+                  '--cache-unreachable-ttl', '1w',
+                  '--cache-query-ttl', '3600'])
+        print args.timeout
+        assert args.timeout == (1, 2)
+
+    def test_xcauth_crash_timeout(self):
+        self.stub_stdouts()
+        try:
+            args = get_args('/var/log/xcauth', None, None, 'xcauth',
+                config_file_contents='#',
+                args=['-b', '/tmp/domdb.db',
+                      '--secret', '012345678',
+                      '--ejabberdctl', '012345678',
+                      '--url', 'https://unconfigured.example.ch',
+                      '--type', 'generic',
+                      '--timeout', '1,2,3',
+                      '--cache-unreachable-ttl', '1w',
+                      '--cache-query-ttl', '3600'])
+            assert False # Should raise ValueError
+        except ValueError:
+            pass
 
     def test_xcauth_exit_a(self):
         self.stub_stdouts()
@@ -35,7 +68,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--type', 'generic',
                       '--cache-unreachable-ttl', '1w',
                       '--cache-query-ttl', '3600'])
-            assert False
+            assert False # Should exit(1)
         except SystemExit:
             pass
 
@@ -48,7 +81,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--secret', '012345678',
                       '--url', 'https://unconfigured.example.ch',
                       '--cache-query-ttl', '3600'])
-            assert False
+            assert False # Should exit(1)
         except SystemExit:
             pass
 

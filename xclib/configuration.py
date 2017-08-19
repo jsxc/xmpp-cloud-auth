@@ -14,7 +14,7 @@ def add_maybe(*args, **kwargs):
         kwargs['help'] = '(ignored for config file compatibility)'
     parser.add_argument(*args, **kwargs)
 
-def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
+def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
     # Config file in /etc or the program directory
     global parser, app_name
     app_name = name
@@ -70,13 +70,15 @@ def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
         help='enable debug mode')
     add_maybe('--interactive', '-i',
         action='store_true',
-        help='log to stdout')
+        help='log to stderr')
     add_maybe('--type', '-t',
         choices=['generic', 'prosody', 'ejabberd', 'saslauthd'],
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
     add_maybe('--timeout',
-        type=int, default=5,
-        help='Timeout for each of connection setup and request processing')
+        default='5,10',
+        help='Timeout for connection setup, request processing')
+    add_maybe('--cache-db',
+        help='Database path for the user cache; enables cache if set')
     add_maybe('--cache-query-ttl',
         default='1h',
         help='Maximum time between queries')
@@ -86,8 +88,6 @@ def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
     add_maybe('--cache-unreachable-ttl',
         default='1w',
         help='Maximum cache time when backend is unreachable (overrides the other TTLs)')
-    add_maybe('--cache-db',
-        help='Database path for the user cache; enables cache if set')
     add_maybe('--cache-bcrypt-rounds',
         type=int, default=12,
         help='''Encrypt passwords with 2^ROUNDS before storing
@@ -107,6 +107,11 @@ def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
         args.cache_query_ttl        = parse_timespan(args.cache_query_ttl)
         args.cache_verification_ttl = parse_timespan(args.cache_verification_ttl)
         args.cache_unreachable_ttl  = parse_timespan(args.cache_unreachable_ttl)
+        if ',' in args.timeout:
+            (a, b) = args.timeout.split(',', 1)
+            args.timeout = (int(a), int(b))
+        else:
+            args.timeout = int(args.timeout)
         if (args.ejabberdctl is None) != (args.shared_roster_db is None):
             sys.stderr.write('Define either both --ejabberdctl and --shared-roster-db, or neither\n')
             sys.exit(1)
@@ -114,7 +119,7 @@ def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
           and args.type is None): # No work to do
             parser.print_help(sys.stderr)
             sys.exit(1)
-    else:
+    else: # xcauth
         command_count = 0
         for i in (args.get, args.put, args.delete, args.load, args.unload):
             if i is not None and i != False:

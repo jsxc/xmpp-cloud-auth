@@ -20,8 +20,8 @@ class TestDBM(unittest.TestCase, iostub):
     def teardown_class(cls):
         pass
         dbfile.close()
-#        os.remove(dbname)
-#        os.rmdir(dirname)
+        os.remove(dbname)
+        os.rmdir(dirname)
 
     def mkns(self, **kwargs):
         params = {'domain_db': dbname, 'get': None, 'put': None, 

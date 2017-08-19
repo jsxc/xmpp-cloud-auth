@@ -3,6 +3,7 @@ import sys
 import atexit
 import anydbm
 from xclib import xcauth
+from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
 
 def perform(args):
@@ -51,17 +52,20 @@ def perform(args):
             bcrypt_rounds = args.cache_bcrypt_rounds)
 
     if args.isuser_test:
-        success = xc.isuser(args.isuser_test[0], args.isuser_test[1])
-        print(success)
-        sys.exit(0)
+        sc = sigcloud(xc, args.isuser_test[0], args.isuser_test[1])
+        success = sc.isuser()
+        print success
+        return
     if args.roster_test:
-        response, text = xc.roster_cloud(args.roster_test[0], args.roster_test[1])
-        print(response)
-        sys.exit(0)
+        sc = sigcloud(xc, args.roster_test[0], args.roster_test[1])
+        success, response = sc.roster_cloud()
+        print response
+        return
     elif args.auth_test:
-        success = xc.auth(args.auth_test[0], args.auth_test[1], args.auth_test[2])
-        print(success)
-        sys.exit(0)
+        sc = sigcloud(xc, args.auth_test[0], args.auth_test[1], args.auth_test[2])
+        success = sc.auth()
+        print success
+        return
 
     if args.type == 'ejabberd':
         from xclib.ejabberd_io import ejabberd_io
@@ -78,9 +82,17 @@ def perform(args):
 
         success = False
         if data[0] == "auth" and len(data) == 4:
-            success = xc.auth(data[1], data[2], data[3])
+            sc = sigcloud(xc, data[1], data[2], data[3])
+            success = sc.auth()
         elif data[0] == "isuser" and len(data) == 3:
-            success = xc.isuser(data[1], data[2])
+            sc = sigcloud(xc, data[1], data[2])
+            success = sc.isuser()
+        elif data[0] == "roster" and len(data) == 3:
+            # Nonstandard extension, only useful with -t generic
+            sc = sigcloud(xc, data[1], data[2])
+            success, response = sc.roster_cloud()
+            if success:
+                success = response
         elif data[0] == "quit" or data[0] == "exit":
             break
 
