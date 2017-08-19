@@ -41,9 +41,7 @@ Line-based, tab-separated file with the following fields:
 ### Lines starting with '#' and empty lines will be ignored
 
 ### Example file
-The table column separators will be single tabs in the real file; the
-horizontal separators need not be there, but could be empty lines or
-comments.
+The table column separators will be single tabs in the real file.
 
 | Field 1   | Field 2          | Field 3                                         |
 | --------- | ---------------- | ----------------------------------------------- |
@@ -51,10 +49,8 @@ comments.
 |           | isuser           | True                                            |
 |           | auth             | True                                            |
 |           | roster           | {"result":"success","data":{"sharedRoster":[]}} |
-| --------- | ---------------- | ----------------------------------------------- |
 | user1     | example.ch       | wr0ng-p4ssw05d                                  |
 |           | isuser           | True                                            |
 |           | auth             | False                                           |
-| --------- | ---------------- | ----------------------------------------------- |
 | nosuchuser| example.ch       | dontcare                                        |
 |           | isuser           | False                                           |
