@@ -32,12 +32,12 @@ class xcauth:
         if dom in self.domain_db:
             try:
                 # Already 4-value database format? Great!
-                secret, url, queryDomain, extra = self.domain_db[dom].split('\t', 3)
+                secret, url, authDomain, extra = self.domain_db[dom].split('\t', 3)
             except ValueError:
                 # No, fall back to 3-value format (and update DB)
                 secret, url, extra = self.domain_db[dom].split('\t', 2)
-                queryDomain = dom
-                self.domain_db[dom] = '\t'.join((secret, url, queryDomain, extra))
-            return secret, url, queryDomain
+                authDomain = dom
+                self.domain_db[dom] = '\t'.join((secret, url, authDomain, extra))
+            return secret, url, authDomain
         else:
             return self.default_secret, self.default_url, dom

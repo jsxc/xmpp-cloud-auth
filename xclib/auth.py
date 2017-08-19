@@ -47,7 +47,7 @@ class auth:
         response = self.cloud_request({
             'operation':'auth',
             'username': self.username,
-            'domain':   self.queryDomain,
+            'domain':   self.authDomain,
             'password': self.password
         })
         if response and 'result' in response:

@@ -14,7 +14,7 @@ class sigcloud(isuser, auth, roster):
         self.username = username
         self.domain = domain
         self.password = password
-        self.secret, self.url, self.queryDomain = ctx.per_domain(domain)
+        self.secret, self.url, self.authDomain = ctx.per_domain(domain)
         self.now = int(now)
 
     def cloud_request(self, data):

@@ -8,7 +8,7 @@ class isuser:
         response = self.cloud_request({
             'operation': 'isuser',
             'username':  self.username,
-            'domain':    self.queryDomain
+            'domain':    self.authDomain
         })
         try:
             return response and response['result'] == 'success' and response['data']['isUser']
