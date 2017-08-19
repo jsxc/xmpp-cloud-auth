@@ -77,6 +77,8 @@ def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
     add_maybe('--timeout',
         type=int, default=5,
         help='Timeout for each of connection setup and request processing')
+    add_maybe('--cache-db',
+        help='Database path for the user cache; enables cache if set')
     add_maybe('--cache-query-ttl',
         default='1h',
         help='Maximum time between queries')
@@ -86,8 +88,6 @@ def get_args(logdir, desc, epilog, name, args=[], config_file_contents=None):
     add_maybe('--cache-unreachable-ttl',
         default='1w',
         help='Maximum cache time when backend is unreachable (overrides the other TTLs)')
-    add_maybe('--cache-db',
-        help='Database path for the user cache; enables cache if set')
     add_maybe('--cache-bcrypt-rounds',
         type=int, default=12,
         help='''Encrypt passwords with 2^ROUNDS before storing

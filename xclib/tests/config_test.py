@@ -35,7 +35,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--type', 'generic',
                       '--cache-unreachable-ttl', '1w',
                       '--cache-query-ttl', '3600'])
-            assert False
+            assert False # Should exit(1)
         except SystemExit:
             pass
 
@@ -48,7 +48,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--secret', '012345678',
                       '--url', 'https://unconfigured.example.ch',
                       '--cache-query-ttl', '3600'])
-            assert False
+            assert False # Should exit(1)
         except SystemExit:
             pass
 
