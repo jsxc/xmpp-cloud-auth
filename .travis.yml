@@ -1,0 +1,20 @@
+language: python
+
+dist: trusty
+
+python:
+  - "2.7"
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libdb5.3 libdb-dev libdb++-dev
+
+install:
+  - pip install requests configargparse bcrypt
+  - pip install coverage nose
+
+script:
+  - nosetests --with-coverage --cover-xml
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
