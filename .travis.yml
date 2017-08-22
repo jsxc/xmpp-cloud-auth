@@ -10,7 +10,7 @@ install:
   - pip install coverage nose
 
 script:
-  - nosetests --with-coverage --cover-xml
+  - nosetests --with-coverage --cover-xml --cover-package=xclib
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
