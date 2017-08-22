@@ -1,6 +1,6 @@
 import sys
 import os
-import anydbm, dbhash
+import anydbm
 import unittest
 import tempfile
 from argparse import Namespace
@@ -14,7 +14,7 @@ class TestDBM(unittest.TestCase, iostub):
         global dbname, dbfile, dirname
         dirname = tempfile.mkdtemp()
         dbname = dirname + "/domains.db"
-        dbfile = dbhash.open(dbname, 'c', 0600)
+        dbfile = anydbm.open(dbname, 'c', 0600)
 
     @classmethod
     def teardown_class(cls):
@@ -43,7 +43,7 @@ class TestDBM(unittest.TestCase, iostub):
         perform(ns)
         ns = self.mkns(get='example.net')
         perform(ns)
-        dbfile = dbhash.open(dbname, 'c', 0600)
+        dbfile = anydbm.open(dbname, 'c', 0600)
         assert 'example.net' in dbfile
         assert dbfile['example.net'] == 'dummy'
         dbfile.close()
