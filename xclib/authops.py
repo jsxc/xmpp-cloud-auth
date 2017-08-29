@@ -59,7 +59,7 @@ def perform(args):
     if args.roster_test:
         sc = sigcloud(xc, args.roster_test[0], args.roster_test[1])
         success, response = sc.roster_cloud()
-        print response
+        print str(response)
         return
     elif args.auth_test:
         sc = sigcloud(xc, args.auth_test[0], args.auth_test[1], args.auth_test[2])
