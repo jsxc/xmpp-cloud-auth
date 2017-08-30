@@ -11,7 +11,7 @@ For some environments, it might be advantageous to use *xcauth* over a network s
 
 ## Testing
 
-When you have set `type=ejabberd` in `/etc/xcauth.conf`, then the following should work (`$` indicates the command line prompt, `<` is data received and `>` data sent):
+If you have set `type=generic` (equivalent to `type=prosody`) in `/etc/xcauth.conf`, then the following should work (`$` indicates the command line prompt, `<` is data received and `>` data sent):
 
 ```
 $ telnet localhost 23664
