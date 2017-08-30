@@ -1,15 +1,14 @@
 import logging
 import sys
 import requests
+from xclib.sigcloud import sigcloud
+import xclib.isuser
 
-def verify_with_isuser(url, secret, domain, user, timeout):
+def verify_with_isuser(url, secret, domain, user, timeout, hook=None):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
-    success, code, response, text = xc.verbose_cloud_request({
-        'operation': 'isuser',
-        'username':  user,
-        'domain':    domain
-    }, secret, url);
-    return success, code, response
+    sc = sigcloud(xc, user, domain)
+    if hook != None: hook(sc)
+    return sc.isuser_verbose()
 
 class xcauth:
     def __init__(self, default_url=None, default_secret=None,

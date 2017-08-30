@@ -4,6 +4,14 @@ class isuser:
     def __init__(self, reqdata):
         self.reqdata = reqdata
 
+    def isuser_verbose(self):
+        success, code, response, text = self.verbose_cloud_request({
+            'operation': 'isuser',
+            'username':  self.username,
+            'domain':    self.authDomain
+        })
+        return success, code, response
+
     def isuser_cloud(self):
         response = self.cloud_request({
             'operation': 'isuser',

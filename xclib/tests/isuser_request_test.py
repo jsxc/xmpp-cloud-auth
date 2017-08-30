@@ -1,7 +1,8 @@
 # Test when replacing request.session
+import sys
 import requests
 from xclib.sigcloud import sigcloud
-from xclib import xcauth
+from xclib import xcauth, verify_with_isuser
 
 class fakeResponse:
     # Will be called as follows:
@@ -38,6 +39,13 @@ def post_200_ok(url, data='', headers='', allow_redirects=False,
             'isUser': '1'
         }}, 'fake body')
 
+def post_200_ok_verify(url, data='', headers='', allow_redirects=False,
+        timeout=5):
+    assert url == 'https://nosuchhost'
+    assert data == 'username=usr&operation=isuser&domain=no.such.doma.in'
+    assert headers['X-JSXC-SIGNATURE'] == 'sha1=a42ba1955c6a8457e3c7396a6827ba824e92b059'
+    return post_200_ok(url, data, headers, allow_redirects, timeout)
+
 def setup_module():
     global xc, sc
     xc = xcauth(domain_db={
@@ -65,3 +73,12 @@ def test_http200_empty():
 def test_success():
     xc.session.post = post_200_ok
     assert sc.isuser() == True
+
+def verify_hook(sc):
+    sc.ctx.session.post = post_200_ok_verify
+
+def test_verify():
+    success, code, response = verify_with_isuser('https://nosuchhost', '999', 'no.such.doma.in', 'usr', (5, 10), verify_hook)
+    assert success == True
+    assert code == None
+    assert response == {'data': {'isUser': '1'}, 'result': 'success'}
