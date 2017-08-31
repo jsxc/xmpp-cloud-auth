@@ -23,9 +23,9 @@ def post_timeout(url, data='', headers='', allow_redirects=False,
         timeout=5):
     raise requests.exceptions.ConnectTimeout("Connection timed out")
 
-def post_400(url, data='', headers='', allow_redirects=False,
+def post_404(url, data='', headers='', allow_redirects=False,
         timeout=5):
-    return fakeResponse(400, None, '400 Error')
+    return fakeResponse(404, None, '404 Not found')
 
 def post_200_empty(url, data='', headers='', allow_redirects=False,
         timeout=5):
@@ -63,7 +63,7 @@ def test_timeout():
     assert sc.isuser() == False
 
 def test_http404():
-    xc.session.post = post_400
+    xc.session.post = post_404
     assert sc.isuser() == False
 
 def test_http200_empty():
