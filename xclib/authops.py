@@ -91,8 +91,8 @@ def perform(args):
             # Nonstandard extension, only useful with -t generic
             sc = sigcloud(xc, data[1], data[2])
             success, response = sc.roster_cloud()
-            if success:
-                success = response
+            if isinstance(success, dict):
+                success = str(response) # Convert from unicode
         elif data[0] == "quit" or data[0] == "exit":
             break
 

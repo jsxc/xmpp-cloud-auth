@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import traceback
 import unicodedata
 import threading

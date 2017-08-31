@@ -4,6 +4,7 @@ import unittest
 import logging
 import shutil
 import tempfile
+import json
 from xclib.sigcloud import sigcloud
 from xclib import xcauth
 from xclib.tests.iostub import iostub
@@ -33,6 +34,7 @@ class TestOnline(unittest.TestCase, iostub):
             line = line.rstrip('\r\n')
             fields = line.split('\t', 2)
             if fields[0] == '':
+                # Line with test command
                 if fields[1] == 'isuser':
                     option = '-I'
                     params = [u, d]
@@ -57,8 +59,9 @@ class TestOnline(unittest.TestCase, iostub):
                             '--shared-roster-db', dirname + '/roster.db',
                             '--ejabberdctl', '/bin/true']
                     self.command_line([option] + params, fields[2])
-                    has_run += fields[1]
+                    has_run += [fields[1]]
             else:
+                # Line with account values
                 (u, d, p) = fields
         file.close()
 
@@ -76,8 +79,13 @@ class TestOnline(unittest.TestCase, iostub):
         perform(args)
         output = sys.stdout.getvalue().rstrip('\n')
         if output == '0':
-            assert expected == 'False'
+            assert str(expected) == 'False'
         elif output == '1':
-            assert expected == 'True'
+            assert str(expected) == 'True'
         else:
+            # Only "roster" command will get here.
+            # Convert both strs to dicts to avoid
+            # problems with formatting (whitespace) and order.
+            output = json.loads(output)
+            expected = json.loads(expected)
             assert output == expected
