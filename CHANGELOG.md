@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for managed servers: Externally callable
   `verify_with_isuser()` function, differing XMPP and
   authentication domains
+- Update *ejabberd* shared roster from the command line (`--update-roster`)
 ### Fixed
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.

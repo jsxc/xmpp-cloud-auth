@@ -55,6 +55,9 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
         parser.add_argument('--roster-test', '-R',
             nargs=2, metavar=("USER", "DOMAIN"),
             help='single, one-shot query of the user\'s shared roster')
+        parser.add_argument('--update-roster', '-T',
+            action='store_true',
+            help='also try to update ejabberd shared roster; requires --ejabberdctl and --shared-roster-db')
 
     add_maybe('--url', '-u',
         required=True,
@@ -114,6 +117,9 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
             args.timeout = int(args.timeout)
         if (args.ejabberdctl is None) != (args.shared_roster_db is None):
             sys.stderr.write('Define either both --ejabberdctl and --shared-roster-db, or neither\n')
+            sys.exit(1)
+        if args.update_roster == True and args.ejabberdctl is None:
+            sys.stderr.write('--try-roster requires --ejabberdctl and --shared-roster-db\n')
             sys.exit(1)
         if (args.auth_test is None and args.isuser_test is None and args.roster_test is None
           and args.type is None): # No work to do

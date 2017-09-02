@@ -60,6 +60,8 @@ def perform(args):
         sc = sigcloud(xc, args.roster_test[0], args.roster_test[1])
         success, response = sc.roster_cloud()
         print str(response)
+        if args.update_roster:
+            sc.try_roster(async=False)
         return
     elif args.auth_test:
         sc = sigcloud(xc, args.auth_test[0], args.auth_test[1], args.auth_test[2])
