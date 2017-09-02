@@ -7,7 +7,7 @@ import xclib.isuser
 def verify_with_isuser(url, secret, domain, user, timeout, hook=None):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
     sc = sigcloud(xc, user, domain)
-    if hook != None: hook(sc)
+    if hook != None: hook(sc) # For automated testing only
     return sc.isuser_verbose()
 
 class xcauth:
