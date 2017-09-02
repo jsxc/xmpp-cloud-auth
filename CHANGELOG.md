@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `xcauth.conf` in the installation directory will no longer be considered
 - Now runs under user `xcauth` with directories `/var/log/xcauth` and `/var/cache/xcauth`
 - Removed support for `--per-domain-config`. The more powerful `--domain-db` remains
+- No longer load configuration from `/etc/external_cloud.conf`
 
 ## 0.2.3 - 2017-07-09
 ### Added

@@ -20,7 +20,7 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
     app_name = name
     parser = configargparse.ArgumentParser(description=desc,
         epilog=epilog,
-        default_config_files=['/etc/xcauth.conf', '/etc/external_cloud.conf'])
+        default_config_files=['/etc/xcauth.conf'])
 
     parser.add_argument('--config-file', '-c',
         is_config_file=True,
