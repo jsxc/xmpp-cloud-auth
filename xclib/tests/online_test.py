@@ -78,8 +78,10 @@ class TestOnline(unittest.TestCase, iostub):
         args = get_args(None, None, None, 'xcauth', args=['-t', 'generic'])
         perform(args)
         output = sys.stdout.getvalue().rstrip('\n')
+        logging.debug(output)
+        logging.debug(expected)
         if output == '0':
-            assert str(expected) == 'False'
+            assert str(expected) == 'False' or str(expected) == 'None'
         elif output == '1':
             assert str(expected) == 'True'
         else:
