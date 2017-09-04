@@ -1,89 +1,21 @@
 import hashlib
 import logging
 import traceback
-import unicodedata
 import threading
 import sys
-from xclib.ejabberdctl import ejabberdctl
+from xclib.roster_thread import roster_thread
 
-def sanitize(name):
-    printable = set(('Lu', 'Ll', 'Lm', 'Lo', 'Nd', 'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po', 'Sm', 'Sc', 'Sk', 'So', 'Zs'))
-    return ''.join(c for c in name if unicodedata.category(c) in printable and c != '@')
-
-class roster:
+class roster(roster_thread):
     def jidsplit(self, jid):
+        '''Split jid into lhs@rhs'''
         (node, at, dom) = jid.partition('@')
         if at == '':
             return (node, self.domain)
         else:
             return (node, dom)
 
-    def roster_groups(self, sr):
-        try:
-            logging.debug('roster_groups update for ' + str(sr))
-
-            # For all *users* we have information about:
-            # - collect the shared roster groups they belong to
-            # - set their full names if not yet defined
-            if self.ctx.ejabberd_controller is None:
-                e = ejabberdctl(self.ctx)
-            else:
-                e = self.ctx.ejabberd_controller
-            groups = {}
-            for k, v in sr.iteritems():
-                if 'groups' in v:
-                    for g in v['groups']:
-                        if g in groups:
-                            groups[g].append(k)
-                        else:
-                            groups[g] = [k]
-                if 'name' in v:
-                    u, d = self.jidsplit(k)
-                    e.set_fn(u, d, v['name'])
-
-            # For all the *groups* we have information about:
-            # - create the group (idempotent)
-            # - delete the users that we do not know about anymore
-            # - add the users we know about (idempotent)
-            hashname = {}
-            for g in groups:
-                hashname[g] = sanitize(g)
-                e.execute(['srg_create', hashname[g], domain, hashname[g], hashname[g], hashname[g]])
-                previous_users = e.members(hashname[g], domain)
-                new_users = {}
-                for u in groups[g]:
-                    (lhs, rhs) = self.jidsplit(u)
-                    fulljid = '%s@%s' % (lhs, rhs)
-                    new_users[fulljid] = True
-                    if not fulljid in previous_users:
-                        e.execute(['srg_user_add', lhs, rhs, hashname[g], domain])
-                for p in previous_users:
-                    (lhs, rhs) = self.jidsplit(p)
-                    if p not in new_users:
-                        e.execute(['srg_user_del', lhs, rhs, hashname[g], domain])
-                        # For all the groups the login user was previously a member of:
-                        # - delete her from the shared roster group if no longer a member
-            key = '%s:%s' % (user, domain)
-            if key in shared_roster_db:
-                # Was previously there as well, need to be removed from one?
-                previous = self.ctx.shared_roster_db[key].split('\t')
-                for p in previous:
-                    if p not in hashname.values():
-                        e.execute(['srg_user_del', user, domain, p, domain])
-                        # Only update when necessary
-                new = '\t'.join(sorted(hashname.values()))
-                if previous != new:
-                    self.ctx.shared_roster_db[key] = new
-            else: # New, always set
-                self.ctx.shared_roster_db[key] = '\t'.join(sorted(hashname.values()))
-            return groups
-        except Exception, err:
-            (etype, value, tb) = sys.exc_info()
-            traceback.print_exception(etype, value, tb)
-            logging.warn('roster_groups thread: %s; %s' % (str(err), str(traceback.format_tb(tb))))
-            return False
-
     def roster_cloud(self):
+        '''Query roster JSON from cloud'''
         success, code, message, text = self.verbose_cloud_request({
             'operation': 'sharedroster',
             'username':  self.username,
@@ -104,16 +36,17 @@ class roster:
             return False, None
 
     def try_roster(self, async=True):
+        '''Maybe update roster'''
         if (self.ctx.ejabberdctl_path is not None):
             try:
                 response, text = self.roster_cloud()
                 if response is not None and response != False:
                     texthash = hashlib.sha256(text).hexdigest()
-                    userhash = 'CACHE:' + self.username + ':' + self.domain
+                    userhash = 'RH:' + self.username + ':' + self.domain
                     # Response changed or first response for that user?
                     if not userhash in self.ctx.shared_roster_db or self.ctx.shared_roster_db[userhash] != texthash:
                         self.ctx.shared_roster_db[userhash] = texthash
-                        t = threading.Thread(target=self.roster_groups,
+                        t = threading.Thread(target=self.roster_background_thread,
                             args=[response])
                         t.start()
                         if not async: t.join() # For automated testing only
@@ -121,6 +54,7 @@ class roster:
             except Exception, err:
                 (etype, value, tb) = sys.exc_info()
                 traceback.print_exception(etype, value, tb)
-                logging.warn('try_roster: %s; %s' % (str(err), str(traceback.format_tb(tb))))
+                logging.warn('roster_groups thread: %s:\n%s'
+                             % (str(err), ''.join(traceback.format_tb(tb))))
                 return False
         return True

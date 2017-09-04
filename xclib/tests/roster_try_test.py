@@ -1,6 +1,7 @@
 # Exercise try_roster()
 import requests
 import logging
+import json
 from xclib.sigcloud import sigcloud
 from xclib.ejabberdctl import ejabberdctl
 from xclib import xcauth
@@ -35,11 +36,12 @@ def post_200_empty(url, data='', headers='', allow_redirects=False,
 def make_rosterfunc(sharedRoster):
     def post_200_ok(url, data='', headers='', allow_redirects=False,
                     timeout=5):
-        return fakeResponse(200, {
+        j = ({
             'result': 'success',
             'data': {
                 'sharedRoster': sharedRoster
-            }}, 'fake body')
+            }})
+        return fakeResponse(200, j, json.dumps(j))
     return post_200_ok
 
 def setup_module():
@@ -49,7 +51,7 @@ def setup_module():
             'udomain': '8888\thttps://oldhost\t',
         },
         default_url='https://localhost', default_secret='01234',
-        ejabberdctl='/bin/true',
+        ejabberdctl='/no/bin/ejabberdctl',
         shared_roster_db={}
     )
     xc.ejabberd_controller = ejabberdctl(xc)
@@ -107,3 +109,87 @@ def test_try_22same_name_uncached():
     logging.debug(xc.ejabberd_controller.execute)
     assert xc.ejabberd_controller.execute == ctrl_end
 
+def ctrl_collect(args):
+    global collect
+    collect.append(args)
+    return ''
+def test_try_30add_lonely_group():
+    # Expected: groups calls
+    global collect
+    collect = []
+    xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
+    xc.ejabberd_controller.execute = ctrl_collect
+    assert sc.try_roster(async=False) == True
+    logging.debug(collect)
+    assert collect == [
+        ['srg_create', 'Lonely', 'domain1', 'Lonely', 'Lonely', 'Lonely'],
+        ['srg_get_members', 'Lonely', 'domain1'],
+        ['srg_user_add', 'user1', 'domain1', 'Lonely', 'domain1'],
+        ]
+def test_try_31login_again():
+    # Expected: groups calls
+    global collect
+    collect = []
+    xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
+    xc.ejabberd_controller.execute = ctrl_collect
+    assert sc.try_roster(async=False) == True
+    logging.debug(collect)
+    assert collect == [
+        ]
+def test_try_32add_normal_group():
+    # Expected: groups calls
+    global collect
+    collect = []
+    xc.session.post = make_rosterfunc({
+        'user1@domain1':{'name':'Ah Be','groups':['Lonely', 'Family']},
+        'user2@domain1':{'name':'De Be','groups':['Family']},
+    })
+    xc.ejabberd_controller.execute = ctrl_collect
+    logging.debug(xc.shared_roster_db)
+    assert sc.try_roster(async=False) == True
+    logging.debug(collect)
+    logging.debug(xc.shared_roster_db)
+    assert collect == [
+        ['get_vcard', 'user2', 'domain1', 'FN'],
+        ['set_vcard', 'user2', 'domain1', 'FN', 'De Be'],
+        ['srg_create', 'Family', 'domain1', 'Family', 'Family', 'Family'],
+        ['srg_get_members', 'Family', 'domain1'],
+        ['srg_user_add', 'user2', 'domain1', 'Family', 'domain1'],
+        ['srg_user_add', 'user1', 'domain1', 'Family', 'domain1'],
+        ['set_vcard', 'user2', 'domain1', 'FN', 'De Be']
+    ]
+def test_try_33login_other_user():
+    global collect
+    collect = []
+    xc.session.post = make_rosterfunc({
+        'user1@domain1':{'name':'Ah Be','groups':['Family']},
+        'user2@domain1':{'name':'De Be','groups':['Family', 'Friends']},
+        'user3@domain1':{'name':'Xy Zzy','groups':['Friends']},
+    })
+    xc.ejabberd_controller.execute = ctrl_collect
+    sc = sigcloud(xc, 'user2', 'domain1')
+    assert sc.try_roster(async=False) == True
+    logging.debug(collect)
+    assert collect == [
+        ['get_vcard', 'user3', 'domain1', 'FN'],
+        ['set_vcard', 'user3', 'domain1', 'FN', 'Xy Zzy'],
+        ['srg_create', 'Friends', 'domain1', 'Friends', 'Friends', 'Friends'],
+        ['srg_get_members', 'Friends', 'domain1'],
+        ['srg_user_add', 'user3', 'domain1', 'Friends', 'domain1'],
+        ['srg_user_add', 'user2', 'domain1', 'Friends', 'domain1'],
+        ['set_vcard', 'user3', 'domain1', 'FN', 'Xy Zzy']
+    ]
+def test_try_34login_other_user_again():
+    global collect
+    collect = []
+    xc.session.post = make_rosterfunc({
+        'user1@domain1':{'name':'Ah Be','groups':['Family'], 'dummy': '1'},
+        'user2@domain1':{'name':'De Be','groups':['Family', 'Friends']},
+        'user3@domain1':{'name':'Xy Zzy','groups':['Friends']},
+    })
+    xc.ejabberd_controller.execute = ctrl_collect
+    sc = sigcloud(xc, 'user2', 'domain1')
+    assert sc.try_roster(async=False) == True
+    logging.debug(collect)
+    assert collect == [
+    ]

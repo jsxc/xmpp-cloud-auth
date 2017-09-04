@@ -1,3 +1,4 @@
+import logging
 import subprocess
 
 class ejabberdctl:
@@ -13,12 +14,21 @@ class ejabberdctl:
                 % (self.ctx.ejabberdctl_path + str(args), str(err)))
             return None
 
-    def set_fn(self, user, domain, name):
-        fullname = self.execute(['get_vcard', user, domain, 'FN'])
-        # 'error_no_vcard' is exitcode 1 is None
+    def maybe_set_fn(self, user, domain, name, cached_name = None):
+        '''Set the full name if not already a nice name'''
+        if cached_name is None:
+            logging.debug(self.ctx.ejabberdctl_path + str((user, domain, name)))
+            fullname = self.execute(['get_vcard', user, domain, 'FN'])
+            # 'error_no_vcard' is exitcode 1 is None
+        else:
+            fullname = cached_name
         if (fullname is None or fullname == '' or fullname == '\n'
             or fullname == user + '\n' or fullname == ('%s@%s\n' % (user, domain))):
-            self.execute(['set_vcard', user, domain, 'FN', name])
+            args = ['set_vcard', user, domain, 'FN', name]
+            self.execute(args)
+            return args
+        else:
+            return None
 
     def members(self, group, domain):
         membership = self.execute(['srg_get_members', group, domain]).split('\n')
@@ -26,5 +36,6 @@ class ejabberdctl:
         mem = []
         for m in membership:
             if m != '':
-                mem = mem + [m]
+                mem.append(m)
+        logging.debug('%s@%s members: %s' % (group, domain, mem))
         return mem

@@ -31,3 +31,44 @@ The first login with the new password after changing passwords will thus automat
   - Unix timestamp of first successful login,
   - Unix timestamp of most recent successful verification, and
   - Unix timestamp of most recent successful authentication query.
+
+# Shared roster caching
+
+To speed up *ejabberd* shared roster updates, another cache is used. Multiple data sets are stored in the same cache, distinguished by their key spaces:
+
+## Roster Hash Cache format
+
+Used to determine whether a roster update thread should be started at all.
+
+- Key: 'RHC:' + JID
+- Value: SHA-256 hash of the body returned for the last processed roster request
+
+## Full Name Cache format
+
+Used to determine whether a 'get_vcard' command needs to be sent to *ejabberdctl*.
+
+- Key: 'FNC:' + JID
+- Value: Full name
+
+## Roster Group Cache format
+
+Used to determine whether a 'srg_create' command needs to be sent to *ejabberdctl*.
+
+- Key: 'RGC:' + Group + ':' + Domain
+- Value: Tab-separated group members
+
+## Login In Group format
+
+Used to record which groups a user (more precisely, the user currently logging in) belongs to.
+
+This is not a cache in the narrow sense, as erasing this entry will not slow down
+operation, but will slow down the removal from groups.
+
+If 'Login In Groups' is persistent, users having been removed from a group will be thrown out of that group *when the first still-member of that group logs in*.
+
+If 'Login In Groups' is not persistent, a user will also be removed from the group *when he logs in himself next*.
+
+So this one results in sooner group membership removal.
+
+- Key: 'LIG:' + JID
+- Value: Tab-separated groups this user is member of (when last recorded)
