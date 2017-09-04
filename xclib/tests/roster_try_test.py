@@ -76,17 +76,17 @@ def test_try_11none():
     assert sc.try_roster(async=False) == True
 
 def ctrl_getfn20(args):
-    logging.debug('ctrl_getfn20')
+    logging.info('ctrl_getfn20')
     assert args == ['get_vcard', 'user1', 'domain1', 'FN']
     xc.ejabberd_controller.execute = ctrl_setfn20
     return None
 def ctrl_setfn20(args):
-    logging.debug('ctrl_setfn20')
+    logging.info('ctrl_setfn20')
     assert args == ['set_vcard', 'user1', 'domain1', 'FN', 'Ah Be']
     xc.ejabberd_controller.execute = ctrl_end
     return True
 def ctrl_getfn22(args):
-    logging.debug('ctrl_getfn22')
+    logging.info('ctrl_getfn22')
     assert args == ['get_vcard', 'user1', 'domain1', 'FN']
     xc.ejabberd_controller.execute = ctrl_end
     return 'Ah Be'
@@ -106,7 +106,7 @@ def test_try_22same_name_uncached():
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','dummy':'1'}})
     xc.ejabberd_controller.execute = ctrl_end
     assert sc.try_roster(async=False) == True
-    logging.debug(xc.ejabberd_controller.execute)
+    logging.info(xc.ejabberd_controller.execute)
     assert xc.ejabberd_controller.execute == ctrl_end
 
 def ctrl_collect(args):
@@ -120,7 +120,7 @@ def test_try_30add_lonely_group():
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
     xc.ejabberd_controller.execute = ctrl_collect
     assert sc.try_roster(async=False) == True
-    logging.debug(collect)
+    logging.info(collect)
     assert collect == [
         ['srg_create', 'Lonely', 'domain1', 'Lonely', 'Lonely', 'Lonely'],
         ['srg_get_members', 'Lonely', 'domain1'],
@@ -133,7 +133,7 @@ def test_try_31login_again():
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
     xc.ejabberd_controller.execute = ctrl_collect
     assert sc.try_roster(async=False) == True
-    logging.debug(collect)
+    logging.info(collect)
     assert collect == [
         ]
 def test_try_32add_normal_group():
@@ -145,10 +145,8 @@ def test_try_32add_normal_group():
         'user2@domain1':{'name':'De Be','groups':['Family']},
     })
     xc.ejabberd_controller.execute = ctrl_collect
-    logging.debug(xc.shared_roster_db)
     assert sc.try_roster(async=False) == True
-    logging.debug(collect)
-    logging.debug(xc.shared_roster_db)
+    logging.info(collect)
     assert collect == [
         ['get_vcard', 'user2', 'domain1', 'FN'],
         ['set_vcard', 'user2', 'domain1', 'FN', 'De Be'],
@@ -169,7 +167,7 @@ def test_try_33login_other_user():
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user2', 'domain1')
     assert sc.try_roster(async=False) == True
-    logging.debug(collect)
+    logging.info(collect)
     assert collect == [
         ['get_vcard', 'user3', 'domain1', 'FN'],
         ['set_vcard', 'user3', 'domain1', 'FN', 'Xy Zzy'],
@@ -190,6 +188,36 @@ def test_try_34login_other_user_again():
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user2', 'domain1')
     assert sc.try_roster(async=False) == True
-    logging.debug(collect)
+    logging.info(collect)
     assert collect == [
+    ]
+
+def test_try_40third_party_deletion():
+    global collect
+    collect = []
+    xc.session.post = make_rosterfunc({
+        'user2@domain1':{'name':'De Be','groups':['Family', 'Friends']},
+        'user3@domain1':{'name':'Xy Zzy','groups':['Friends']},
+    })
+    xc.ejabberd_controller.execute = ctrl_collect
+    sc = sigcloud(xc, 'user2', 'domain1')
+    assert sc.try_roster(async=False) == True
+    logging.info(collect)
+    assert collect == [
+        ['srg_user_del', 'user1', 'domain1', 'Family', 'domain1']
+    ]
+def test_try_41self_deletion():
+    global collect
+    collect = []
+    xc.session.post = make_rosterfunc({
+        'user1@domain1':{'name':'Ah Be'}
+    })
+    xc.ejabberd_controller.execute = ctrl_collect
+    sc = sigcloud(xc, 'user1', 'domain1')
+    assert sc.try_roster(async=False) == True
+    logging.info(collect)
+    assert collect == [
+        # The first is unnecessary but harmless and not easily avoidable
+        ['srg_user_del', 'user1', 'domain1', 'Family', 'domain1'],
+        ['srg_user_del', 'user1', 'domain1', 'Lonely', 'domain1']
     ]
