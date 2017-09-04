@@ -1,6 +1,20 @@
+# File structure: (each field separated by a single tab)
+#
 # login	domain	password
+# (nil)	command	result
+# (nil)	command	result
+#
+# Beware that too many failing 'auth' commands will
+# trigger anti-brute force measures (delays, bans, …)
 nosuchuser	example.ch	-
 	isuser	False
+	auth	False
+	roster	None
 tester	example.ch	p4ssw0rd
 	isuser	True
 	auth	True
+	roster	{"result":"success","data":{"sharedRoster":{"tester":{"name":"Frank Tester","groups":["Test","Test2"],"friend@example.ch":{"name":"My Friend","groups":["Test"]},"another":{"name":"A. N. Other","groups":["Test2"]}}}}
+another	example.ch	wrong-password
+	isuser	True
+	auth	False
+	roster	{"result":"success","data":{"sharedRoster":{"tester":{"name":"Frank Tester","groups":["Test2"],"another":{"name":"A. N. Other","groups":["Test2"]}}}}

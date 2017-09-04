@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/jsxc/xmpp-cloud-auth.svg?branch=master)](https://travis-ci.org/jsxc/xmpp-cloud-auth)
 [![codecov](https://codecov.io/gh/jsxc/xmpp-cloud-auth/branch/master/graph/badge.svg)](https://codecov.io/gh/jsxc/xmpp-cloud-auth)
+[with system tests: 96%](tests/Coverage.md)
 
 # xmpp-cloud-auth
 
