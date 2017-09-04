@@ -99,8 +99,12 @@ For all the *groups* we have information about:
                 if p not in cleanname.values():
                     e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
             # Only update when necessary
-            new = '\t'.join(sorted(cleanname.values()))
-            if previous != new:
-                self.ctx.shared_roster_db[key] = new
+            if not cleanname:
+                del self.ctx.shared_roster_db[key]
+            else:
+                new = '\t'.join(sorted(cleanname.values()))
+                if previous != new:
+                    self.ctx.shared_roster_db[key] = new
         else: # New, always set
-            self.ctx.shared_roster_db[key] = '\t'.join(sorted(cleanname.values()))
+            if cleanname:
+                self.ctx.shared_roster_db[key] = '\t'.join(sorted(cleanname.values()))
