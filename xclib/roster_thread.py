@@ -53,7 +53,6 @@ Return inverted hash'''
                     cached_name = self.ctx.shared_roster_db['FNC:' + user]
                 else:
                     cached_name = None
-                logging.debug('u='+user)
                 self.ctx.shared_roster_db['FNC:' + user] = desc['name']
                 cmd = e.maybe_set_fn(lhs, rhs, desc['name'], cached_name=cached_name)
                 if cmd is not None:
@@ -88,9 +87,7 @@ For all the *groups* we have information about:
                 (lhs, rhs) = self.jidsplit(p)
                 if p not in new_users:
                     e.execute(['srg_user_del', lhs, rhs, cleanname[g], self.domain])
-            members = new_users.keys()
-            members.sort()
-            self.ctx.shared_roster_db[key] = '\t'.join(members)
+            self.ctx.shared_roster_db[key] = '\t'.join(sorted(new_users.keys()))
 
         # For all the groups the login user was previously a member of:
         # - delete her from the shared roster group if no longer a member
