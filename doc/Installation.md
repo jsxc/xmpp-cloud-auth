@@ -183,6 +183,20 @@ JSXC and Nextcloud. It has been successfully tested against *Postfix*
 and *Cyrus IMAP*. More information can be found in
 [systemd/README.md (*saslauthd* mode)](../systemd/README.md#saslauthd-mode)
 
+### *ejabberd* shared roster support
+
+In the configuration file, set
+1. the `ejabberdctl` configuration variable to the path to the `ejabberdctl` binary, and
+1. `shared-roster-db` to a path where *xmpp-cloud-auth* can create its shared roster database (e.g. `/var/lib/xcauth/shared-roster.db`).
+Then, on every future login, *xmpp-cloud-auth* will query JSXC for the list of Nextcloud groups the user is in, and create a shared
+roster group for each of those groups. The grouping will not be visible in JSXC, as the
+[JSXC user interface does not yet display the groupings (pull requests welcome!)](https://github.com/jsxc/jsxc/issues/77); JSXC users will just see the members without the group structure.
+XMPP clients supporting roster groups will also display the groups accordingly.
+
+Shared rosters provide implicit mutual access to the presence information within the roster groups.
+
+For *Prosody*, there is a [module available to manage shared rosters](https://github.com/jsxc/prosody-cloud-roster).
+
 ## How does it work?
 Your XMPP server sends the authentication data in a [special format](https://www.ejabberd.im/files/doc/dev.html#htoc9) on the standard input to the authentication script, length-prefixed (`-t ejabberd`) for *ejabberd*, newline-terminated (`-t prosody` aka `-t generic`) for *Prosody* (and maybe others). The script will first try to verify the given password as time-limited token and if this fails, it will send a HTTP request to your cloud installation to verify this data. To protect your Nextcloud/Owncloud against different attacks, every request has a signature similar to the  [github webhook signature]( https://developer.github.com/webhooks/securing/).
 
