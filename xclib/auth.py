@@ -73,6 +73,7 @@ class auth:
                or (unreach and int(tsv) + self.ctx.ttls['unreach'] > now)):
                 if self.checkpw(pwhash):
                     self.ctx.cache_db[key] = "\t".join((pwhash, ts1, tsv, str(now), rest))
+                    self.ctx.cache_db.sync()
                     return True
         return False
 
@@ -93,6 +94,7 @@ class auth:
             self.ctx.cache_db[key] = "\t".join((pwhash, ts1, snow, snow, rest))
         else:
             self.ctx.cache_db[key] = "\t".join((pwhash, snow, snow, snow, ''))
+        self.ctx.cache_db.sync()
 
     def auth(self):
         if self.auth_token():
