@@ -49,7 +49,14 @@ class roster(roster_thread):
                         t = threading.Thread(target=self.roster_background_thread,
                             args=[response])
                         t.start()
-                        if not async: t.join() # For automated testing only
+                        if not async:
+                            t.join() # For automated testing only
+                        else:
+                            # Try to do most before the user is actually logged in.
+                            # Thanks to improved caching, this should rarely be noticeable
+                            # and reduce the 'full names only visible on second login'
+                            # problem experienced especially in Gajim (maybe a race condition?)
+                            t.join(1.0)
                         return True
             except Exception, err:
                 (etype, value, tb) = sys.exc_info()

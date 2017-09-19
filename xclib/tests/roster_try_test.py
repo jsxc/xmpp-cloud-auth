@@ -154,7 +154,6 @@ def test_try_32add_normal_group():
         ['srg_get_members', 'Family', 'domain1'],
         ['srg_user_add', 'user2', 'domain1', 'Family', 'domain1'],
         ['srg_user_add', 'user1', 'domain1', 'Family', 'domain1'],
-        ['set_vcard', 'user2', 'domain1', 'FN', 'De Be']
     ]
 def test_try_33login_other_user():
     global collect
@@ -175,7 +174,6 @@ def test_try_33login_other_user():
         ['srg_get_members', 'Friends', 'domain1'],
         ['srg_user_add', 'user3', 'domain1', 'Friends', 'domain1'],
         ['srg_user_add', 'user2', 'domain1', 'Friends', 'domain1'],
-        ['set_vcard', 'user3', 'domain1', 'FN', 'Xy Zzy']
     ]
 def test_try_34login_other_user_again():
     global collect

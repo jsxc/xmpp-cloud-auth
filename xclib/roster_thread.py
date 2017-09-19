@@ -22,8 +22,9 @@ class roster_thread:
             groups, commands = self.roster_update_users(e, sr)
             self.roster_update_groups(e, groups)
             # For some reason, the vcard changes are not pushed to the clients. Rinse and repeat.
-            for cmd in commands:
-                e.execute(cmd)
+# Maybe not necessary with synchronous thread?
+#            for cmd in commands:
+#                e.execute(cmd)
         except Exception, err:
             (etype, value, tb) = sys.exc_info()
             traceback.print_exception(etype, value, tb)
