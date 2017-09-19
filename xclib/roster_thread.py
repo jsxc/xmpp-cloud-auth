@@ -15,10 +15,10 @@ class roster_thread:
         try:
             logging.debug('roster_thread for ' + str(sr))
             # Allow test hooks with static ejabberd_controller
-            if self.ctx.ejabberd_controller is None:
-                e = ejabberdctl(self.ctx)
-            else:
+            if hasattr(self.ctx, 'ejabberd_controller') and self.ctx.ejabberd_controller is not None:
                 e = self.ctx.ejabberd_controller
+            else:
+                e = ejabberdctl(self.ctx)
             groups, commands = self.roster_update_users(e, sr)
             self.roster_update_groups(e, groups)
             # For some reason, the vcard changes are not pushed to the clients. Rinse and repeat.
