@@ -7,7 +7,13 @@ from xclib.ejabberdctl import ejabberdctl
 def sanitize(name):
     name = unicode(name)
     printable = set(('Lu', 'Ll', 'Lm', 'Lo', 'Nd', 'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po', 'Sm', 'Sc', 'Sk', 'So', 'Zs'))
-    return str(''.join(c for c in name if unicodedata.category(c) in printable and c != '@'))
+    return utf8(''.join(c for c in name if unicodedata.category(c) in printable and c != '@'))
+
+def utf8(u):
+    return u.encode('utf-8', 'ignore')
+
+def unutf8(u):
+    return u.decode('utf-8', 'ignore')
 
 class roster_thread:
     def roster_background_thread(self, sr):
@@ -25,6 +31,7 @@ class roster_thread:
 # Maybe not necessary with synchronous thread?
 #            for cmd in commands:
 #                e.execute(cmd)
+            self.ctx.shared_roster_db.sync()
         except Exception, err:
             (etype, value, tb) = sys.exc_info()
             traceback.print_exception(etype, value, tb)
@@ -50,11 +57,12 @@ Return inverted hash'''
                         groups[g] = [user]
             if 'name' in desc:
                 lhs, rhs = self.jidsplit(user)
-                if ('FNC:' + user) in self.ctx.shared_roster_db:
-                    cached_name = self.ctx.shared_roster_db['FNC:' + user]
+                fnc = utf8('FNC:' + user) # No unicode keys
+                if fnc in self.ctx.shared_roster_db:
+                    cached_name = unutf8(self.ctx.shared_roster_db[fnc])
                 else:
                     cached_name = None
-                self.ctx.shared_roster_db['FNC:' + user] = desc['name']
+                self.ctx.shared_roster_db[fnc] = utf8(desc['name'])
                 cmd = e.maybe_set_fn(lhs, rhs, desc['name'], cached_name=cached_name)
                 if cmd is not None:
                     commands.append(cmd)
@@ -70,7 +78,7 @@ For all the *groups* we have information about:
         cleanname = {}
         for g in groups:
             cleanname[g] = sanitize(g)
-            key = 'RGC:%s:%s' % (cleanname[g], self.domain)
+            key = utf8('RGC:%s:%s' % (cleanname[g], self.domain))
             if key in self.ctx.shared_roster_db:
                 previous_users = self.ctx.shared_roster_db[key].split('\t')
             else:
@@ -92,7 +100,7 @@ For all the *groups* we have information about:
 
         # For all the groups the login user was previously a member of:
         # - delete her from the shared roster group if no longer a member
-        key = 'LIG:%s@%s' % (self.username, self.domain)
+        key = utf8('LIG:%s@%s' % (self.username, self.domain))
         if key in self.ctx.shared_roster_db and self.ctx.shared_roster_db[key] != '':
             # Was previously there as well, need to be removed from one?
             previous = self.ctx.shared_roster_db[key].split('\t')
