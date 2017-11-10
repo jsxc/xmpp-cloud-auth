@@ -12,7 +12,7 @@ This is the output of `nosetests --with-coverage --cover-package=xclib` in the t
 Name                     Stmts   Miss  Cover   Missing
 ------------------------------------------------------
 xclib.py                    32      0   100%
-xclib/auth.py               89      5    94%   14, 64-65, 87-89
+xclib/auth.py               96      3    97%   14, 64-65
 xclib/authops.py            73      1    99%   76
 xclib/configuration.py      69      3    96%   122, 134-135
 xclib/dbmops.py             18      0   100%
@@ -20,15 +20,15 @@ xclib/ejabberd_io.py        25      0   100%
 xclib/ejabberdctl.py        30      1    97%   39
 xclib/isuser.py             19      1    95%   5
 xclib/prosody_io.py         17      0   100%
-xclib/roster.py             44      0   100%
-xclib/roster_thread.py      78      1    99%   19
+xclib/roster.py             46      0   100%
+xclib/roster_thread.py      82      0   100%
 xclib/saslauthd_io.py       27      0   100%
 xclib/sigcloud.py           48      9    81%   31, 58-59, 63-64, 69-70, 74-75
 xclib/version.py             1      0   100%
 ------------------------------------------------------
-TOTAL                      570     21    96%
+TOTAL                      583     18    97%
 ----------------------------------------------------------------------
-Ran 69 tests in 1.206s
+Ran 69 tests in 2.457s
 
 OK
 ```
