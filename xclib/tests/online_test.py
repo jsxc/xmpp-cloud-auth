@@ -80,7 +80,7 @@ class TestOnline(unittest.TestCase, iostub):
         output = sys.stdout.getvalue().rstrip('\n')
         logging.debug(output)
         logging.debug(expected)
-        if output == '0':
+        if output == '0' or output == 'None':
             assert str(expected) == 'False' or str(expected) == 'None'
         elif output == '1':
             assert str(expected) == 'True'

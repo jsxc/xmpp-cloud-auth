@@ -26,9 +26,14 @@ while (<>) {
       exit(1);
     }
     $data = <PROG>;
+    # Normalization
     chomp $data;
+    if ($data eq '[]' || $data eq '{"result":"success","data":{"sharedRoster":[]}}') {
+      $data = 'None';
+    }
+
     if ($data ne $fields[2]) {
-      print STDERR "*** Test " . join(' ', @fields[1,2]) . " failed\n";
+      print STDERR "*** Test " . join(' ', @fields[1,2]) . " failed ($u/$d/$p: $data != $fields[2])\n";
       exit(1);
     } else {
       print STDERR "*** Test " . join(' ', @fields[1,2]) . " succeeded\n\n";
