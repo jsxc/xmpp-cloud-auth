@@ -64,6 +64,16 @@ class auth:
             ret = bcrypt.hashpw(self.password, pwhash)
             return ret == pwhash
 
+    def try_db_sync(self):
+        '''sync() only works on real databases
+
+        Therefore, we allow it to fail, especially in nosetests'''
+        try:
+            self.ctx.cache_db.sync()
+        except AttributeError:
+            pass
+
+
     def auth_with_cache(self, unreach=False):
         key = self.username + ':' + self.domain
         if key in self.ctx.cache_db:
@@ -73,7 +83,7 @@ class auth:
                or (unreach and int(tsv) + self.ctx.ttls['unreach'] > now)):
                 if self.checkpw(pwhash):
                     self.ctx.cache_db[key] = "\t".join((pwhash, ts1, tsv, str(now), rest))
-                    self.ctx.cache_db.sync()
+                    self.try_db_sync()
                     return True
         return False
 
@@ -94,7 +104,7 @@ class auth:
             self.ctx.cache_db[key] = "\t".join((pwhash, ts1, snow, snow, rest))
         else:
             self.ctx.cache_db[key] = "\t".join((pwhash, snow, snow, snow, ''))
-        self.ctx.cache_db.sync()
+        self.try_db_sync()
 
     def auth(self):
         if self.auth_token():
