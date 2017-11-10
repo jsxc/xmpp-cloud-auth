@@ -32,6 +32,8 @@ class roster_thread:
 #            for cmd in commands:
 #                e.execute(cmd)
             self.ctx.shared_roster_db.sync()
+        except AttributeError:
+            pass # For tests
         except Exception, err:
             (etype, value, tb) = sys.exc_info()
             traceback.print_exception(etype, value, tb)
