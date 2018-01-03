@@ -1,8 +1,11 @@
 #!/usr/bin/php -f
 <?php
-if ($argc != 6) {
-  print "Usage: generateTimeLimitedToken USER DOMAIN SECRET TTL STARTTIME\n";
+if ($argc < 5 || $argc > 6) {
+  print "Usage: generateTimeLimitedToken USER DOMAIN SECRET TTL [STARTTIME]\n";
   exit(1);
+}
+if ($argc == 5) {
+  $argv[5] = null;
 }
 print generateUser($argv[1], $argv[2], $argv[3], $argv[4], $argv[5]) . "\n";
 
