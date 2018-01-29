@@ -4,17 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.9.0+ - [Unreleased]
+## 1.0.0 - 2018-01-29
 ### Added
 - Authentication against multiple cloud instances based on
   a dynamic database
-- Experimental support for *saslauthd* protocol
+- Support for *saslauthd* protocol
 - Credentails caching
+- Tool to manually create a [time-limited token](doc/Protocol.md) for debugging of that mechanism ([`xclib/tests/generateTimeLimitedToken`](./xclib/tests/generateTimeLimitedToken))
 - Connection/request timeout option (default: 5s)
 - Support for managed servers: Externally callable
   `verify_with_isuser()` function, differing XMPP and
   authentication domains
-- Update *ejabberd* shared roster from the command line (`--update-roster`)
+- Support for creating/updating *ejabberd* shared roster
+  - Automatically on every login (after 0.5s, background the roster update)
+  - Trigger manually from the command line (`--update-roster`)
 ### Fixed
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.
@@ -22,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Now runs under user `xcauth` with directories `/var/log/xcauth` and `/var/cache/xcauth`
 - Removed support for `--per-domain-config`. The more powerful `--domain-db` remains
 - No longer load configuration from `/etc/external_cloud.conf`
+- Improved test coverage
 
 ## 0.2.3 - 2017-07-09
 ### Added
