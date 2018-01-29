@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.0+ - [Unreleased]
+### Added
+### Fixed
+### Changed
+- Changed away from multiple `dbm` storages, due to corruption/locking
+  problems and the growing number of partially-related databases. The
+  database is now `sqlite`.  
+  **DEPRECATED** the following (will be removed in 1.2; requires upgrades
+  from <=1.0 to >=1.2 to go over an intermediate step for the automatic
+  database conversion process to kick in):
+  - `xcdbm.py` is no longer needed. Use `sqlite3` to manipulate the
+    [database contents](./doc/Database.md)
+  - `--domain-db`, `--cache-db`, and `--shared-roster-db` are only used
+    for the database upconversion and should be removed afterward.
+  - The presence of the above options previously also enabled the use
+    of that database. This is now handled as follows:
+    - The domain database is always consulted. It will be empty initially.
+    - The use of the cache is enabled with the new `--enable-cache` option.
+    - The use of the shared roster is enabled with `--enable-shared-roster`.
+  - There is a new option `--database`, defaulting to `/var/lib/xcauth/xcauth.sqlite`.
+
 ## 1.0.0 - 2018-01-29
 ### Added
 - Authentication against multiple cloud instances based on
