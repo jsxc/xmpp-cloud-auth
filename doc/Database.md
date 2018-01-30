@@ -49,18 +49,20 @@ The lookup is based on the `jid` (the XMPP ID) and stores
 ## Shared roster cache
 
 ```sql
-CREATE TABLE rosterinfo   (userid,      INTEGER PRIMARY KEY,
-                           jid          TEXT UNIQUE,
+CREATE TABLE rosterinfo   (jid,         TEXT PRIMARY KEY,
+                           userid,      INTEGER UNIQUE,
                            fullname     TEXT,
                            groups       TEXT,
                            responsehash TEXT);
-CREATE TABLE rostergroups (groupid      INTEGER PRIMARY KEY,
-                           groupname    TEXT PRIMARY KEY);
+CREATE TABLE rostergroups (groupname    TEXT PRIMARY KEY,
+                           groupid      INTEGER UNIQUE);
 CREATE TABLE rostermembers(userid       INTEGER,
                            groupid      INTEGER,
-                           UNIQUE(userid, groupid));
--- The rostermembers INTEGERS are actually foreign keys, but SQLite does
--- not allow that relationship to be expressed against INTEGER PRIMARY KEYs.
+                           UNIQUE(userid, groupid),
+                           FOREIGN KEY(userid) REFERENCES rosterinfo(userid),
+                           FOREIGN KEY(groupid) REFERENCES rostergroups(groupid));
+-- New `rosterinfo.userid` and `rostergroups.groupid` values are randomly
+-- picked from [0...2^63-1]
 ```
 
 The `rosterinfo` table contains information about a user
