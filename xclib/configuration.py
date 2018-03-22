@@ -1,6 +1,7 @@
 import configargparse
 import sys
 from xclib.version import VERSION
+default_db = '/var/lib/xcauth/xcauth.sqlite3'
 
 def parse_timespan(span):
     multipliers = {'s': 1, 'm': 60, 'h': 60*60, 'd': 60*60*24, 'w': 60*60*24*7}
@@ -44,8 +45,12 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
             action='store_true',
             help='unload (dump) the database contents to stdout')
     else:
+        parser.add_argument('--db',
+            default=default_db,
+            help='Path to the SQLite state database')
         parser.add_argument('--domain-db', '-b',
-            help='persistent domain database; manipulated with xcdbm.py')
+            help='''persistent domain database; manipulated with xcdbm.py.
+DEPRECATED, will only be used for migration purposes.''')
         parser.add_argument('--auth-test', '-A',
             nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
             help='single, one-shot query of the user, domain, and password triple')
@@ -81,7 +86,7 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
         default='5,10',
         help='Timeout for connection setup, request processing')
     add_maybe('--cache-db',
-        help='Database path for the user cache; enables cache if set')
+        help='Database path for the user cache; enables cache if set. DEPRECATED, only for conversion purposes')
     add_maybe('--cache-query-ttl',
         default='1h',
         help='Maximum time between queries')

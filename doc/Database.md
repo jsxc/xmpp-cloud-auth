@@ -46,7 +46,7 @@ The lookup is based on the `jid` (the XMPP ID) and stores
 - the most recent authentication by the user, either against the cache
   or against the Nextcloud server (`anyauth`).
 
-## Shared roster cache
+## Shared roster state
 
 ```sql
 CREATE TABLE rosterinfo   (jid          TEXT PRIMARY KEY,
@@ -66,7 +66,9 @@ The `rostergroups` table contains the tab-separated list of users
 (`userlist`) that have been added to a group (identified by `groupname`).
 
 Memberships in `rosterinfo` and `rostergroups` do not necessarily need
-to be reciprocal.
+to be reciprocal: A user's `grouplist` is only ever updated on that user's
+login, but a group's `userlist` is updated on every login of one of its
+members. This might be considered a bug and should be addressed.
 
 ## Automatic conversion
 When a version of `xcauth` with sqlite support is run, and the `sqlite`
