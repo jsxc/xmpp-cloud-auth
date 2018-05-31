@@ -75,7 +75,7 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
         action='store_true',
         help='log to stderr')
     add_maybe('--type', '-t',
-        choices=['generic', 'prosody', 'ejabberd', 'saslauthd'],
+        choices=['generic', 'prosody', 'ejabberd', 'saslauthd', 'postfix'],
         help='XMPP server type (prosody=generic); implies reading requests from stdin')
     add_maybe('--timeout',
         default='5,10',

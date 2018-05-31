@@ -13,12 +13,18 @@ class isuser:
         return success, code, response
 
     def isuser_cloud(self):
+        '''Returns:
+- True when user exists
+- False when user does not exist
+- None when there is a problem (connection failure or HTTP error code)'''
         response = self.cloud_request({
             'operation': 'isuser',
             'username':  self.username,
             'domain':    self.authDomain
         })
         try:
+            if response == False or isinstance(response, int):
+                return None
             return response and response['result'] == 'success' and response['data']['isUser']
         except KeyError:
             logging.error('Request for %s@%s returned malformed response: %s'

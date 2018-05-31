@@ -75,6 +75,9 @@ def perform(args):
     elif args.type == 'saslauthd':
         from xclib.saslauthd_io import saslauthd_io
         xmpp = saslauthd_io
+    elif args.type == 'postfix':
+        from xclib.postfix_io import postfix_io
+        xmpp = postfix_io
     else: # 'generic' or 'prosody'
         from xclib.prosody_io import prosody_io
         xmpp = prosody_io
