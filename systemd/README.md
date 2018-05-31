@@ -71,7 +71,14 @@ user's mailbox.
    ("OK" is a common value).
 
    The users can be determined easily, but not the domains. It is assumed
-   that the domain list will not change frequently.
+   that the domain list will not change frequently. (You will need to run
+   `postmap /etc/postfix/vmdomains` after every change to that file.)
+1. Add the line
+   ```Postfix
+   virtual_mailbox_maps = hash:/etc/postfix/vmdomains, tcp:localhost:23665
+   ```
+   to `/etc/postfix/main.cf`. Integrate any existing assignment to
+   `virtual_mailbox_maps`.
 1. Install *xcauth* as described above.
 1. Copy `xcpostfix@.service` and `xcpostfix.socket` to `/etc/systemd/system` (see above for symlink issues)
 1. Enable *xcauth.py* in *postfix* mode: `systemctl enable xcpostfix.socket` and `systemctl start xcpostfix.socket`
