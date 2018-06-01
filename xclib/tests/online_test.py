@@ -66,6 +66,7 @@ class TestOnline(unittest.TestCase, iostub):
         file.close()
 
     def command_line(self, options, expected):
+        logging.info('command_line ' + str(options) + ' =? ' + expected)
         self.stub_stdout()
         args = get_args(None, None, None, 'xcauth', args=options)
         perform(args)
@@ -73,6 +74,7 @@ class TestOnline(unittest.TestCase, iostub):
         assert output == expected
 
     def generic_io(self, command, expected):
+        logging.info('generic_io ' + str(command) + ' =? ' + expected)
         self.stub_stdin(':'.join(command) + '\n')
         self.stub_stdout()
         args = get_args(None, None, None, 'xcauth', args=['-t', 'generic'])
