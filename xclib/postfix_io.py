@@ -11,7 +11,7 @@ class postfix_io:
             line = sys.stdin.readline()
             if not line:
                 break
-            match = re.match('^get ([^ @%]+)@([^ @%]+)\r?\n$', line)
+            match = re.match('^get ([^\000- @%]+)@([^\000- @%]+)\r?\n$', line)
             if match:
                 yield ('isuser',) + match.group(1,2)
             else:
