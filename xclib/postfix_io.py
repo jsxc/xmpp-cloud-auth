@@ -1,6 +1,7 @@
 # Only supports isuser request for Postfix virtual mailbox maps
 import sys
 import re
+import logging
 
 class postfix_io:
     @classmethod
@@ -11,10 +12,11 @@ class postfix_io:
             if not line:
                 break
             match = re.match('^get ([^ @%]+)@([^ @%]+)\r?\n$', line)
+            logging.info('Request format: ' + line)
             if match:
                 yield ('isuser',) + match.group(1,2)
             else:
-                sys.stdout.write('100 Err\n')
+                logging.error('Illegal request format: ' + line)
                 sys.stdout.write('500 Illegal request format\n')
                 sys.stdout.flush()
 
