@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.0+ - [Unreleased]
+### Added
+- Now supports [*Postfix* Virtual Mailbox mode](systemd/README.md)
+### Fixed
+- Incorporated *Prosody* upstream mod_auth_external.lua fixes
+### Changed
+
 ## 1.0.0 - 2018-01-29
 ### Added
 - Authentication against multiple cloud instances based on
