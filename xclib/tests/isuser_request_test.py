@@ -3,6 +3,7 @@ import sys
 import requests
 from xclib.sigcloud import sigcloud
 from xclib import xcauth, verify_with_isuser
+import logging
 
 class fakeResponse:
     # Will be called as follows:
@@ -60,15 +61,15 @@ def teardown_module():
 
 def test_timeout():
     xc.session.post = post_timeout
-    assert sc.isuser() == False
+    assert sc.isuser() == None
 
 def test_http404():
     xc.session.post = post_404
-    assert sc.isuser() == False
+    assert sc.isuser() == None
 
 def test_http200_empty():
     xc.session.post = post_200_empty
-    assert sc.isuser() == False
+    assert sc.isuser() == None
 
 def test_success():
     xc.session.post = post_200_ok

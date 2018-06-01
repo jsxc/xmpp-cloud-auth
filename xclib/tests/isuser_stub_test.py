@@ -20,25 +20,25 @@ def sc_timeout(data):
     return (False, None, 'Timeout', None)
 def test_timeout():
     sc.verbose_cloud_request = sc_timeout
-    assert sc.isuser() == False
+    assert sc.isuser() == None
 
 def sc_404(data):
     return (False, 404, None, None)
 def test_http404():
     sc.verbose_cloud_request = sc_404
-    assert sc.isuser() == False
+    assert sc.isuser() == None
 
 def sc_500json(data):
     return (False, 500, {'result': 'failure'}, None)
 def test_http500json():
     sc.verbose_cloud_request = sc_500json
-    assert sc.isuser() == False
+    assert sc.isuser() == None
 
 def sc_malformed(data):
     return (True, None, {'result': 'success'}, None)
 def test_malformed():
     sc.verbose_cloud_request = sc_malformed
-    assert sc.isuser() == False
+    assert sc.isuser() == None
 
 def sc_success(data):
     return (True, None, {

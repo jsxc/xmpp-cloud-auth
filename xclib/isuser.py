@@ -23,16 +23,24 @@ class isuser:
             'domain':    self.authDomain
         })
         try:
-            if response == False or isinstance(response, int):
+            if isinstance(response, dict):
+                if response['result'] == 'success':
+                    return bool(response['data']['isUser'])
+                else:
+                    return None
+            else:
                 return None
-            return response and response['result'] == 'success' and response['data']['isUser']
         except KeyError:
             logging.error('Request for %s@%s returned malformed response: %s'
                 % (self.username, self.domain, str(response)))
-            return False
+            return None
 
     def isuser(self):
-        if self.isuser_cloud():
+        result = self.isuser_cloud()
+        if result == None:
+            logging.info('Cloud unreachable testing user %s@%s' % (self.username, self.domain))
+        elif result == True:
             logging.info('Cloud says user %s@%s exists' % (self.username, self.domain))
-            return True
-        return False
+        else:
+            logging.info('Cloud says user %s@%s does not exist' % (self.username, self.domain))
+        return result

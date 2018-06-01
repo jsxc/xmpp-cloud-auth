@@ -12,7 +12,6 @@ class postfix_io:
             if not line:
                 break
             match = re.match('^get ([^ @%]+)@([^ @%]+)\r?\n$', line)
-            logging.info('Request format: ' + line)
             if match:
                 yield ('isuser',) + match.group(1,2)
             else:
