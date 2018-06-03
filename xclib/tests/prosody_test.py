@@ -9,12 +9,12 @@ class TestProsody(unittest.TestCase, iostub):
         self.stub_stdin('isuser:login:\n' +
             'auth:log:dom:pass\n')
         tester = iter(prosody_io.read_request())
-        output = tester.next()
+        output = next(tester)
         assert output == ('isuser', 'login', '')
-        output = tester.next()
+        output = next(tester)
         assert output == ('auth', 'log', 'dom', 'pass')
         try:
-            output = tester.next()
+            output = next(tester)
             assert False # Should raise StopIteration
         except StopIteration:
             pass

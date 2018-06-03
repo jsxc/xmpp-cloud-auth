@@ -9,12 +9,12 @@ class TestPostfix(unittest.TestCase, iostub):
         self.stub_stdin('get success@jsxc.ch\n' +
             'get succ2@jsxc.org\n')
         tester = iter(postfix_io.read_request())
-        output = tester.next()
+        output = next(tester)
         assert output == ('isuser', 'success', 'jsxc.ch')
-        output = tester.next()
+        output = next(tester)
         assert output == ('isuser', 'succ2', 'jsxc.org')
         try:
-            output = tester.next()
+            output = next(tester)
             assert False # Should raise StopIteration
         except StopIteration:
             pass
@@ -25,13 +25,13 @@ class TestPostfix(unittest.TestCase, iostub):
             'get succ2@jsxc.org\n')
         self.stub_stdouts()
         tester = iter(postfix_io.read_request())
-        output = tester.next()
+        output = next(tester)
         assert output == ('isuser', 'success', 'jsxc.ch')
-        output = tester.next()
+        output = next(tester)
         self.assertEqual(sys.stdout.getvalue()[0:4], '500 ')
         assert output == ('isuser', 'succ2', 'jsxc.org')
         try:
-            output = tester.next()
+            output = next(tester)
             assert False # Should raise StopIteration
         except StopIteration:
             pass

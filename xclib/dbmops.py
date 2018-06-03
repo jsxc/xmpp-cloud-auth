@@ -1,8 +1,8 @@
 import sys
-import anydbm
+import dbm
 
 def perform(args):
-    domain_db = anydbm.open(args.domain_db, 'c', 0600)
+    domain_db = dbm.open(args.domain_db, 'c', 0o600)
     if args.get:
         print(domain_db[args.get])
     elif args.put:
@@ -10,8 +10,8 @@ def perform(args):
     elif args.delete:
         del domain_db[args.delete]
     elif args.unload:
-        for k in domain_db.keys():
-            print '%s\t%s' % (k, domain_db[k])
+        for k in list(domain_db.keys()):
+            print('%s\t%s' % (k, domain_db[k]))
         # Should work according to documentation, but doesn't
         # for k, v in DOMAIN_DB.iteritems():
         #     print k, '\t', v

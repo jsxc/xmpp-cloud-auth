@@ -1,4 +1,4 @@
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import requests
 import hashlib
 import hmac
@@ -45,7 +45,7 @@ class sigcloud(isuser, auth, roster):
         - (False, None, err, None): Connection problem, described in err
         '''
         # logging.debug("Sending %s to %s" % (data, url))
-        payload = urllib.urlencode(data)
+        payload = urllib.parse.urlencode(data)
         signature = hmac.new(self.secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
         headers = {
             'X-JSXC-SIGNATURE': 'sha1=' + signature,

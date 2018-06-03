@@ -29,7 +29,7 @@ class roster(roster_thread):
                 try:
                     sr = message['data']['sharedRoster']
                     return sr, text
-                except Exception, e:
+                except Exception as e:
                     logging.warn('Weird response: ' + str(e))
                     return message, text
         else:
@@ -58,7 +58,7 @@ class roster(roster_thread):
                             # problem experienced especially in Gajim (maybe a race condition?)
                             t.join(1.0)
                         return True
-            except Exception, err:
+            except Exception as err:
                 (etype, value, tb) = sys.exc_info()
                 traceback.print_exception(etype, value, tb)
                 logging.warn('roster_groups thread: %s:\n%s'

@@ -9,12 +9,12 @@ class TestEjabberd(unittest.TestCase, iostub):
         self.stub_stdin('\000\015isuser:login:' +
             '\000\021auth:log:dom:pass')
         tester = iter(ejabberd_io.read_request())
-        output = tester.next()
+        output = next(tester)
         assert output == ('isuser', 'login', '')
-        output = tester.next()
+        output = next(tester)
         assert output == ('auth', 'log', 'dom', 'pass')
         try:
-            output = tester.next()
+            output = next(tester)
             assert False # Should raise StopIteration
         except StopIteration:
             pass
@@ -23,7 +23,7 @@ class TestEjabberd(unittest.TestCase, iostub):
         self.stub_stdin('\000\000')
         tester = iter(ejabberd_io.read_request())
         try:
-            output = tester.next()
+            output = next(tester)
             assert False # Should raise StopIteration
         except StopIteration:
             pass
@@ -32,7 +32,7 @@ class TestEjabberd(unittest.TestCase, iostub):
         self.stub_stdin('\001\000')
         tester = iter(ejabberd_io.read_request())
         try:
-            output = tester.next()
+            output = next(tester)
             assert False # Should raise StopIteration
         except StopIteration:
             pass
@@ -41,7 +41,7 @@ class TestEjabberd(unittest.TestCase, iostub):
         self.stub_stdin('\377\377')
         tester = iter(ejabberd_io.read_request())
         try:
-            output = tester.next()
+            output = next(tester)
             assert False # Should raise StopIteration
         except StopIteration:
             pass

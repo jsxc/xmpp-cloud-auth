@@ -23,7 +23,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--timeout', '5',
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
-        print args.timeout
+        print(args.timeout)
         assert args.timeout == 5
 
     def test_xcauth_timeout(self):
@@ -36,7 +36,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--timeout', '1,2',
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
-        print args.timeout
+        print(args.timeout)
         assert args.timeout == (1, 2)
 
     def test_xcauth_crash_timeout(self):
