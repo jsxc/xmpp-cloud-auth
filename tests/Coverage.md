@@ -5,7 +5,7 @@ Unit tests result in a code coverage of
 
 However, with system tests (which require `/etc/xcauth.accounts` based on [xcauth.accounts.sample](./xcauth.accounts.sample) and a running Nextcloud+JSXC instance), code coverage as of [`48a3d8e`](https://github.com/jsxc/xmpp-cloud-auth/commit/48a3d8e) raises this to 98%.
 
-This is the output of `nosetests --with-coverage --cover-package=xclib` in the top-level directory (with online tests, based on the above version).
+This is the output of `nosetests` in the top-level directory (with online tests, based on the above version).
 
 ```
 ..........................................................................
