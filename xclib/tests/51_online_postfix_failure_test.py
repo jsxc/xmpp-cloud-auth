@@ -1,5 +1,10 @@
+# Second half of the postfix_io tests.
+# If the authentication host is unreachable, postfix
+# should have a 400 error returned. This tests for it.
+# This test also works if the local machine is offline,
+# nevertheless, it sends packets to the network, therefore
+# is considered an online test
 import sys
-import requests
 import unittest
 import logging
 import shutil

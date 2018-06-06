@@ -1,3 +1,4 @@
+# Checks that postfix_io (tcp_table) works as it should
 import sys
 import unittest
 from xclib.postfix_io import postfix_io

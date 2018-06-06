@@ -1,3 +1,4 @@
+# Tests wheter our UTF-8 convenience functions work as they should
 import sys
 import io
 from xclib.utf8 import utf8, unutf8, utf8l

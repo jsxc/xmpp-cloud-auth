@@ -1,3 +1,4 @@
+# Checks that prosody_io works as designed
 import sys
 import unittest
 from xclib.prosody_io import prosody_io

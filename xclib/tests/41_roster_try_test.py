@@ -1,4 +1,5 @@
 # Exercise try_roster()
+# Stubs `ejabberctl` and `request`
 import requests
 import logging
 import json

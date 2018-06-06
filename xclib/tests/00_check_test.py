@@ -1,3 +1,4 @@
+# Test whether our own assertEqual works as it should
 from xclib.check import assertEqual, assertSimilar
 
 def test_assert_equal_type_success():

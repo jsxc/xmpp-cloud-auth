@@ -1,3 +1,4 @@
+# Test whether the configuration parser works as it should
 import sys
 import unittest
 from xclib.tests.iostub import iostub

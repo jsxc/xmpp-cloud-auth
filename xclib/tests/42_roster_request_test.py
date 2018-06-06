@@ -1,3 +1,4 @@
+# Exercises the roster_cloud() request
 # Test when replacing request.session
 import requests
 from xclib.sigcloud import sigcloud

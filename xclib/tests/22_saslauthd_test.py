@@ -1,3 +1,4 @@
+# Checks that saslauthd_io works as it should
 import sys
 import io
 import unittest

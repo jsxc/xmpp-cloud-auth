@@ -1,3 +1,4 @@
+# Checks that ejabberd_io works as designed
 import sys
 import io
 import unittest

@@ -1,3 +1,5 @@
+# Checks whether the isuser() function works as it should
+# Stubs the cloud_request() functions for these tests
 from xclib.sigcloud import sigcloud
 from xclib import xcauth
 from xclib.check import assertEqual

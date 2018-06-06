@@ -1,4 +1,6 @@
+# Checks whether the isuser() function works as it should
 # Test when replacing request.session
+# (a level further down from the `stub` tests before)
 import sys
 import requests
 from xclib.sigcloud import sigcloud

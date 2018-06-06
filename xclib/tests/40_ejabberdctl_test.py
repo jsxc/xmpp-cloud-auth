@@ -1,3 +1,6 @@
+# Check whether calling `ejabberdctl` would work
+# Uses `echo`, `true`, and `false` as external programs;
+# thus does not require in installation of *ejabberd*
 from xclib.ejabberdctl import ejabberdctl
 from xclib import xcauth
 from xclib.check import assertEqual

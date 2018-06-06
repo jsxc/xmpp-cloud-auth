@@ -1,3 +1,5 @@
+# Performs the online auth(), isuser(), and roster() functions
+# if `/etc/xcauth.accounts` exists and the machine is online.
 import sys
 import requests
 import unittest
