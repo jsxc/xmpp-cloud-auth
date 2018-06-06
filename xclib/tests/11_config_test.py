@@ -2,7 +2,6 @@ import sys
 import unittest
 from xclib.tests.iostub import iostub
 from xclib.configuration import get_args
-from xclib.check import assertEqual
 
 def setup_module():
     global arg_save
@@ -25,7 +24,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
         print(args.timeout)
-        assertEqual(args.timeout, 5)
+        self.assertEqual(args.timeout, 5)
 
     def test_xcauth_timeout(self):
         args = get_args('/var/log/xcauth', None, None, 'xcauth',
@@ -38,12 +37,12 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
         print(args.timeout)
-        assertEqual(args.timeout, (1, 2))
+        self.assertEqual(args.timeout, (1, 2))
 
     def test_xcauth_crash_timeout(self):
         self.stub_stdouts()
-        try:
-            args = get_args('/var/log/xcauth', None, None, 'xcauth',
+        self.assertRaises(ValueError, get_args, 
+                '/var/log/xcauth', None, None, 'xcauth',
                 config_file_contents='#',
                 args=['-b', '/tmp/domdb.db',
                       '--secret', '012345678',
@@ -53,14 +52,11 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--timeout', '1,2,3',
                       '--cache-unreachable-ttl', '1w',
                       '--cache-query-ttl', '3600'])
-            assert False # Should raise ValueError
-        except ValueError:
-            pass
 
     def test_xcauth_exit_a(self):
         self.stub_stdouts()
-        try:
-            args = get_args('/var/log/xcauth', None, None, 'xcauth',
+        self.assertRaises(SystemExit, get_args,
+                '/var/log/xcauth', None, None, 'xcauth',
                 config_file_contents='#',
                 args=['-b', '/tmp/domdb.db',
                       '--secret', '012345678',
@@ -69,22 +65,16 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--type', 'generic',
                       '--cache-unreachable-ttl', '1w',
                       '--cache-query-ttl', '3600'])
-            assert False # Should exit(1)
-        except SystemExit:
-            pass
 
     def test_xcauth_exit_b(self):
         self.stub_stdouts()
-        try:
-            args = get_args('/var/log/xcauth', None, None, 'xcauth',
+        self.assertRaises(SystemExit, get_args,
+                '/var/log/xcauth', None, None, 'xcauth',
                 config_file_contents='#',
                 args=['-b', '/tmp/domdb.db',
                       '--secret', '012345678',
                       '--url', 'https://unconfigured.example.ch',
                       '--cache-query-ttl', '3600'])
-            assert False # Should exit(1)
-        except SystemExit:
-            pass
 
     def test_xcdbm(self):
         args = get_args('/var/log/xcauth', None, None, 'xcdbm',

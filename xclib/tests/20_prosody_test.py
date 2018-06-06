@@ -14,11 +14,7 @@ class TestProsody(unittest.TestCase, iostub):
         assertEqual(output, ('isuser', 'login', ''))
         output = next(tester)
         assertEqual(output, ('auth', 'log', 'dom', 'pass'))
-        try:
-            output = next(tester)
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertRaises(StopIteration, next, tester)
 
     def test_output_false(self):
         self.stub_stdout()

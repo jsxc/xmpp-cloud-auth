@@ -2,7 +2,6 @@ import sys
 import unittest
 from xclib.postfix_io import postfix_io
 from xclib.tests.iostub import iostub
-from xclib.check import assertEqual
 
 class TestPostfix(unittest.TestCase, iostub):
 
@@ -11,14 +10,10 @@ class TestPostfix(unittest.TestCase, iostub):
             'get succ2@jsxc.org\n')
         tester = iter(postfix_io.read_request())
         output = next(tester)
-        assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
+        self.assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
         output = next(tester)
-        assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
-        try:
-            output = next(tester)
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
+        self.assertRaises(StopIteration, next, tester)
 
     def test_input_ignore(self):
         self.stub_stdin('get success@jsxc.ch\n' +
@@ -27,15 +22,11 @@ class TestPostfix(unittest.TestCase, iostub):
         self.stub_stdouts()
         tester = iter(postfix_io.read_request())
         output = next(tester)
-        assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
+        self.assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
         output = next(tester)
         self.assertEqual(sys.stdout.getvalue()[0:4], '500 ')
-        assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
-        try:
-            output = next(tester)
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
+        self.assertRaises(StopIteration, next, tester)
 
     def test_output_false(self):
         self.stub_stdout()

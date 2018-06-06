@@ -3,7 +3,6 @@ import io
 import unittest
 from xclib.ejabberd_io import ejabberd_io
 from xclib.tests.iostub import iostub
-from xclib.check import assertEqual
 
 class TestEjabberd(unittest.TestCase, iostub):
 
@@ -12,41 +11,25 @@ class TestEjabberd(unittest.TestCase, iostub):
             b'\000\021auth:log:dom:pass', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
         output = next(tester)
-        assertEqual(output, ('isuser', 'login', ''))
+        self.assertEqual(output, ('isuser', 'login', ''))
         output = next(tester)
-        assertEqual(output, ('auth', 'log', 'dom', 'pass'))
-        try:
-            output = next(tester)
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertEqual(output, ('auth', 'log', 'dom', 'pass'))
+        self.assertRaises(StopIteration, next, tester)
 
     def test_input_fake_eof(self):
         self.stub_stdin(b'\000\000', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
-        try:
-            output = next(tester)
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertRaises(StopIteration, next, tester)
 
     def test_input_short(self):
         self.stub_stdin(b'\001\000', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
-        try:
-            output = next(tester)
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertRaises(StopIteration, next, tester)
 
     def test_input_negative(self):
         self.stub_stdin(b'\377\377', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
-        try:
-            output = next(tester)
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertRaises(StopIteration, next, tester)
 
     def test_output_false(self):
         self.stub_stdout(ioclass=io.BytesIO)

@@ -10,7 +10,6 @@ from xclib import xcauth
 from xclib.tests.iostub import iostub
 from xclib.configuration import get_args
 from xclib.authops import perform
-from xclib.check import assertEqual
 
 def setup_module():
     global dirname
@@ -72,7 +71,7 @@ class TestOnline(unittest.TestCase, iostub):
         args = get_args(None, None, None, 'xcauth', args=options)
         perform(args)
         output = sys.stdout.getvalue().rstrip('\n')
-        assertEqual(output, expected)
+        self.assertEqual(output, expected)
 
     def generic_io(self, command, expected):
         logging.info('generic_io ' + str(command) + ' =? ' + expected)
@@ -86,11 +85,11 @@ class TestOnline(unittest.TestCase, iostub):
         if output == '0' or output == 'None':
             assert str(expected) == 'False' or str(expected), 'None'
         elif output == '1':
-            assertEqual(str(expected), 'True')
+            self.assertEqual(str(expected), 'True')
         else:
             # Only "roster" command will get here.
             # Convert both strs to dicts to avoid
             # problems with formatting (whitespace) and order.
             output = json.loads(output)
             expected = json.loads(expected)
-            assertEqual(output, expected)
+            self.assertEqual(output, expected)
