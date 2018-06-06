@@ -2,6 +2,7 @@ import sys
 import unittest
 from xclib.postfix_io import postfix_io
 from xclib.tests.iostub import iostub
+from xclib.check import assertEqual
 
 class TestPostfix(unittest.TestCase, iostub):
 
@@ -10,9 +11,9 @@ class TestPostfix(unittest.TestCase, iostub):
             'get succ2@jsxc.org\n')
         tester = iter(postfix_io.read_request())
         output = next(tester)
-        assert output == ('isuser', 'success', 'jsxc.ch')
+        assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
         output = next(tester)
-        assert output == ('isuser', 'succ2', 'jsxc.org')
+        assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
         try:
             output = next(tester)
             assert False # Should raise StopIteration
@@ -26,10 +27,10 @@ class TestPostfix(unittest.TestCase, iostub):
         self.stub_stdouts()
         tester = iter(postfix_io.read_request())
         output = next(tester)
-        assert output == ('isuser', 'success', 'jsxc.ch')
+        assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
         output = next(tester)
         self.assertEqual(sys.stdout.getvalue()[0:4], '500 ')
-        assert output == ('isuser', 'succ2', 'jsxc.org')
+        assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
         try:
             output = next(tester)
             assert False # Should raise StopIteration

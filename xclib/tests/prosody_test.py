@@ -2,6 +2,7 @@ import sys
 import unittest
 from xclib.prosody_io import prosody_io
 from xclib.tests.iostub import iostub
+from xclib.check import assertEqual
 
 class TestProsody(unittest.TestCase, iostub):
 
@@ -10,9 +11,9 @@ class TestProsody(unittest.TestCase, iostub):
             'auth:log:dom:pass\n')
         tester = iter(prosody_io.read_request())
         output = next(tester)
-        assert output == ('isuser', 'login', '')
+        assertEqual(output, ('isuser', 'login', ''))
         output = next(tester)
-        assert output == ('auth', 'log', 'dom', 'pass')
+        assertEqual(output, ('auth', 'log', 'dom', 'pass'))
         try:
             output = next(tester)
             assert False # Should raise StopIteration

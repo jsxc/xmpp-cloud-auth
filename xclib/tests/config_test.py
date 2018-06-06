@@ -2,6 +2,7 @@ import sys
 import unittest
 from xclib.tests.iostub import iostub
 from xclib.configuration import get_args
+from xclib.check import assertEqual
 
 def setup_module():
     global arg_save
@@ -24,7 +25,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
         print(args.timeout)
-        assert args.timeout == 5
+        assertEqual(args.timeout, 5)
 
     def test_xcauth_timeout(self):
         args = get_args('/var/log/xcauth', None, None, 'xcauth',
@@ -37,7 +38,7 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
         print(args.timeout)
-        assert args.timeout == (1, 2)
+        assertEqual(args.timeout, (1, 2))
 
     def test_xcauth_crash_timeout(self):
         self.stub_stdouts()

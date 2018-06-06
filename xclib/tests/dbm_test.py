@@ -10,6 +10,7 @@ from argparse import Namespace
 from xclib.dbmops import perform
 from xclib.tests.iostub import iostub
 from xclib.utf8 import utf8
+from xclib.check import assertEqual
 
 class TestDBM(unittest.TestCase, iostub):
 
@@ -37,8 +38,8 @@ class TestDBM(unittest.TestCase, iostub):
             u'example.de\tNothrXampl\thttps://nothing\t\n')
         ns = self.mkns(load=True)
         perform(ns)
-        assert dbfile[b'example.ch'] == b'XmplScrt\thttps://example.ch/index.php/apps/ojsxc/ajax/externalApi.php\texample.ch\t'
-        assert dbfile[b'example.de'] == b'NothrXampl\thttps://nothing\t'
+        assertEqual(dbfile[b'example.ch'], b'XmplScrt\thttps://example.ch/index.php/apps/ojsxc/ajax/externalApi.php\texample.ch\t')
+        assertEqual(dbfile[b'example.de'], b'NothrXampl\thttps://nothing\t')
         assert b'example.net' not in dbfile
 
     def test_02_put(self):
@@ -48,7 +49,7 @@ class TestDBM(unittest.TestCase, iostub):
         perform(ns)
         dbfile = bsddb3.hashopen(dbname, 'c', 0o600)
         assert b'example.net' in dbfile
-        assert dbfile[b'example.net'] == b'dummy'
+        assertEqual(dbfile[b'example.net'], b'dummy')
         dbfile.close()
 
     def test_03_get(self):
@@ -71,4 +72,4 @@ class TestDBM(unittest.TestCase, iostub):
             if line != '':
                (k, delim, v) = line.partition('\t')
                expected.remove(utf8(k))
-        assert expected == []
+        assertEqual(expected, [])

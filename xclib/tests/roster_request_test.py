@@ -2,6 +2,7 @@
 import requests
 from xclib.sigcloud import sigcloud
 from xclib import xcauth
+from xclib.check import assertEqual
 
 class fakeResponse:
     # Will be called as follows:
@@ -52,21 +53,21 @@ def teardown_module():
 
 def test_timeout():
     xc.session.post = post_timeout
-    assert sc.roster_cloud() == (False, None)
+    assertEqual(sc.roster_cloud(), (False, None))
 
 def test_http404():
     xc.session.post = post_404
-    assert sc.roster_cloud() == (False, None)
+    assertEqual(sc.roster_cloud(), (False, None))
 
 def test_http200_empty():
     xc.session.post = post_200_empty
     roster, body = sc.roster_cloud()
-    assert roster == None
-    assert body == '200 Success'
+    assertEqual(roster, None)
+    assertEqual(body, '200 Success')
 
 def test_success():
     xc.session.post = post_200_ok
     roster, body = sc.roster_cloud()
-    assert roster == {'user1@domain1':{'name':'Ah Be','groups':['Lonely']}}
-    assert body == 'fake body'
+    assertEqual(roster, {'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
+    assertEqual(body, 'fake body')
 

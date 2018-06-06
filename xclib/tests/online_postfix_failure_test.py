@@ -10,6 +10,7 @@ from xclib import xcauth
 from xclib.tests.iostub import iostub
 from xclib.configuration import get_args
 from xclib.authops import perform
+from xclib.check import assertEqual
 
 def setup_module():
     global dirname
@@ -29,4 +30,4 @@ class TestOnline(unittest.TestCase, iostub):
         perform(args)
         output = sys.stdout.getvalue().rstrip('\n')
         logging.debug(output)
-        assert output[0:4] == '400 '
+        assertEqual(output[0:4], '400 ')

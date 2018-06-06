@@ -200,10 +200,9 @@ def test_try_34login_other_user_again():
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user2', 'domain1')
-    assert sc.try_roster(async=False) == True
+    assertEqual(sc.try_roster(async=False), True)
     logging.info(collect)
-    assert collect == [
-    ]
+    assertEqual(collect, [])
 
 def test_try_40third_party_deletion():
     global collect
@@ -214,11 +213,11 @@ def test_try_40third_party_deletion():
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user2', 'domain1')
-    assert sc.try_roster(async=False) == True
+    assertEqual(sc.try_roster(async=False), True)
     logging.info(collect)
-    assert collect == [
+    assertEqual(collect, [
         ['srg_user_del', 'user1', 'domain1', 'Family', 'domain1']
-    ]
+    ])
 def test_try_41self_deletion():
     global collect
     collect = []
@@ -227,10 +226,10 @@ def test_try_41self_deletion():
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user1', 'domain1')
-    assert sc.try_roster(async=False) == True
+    assertEqual(sc.try_roster(async=False), True)
     logging.info(collect)
-    assert collect == [
+    assertEqual(collect, [
         # The first is unnecessary but harmless and not easily avoidable
         ['srg_user_del', 'user1', 'domain1', 'Family', 'domain1'],
         ['srg_user_del', 'user1', 'domain1', 'Lonely', 'domain1']
-    ]
+    ])

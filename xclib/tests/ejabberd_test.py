@@ -3,6 +3,7 @@ import io
 import unittest
 from xclib.ejabberd_io import ejabberd_io
 from xclib.tests.iostub import iostub
+from xclib.check import assertEqual
 
 class TestEjabberd(unittest.TestCase, iostub):
 
@@ -11,9 +12,9 @@ class TestEjabberd(unittest.TestCase, iostub):
             b'\000\021auth:log:dom:pass', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
         output = next(tester)
-        assert output == ('isuser', 'login', '')
+        assertEqual(output, ('isuser', 'login', ''))
         output = next(tester)
-        assert output == ('auth', 'log', 'dom', 'pass')
+        assertEqual(output, ('auth', 'log', 'dom', 'pass'))
         try:
             output = next(tester)
             assert False # Should raise StopIteration
