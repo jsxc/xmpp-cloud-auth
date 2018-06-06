@@ -1,6 +1,7 @@
 import sys
 import logging
 from struct import pack, unpack
+from xclib.utf8 import unutf8
 
 class ejabberd_io:
     @classmethod
@@ -15,7 +16,7 @@ class ejabberd_io:
             if len(cmd) != size:
                logging.warn('premature EOF while reading cmd: %d != %d' % (len(cmd), size))
                return
-            x = cmd.decode('utf-8').split(':', 3)
+            x = unutf8(cmd).split(':', 3)
             yield tuple(x)
             length_field = sys.stdin.buffer.read(2)
 

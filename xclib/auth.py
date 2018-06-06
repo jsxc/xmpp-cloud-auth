@@ -5,6 +5,7 @@ import bcrypt
 from time import time
 from struct import pack, unpack
 from base64 import b64decode
+from xclib.utf8 import utf8, unutf8
 
 usersafe_encoding = str.maketrans('-$%', 'OIl')
 
@@ -37,7 +38,7 @@ class auth:
             logging.debug('Token has expired')
             return False
 
-        challenge = pack('> B 6s %ds' % len(jid), version, header, jid.encode('utf-8'))
+        challenge = pack('> B 6s %ds' % len(jid), version, header, utf8(jid))
         response = hmac.new(self.secret, challenge, hashlib.sha256).digest()
 
         return hmac.compare_digest(mac, response[:16])
@@ -57,8 +58,8 @@ class auth:
         '''Compare self.password with pwhash.
         
         Try to be resistant to timing attacks and use `checkpw` if available.'''
-        pw = self.password.encode('utf-8')
-        pwhash = pwhash.encode('utf-8')
+        pw = utf8(self.password)
+        pwhash = utf8(pwhash)
         if 'checkpw' in dir(bcrypt):
             return bcrypt.checkpw(pw, pwhash)
         else:
@@ -99,7 +100,7 @@ class auth:
         except TypeError:
             # Old versions of bcrypt() apparently do not support the rounds option
             salt = bcrypt.gensalt()
-        pwhash = bcrypt.hashpw(self.password.encode('utf-8'), salt).decode('ascii', 'strict')
+        pwhash = unutf8(bcrypt.hashpw(utf8(self.password), salt))
         if key in self.ctx.cache_db:
             (ignored, ts1, tsv, tsa, rest) = self.ctx.cache_db[key].split("\t", 4)
             self.ctx.cache_db[key] = "\t".join((pwhash, ts1, snow, snow, rest))

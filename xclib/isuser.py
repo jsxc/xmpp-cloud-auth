@@ -1,4 +1,5 @@
 import logging
+from xclib.utf8 import utf8
 
 class isuser:
     def __init__(self, reqdata):

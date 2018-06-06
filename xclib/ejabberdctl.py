@@ -1,5 +1,6 @@
 import logging
 import subprocess
+from xclib.utf8 import unutf8
 
 class ejabberdctl:
     def __init__(self, ctx):
@@ -8,7 +9,7 @@ class ejabberdctl:
     def execute(self, args):
         logging.debug(self.ctx.ejabberdctl_path + str(args))
         try:
-            return subprocess.check_output([self.ctx.ejabberdctl_path] + args).decode('utf-8')
+            return unutf8(subprocess.check_output([self.ctx.ejabberdctl_path] + args))
         except subprocess.CalledProcessError as err:
             logging.warn('ejabberdctl %s failed with %s'
                 % (self.ctx.ejabberdctl_path + str(args), str(err)))
