@@ -1,5 +1,6 @@
 # Performs the online auth(), isuser(), and roster() functions
 # if `/etc/xcauth.accounts` exists and the machine is online.
+import os
 import sys
 import requests
 import unittest
@@ -7,6 +8,7 @@ import logging
 import shutil
 import tempfile
 import json
+import requests
 from xclib.sigcloud import sigcloud
 from xclib import xcauth
 from xclib.tests.iostub import iostub
@@ -20,15 +22,25 @@ def setup_module():
 def teardown_module():
     shutil.rmtree(dirname)
 
+def is_online():
+    try:
+        req = requests.get("https://xmpp.jsxc.ch/online_tests", timeout=5)
+        return True
+    except requests.exceptions.RequestException:
+        return False
+
 class TestOnline(unittest.TestCase, iostub):
     # Skip online tests if /etc/xcauth.accounts does not exist
     # The overall operation is modeled after ../../tests/run-online.pl
+
+    @unittest.skipUnless(os.path.isfile("/etc/xcauth.accounts"), "/etc/xcauth.accounts missing")
+    @unittest.skipUnless(is_online(), "Not online")
     def test_online(self):
         has_run = []
         try:
             file = open('/etc/xcauth.accounts', 'r');
         except IOError:
-            return
+            raise unittest.SkipTest("/etc/xcauth.accounts unreadable")
         u = None
         d = None
         p = None
