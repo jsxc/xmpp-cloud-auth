@@ -4,6 +4,8 @@ import requests
 from xclib.sigcloud import sigcloud
 from xclib import xcauth, verify_with_isuser
 import logging
+import hmac
+import hashlib
 
 class fakeResponse:
     # Will be called as follows:
@@ -43,8 +45,10 @@ def post_200_ok(url, data='', headers='', allow_redirects=False,
 def post_200_ok_verify(url, data='', headers='', allow_redirects=False,
         timeout=5):
     assert url == 'https://nosuchhost'
-    assert data == 'username=usr&operation=isuser&domain=no.such.doma.in'
-    assert headers['X-JSXC-SIGNATURE'] == 'sha1=a42ba1955c6a8457e3c7396a6827ba824e92b059'
+    assert (data == b'username=usr&operation=isuser&domain=no.such.doma.in' or
+            data == b'operation=isuser&username=usr&domain=no.such.doma.in')
+    hash = hmac.new(b'999', msg=data, digestmod=hashlib.sha1).hexdigest()
+    assert headers['X-JSXC-SIGNATURE'] == 'sha1=' + hash
     return post_200_ok(url, data, headers, allow_redirects, timeout)
 
 def setup_module():

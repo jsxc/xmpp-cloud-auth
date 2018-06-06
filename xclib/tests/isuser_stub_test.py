@@ -4,8 +4,8 @@ from xclib import xcauth
 def setup_module():
     global xc, sc
     xc = xcauth(domain_db={
-            'xdomain': '99999\thttps://remotehost\tydomain\t',
-            'udomain': '8888\thttps://oldhost\t',
+            b'xdomain': '99999\thttps://remotehost\tydomain\t',
+            b'udomain': '8888\thttps://oldhost\t',
         },
         default_url='https://localhost', default_secret='01234')
     sc = sigcloud(xc, 'user1', 'domain1')

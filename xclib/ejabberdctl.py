@@ -8,7 +8,7 @@ class ejabberdctl:
     def execute(self, args):
         logging.debug(self.ctx.ejabberdctl_path + str(args))
         try:
-            return subprocess.check_output([self.ctx.ejabberdctl_path] + args)
+            return subprocess.check_output([self.ctx.ejabberdctl_path] + args).decode('utf-8')
         except subprocess.CalledProcessError as err:
             logging.warn('ejabberdctl %s failed with %s'
                 % (self.ctx.ejabberdctl_path + str(args), str(err)))

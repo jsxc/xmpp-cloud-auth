@@ -1,7 +1,7 @@
 import logging
 import sys
 import atexit
-import dbm
+import bsddb3
 from xclib import xcauth
 from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
@@ -24,18 +24,18 @@ def perform(args):
     logging.debug('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, args.url)
 
     if args.domain_db:
-        domain_db = dbm.open(args.domain_db, 'c', 0o600)
+        domain_db = bsddb3.hashopen(args.domain_db, 'c', 0o600)
         atexit.register(domain_db.close)
     else:
         domain_db = {}
     if args.cache_db:
         import bcrypt
-        cache_db = dbm.open(args.cache_db, 'c', 0o600)
+        cache_db = bsddb3.hashopen(args.cache_db, 'c', 0o600)
         atexit.register(cache_db.close)
     else:
         cache_db = {'': ''} # "Do not use" marker
     if args.shared_roster_db:
-        shared_roster_db = dbm.open(args.shared_roster_db, 'c', 0o600)
+        shared_roster_db = bsddb3.hashopen(args.shared_roster_db, 'c', 0o600)
         atexit.register(shared_roster_db.close)
     else:
         # Will never be accessed, as `ejabberdctl` will not be set

@@ -1,24 +1,25 @@
 import sys
-import dbm
+import bsddb3
+from xclib.utf8 import utf8, unutf8
 
 def perform(args):
-    domain_db = dbm.open(args.domain_db, 'c', 0o600)
+    domain_db = bsddb3.hashopen(args.domain_db, 'c', 0o600)
     if args.get:
-        print(domain_db[args.get])
+        print(unutf8(domain_db[utf8(args.get)]))
     elif args.put:
-        domain_db[args.put[0]] = args.put[1]
+        domain_db[utf8(args.put[0])] = args.put[1]
     elif args.delete:
-        del domain_db[args.delete]
+        del domain_db[utf8(args.delete)]
     elif args.unload:
         for k in list(domain_db.keys()):
-            print('%s\t%s' % (k, domain_db[k]))
+            print('%s\t%s' % (unutf8(k), unutf8(domain_db[k])))
         # Should work according to documentation, but doesn't
         # for k, v in DOMAIN_DB.iteritems():
         #     print k, '\t', v
     elif args.load:
         for line in sys.stdin:
             k, v = line.rstrip('\r\n').split('\t', 1)
-            domain_db[k] = v
+            domain_db[utf8(k)] = v
     domain_db.close()
 
 # vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4

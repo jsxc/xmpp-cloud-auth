@@ -1,4 +1,5 @@
 import sys
+import io
 import unittest
 from xclib.ejabberd_io import ejabberd_io
 from xclib.tests.iostub import iostub
@@ -6,8 +7,8 @@ from xclib.tests.iostub import iostub
 class TestEjabberd(unittest.TestCase, iostub):
 
     def test_input(self):
-        self.stub_stdin('\000\015isuser:login:' +
-            '\000\021auth:log:dom:pass')
+        self.stub_stdin(b'\000\015isuser:login:' +
+            b'\000\021auth:log:dom:pass', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
         output = next(tester)
         assert output == ('isuser', 'login', '')
@@ -20,7 +21,7 @@ class TestEjabberd(unittest.TestCase, iostub):
             pass
 
     def test_input_fake_eof(self):
-        self.stub_stdin('\000\000')
+        self.stub_stdin(b'\000\000', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
         try:
             output = next(tester)
@@ -29,7 +30,7 @@ class TestEjabberd(unittest.TestCase, iostub):
             pass
 
     def test_input_short(self):
-        self.stub_stdin('\001\000')
+        self.stub_stdin(b'\001\000', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
         try:
             output = next(tester)
@@ -38,7 +39,7 @@ class TestEjabberd(unittest.TestCase, iostub):
             pass
 
     def test_input_negative(self):
-        self.stub_stdin('\377\377')
+        self.stub_stdin(b'\377\377', ioclass=io.BytesIO)
         tester = iter(ejabberd_io.read_request())
         try:
             output = next(tester)
@@ -47,12 +48,12 @@ class TestEjabberd(unittest.TestCase, iostub):
             pass
 
     def test_output_false(self):
-        self.stub_stdout()
+        self.stub_stdout(ioclass=io.BytesIO)
         ejabberd_io.write_response(False)
-        self.assertEqual(sys.stdout.getvalue(), '\000\002\000\000')
+        self.assertEqual(sys.stdout.getvalue(), b'\000\002\000\000')
 
     # Cannot be merged, as getvalue() returns the aggregate value
     def test_output_true(self):
-        self.stub_stdout()
+        self.stub_stdout(ioclass=io.BytesIO)
         ejabberd_io.write_response(True)
-        self.assertEqual(sys.stdout.getvalue(), '\000\002\000\001')
+        self.assertEqual(sys.stdout.getvalue(), b'\000\002\000\001')

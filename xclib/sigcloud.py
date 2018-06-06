@@ -45,8 +45,8 @@ class sigcloud(isuser, auth, roster):
         - (False, None, err, None): Connection problem, described in err
         '''
         # logging.debug("Sending %s to %s" % (data, url))
-        payload = urllib.parse.urlencode(data)
-        signature = hmac.new(self.secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
+        payload = urllib.parse.urlencode(data).encode('utf-8')
+        signature = hmac.new(self.secret, msg=payload, digestmod=hashlib.sha1).hexdigest()
         headers = {
             'X-JSXC-SIGNATURE': 'sha1=' + signature,
             'content-type':     'application/x-www-form-urlencoded'

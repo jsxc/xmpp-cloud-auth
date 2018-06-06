@@ -3,17 +3,12 @@ import traceback
 import unicodedata
 import sys
 from xclib.ejabberdctl import ejabberdctl
+from xclib.utf8 import utf8, unutf8, utf8l
 
 def sanitize(name):
     name = str(name)
     printable = {'Lu', 'Ll', 'Lm', 'Lo', 'Nd', 'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po', 'Sm', 'Sc', 'Sk', 'So', 'Zs'}
-    return utf8(''.join(c for c in name if unicodedata.category(c) in printable and c != '@'))
-
-def utf8(u):
-    return u.encode('utf-8', 'ignore')
-
-def unutf8(u):
-    return u.decode('utf-8', 'ignore')
+    return ''.join(c for c in name if unicodedata.category(c) in printable and c != '@')
 
 class roster_thread:
     def roster_background_thread(self, sr):
