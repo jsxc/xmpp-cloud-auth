@@ -1,3 +1,4 @@
+# Checks that postfix_io (tcp_table) works as it should
 import sys
 import unittest
 from xclib.postfix_io import postfix_io
@@ -9,15 +10,11 @@ class TestPostfix(unittest.TestCase, iostub):
         self.stub_stdin('get success@jsxc.ch\n' +
             'get succ2@jsxc.org\n')
         tester = iter(postfix_io.read_request())
-        output = tester.next()
-        assert output == ('isuser', 'success', 'jsxc.ch')
-        output = tester.next()
-        assert output == ('isuser', 'succ2', 'jsxc.org')
-        try:
-            output = tester.next()
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        output = next(tester)
+        self.assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
+        output = next(tester)
+        self.assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
+        self.assertRaises(StopIteration, next, tester)
 
     def test_input_ignore(self):
         self.stub_stdin('get success@jsxc.ch\n' +
@@ -25,16 +22,12 @@ class TestPostfix(unittest.TestCase, iostub):
             'get succ2@jsxc.org\n')
         self.stub_stdouts()
         tester = iter(postfix_io.read_request())
-        output = tester.next()
-        assert output == ('isuser', 'success', 'jsxc.ch')
-        output = tester.next()
+        output = next(tester)
+        self.assertEqual(output, ('isuser', 'success', 'jsxc.ch'))
+        output = next(tester)
         self.assertEqual(sys.stdout.getvalue()[0:4], '500 ')
-        assert output == ('isuser', 'succ2', 'jsxc.org')
-        try:
-            output = tester.next()
-            assert False # Should raise StopIteration
-        except StopIteration:
-            pass
+        self.assertEqual(output, ('isuser', 'succ2', 'jsxc.org'))
+        self.assertRaises(StopIteration, next, tester)
 
     def test_output_false(self):
         self.stub_stdout()

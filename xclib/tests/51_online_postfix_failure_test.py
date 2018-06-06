@@ -1,5 +1,10 @@
+# Second half of the postfix_io tests.
+# If the authentication host is unreachable, postfix
+# should have a 400 error returned. This tests for it.
+# This test also works if the local machine is offline,
+# nevertheless, it sends packets to the network, therefore
+# is considered an online test
 import sys
-import requests
 import unittest
 import logging
 import shutil
@@ -10,6 +15,7 @@ from xclib import xcauth
 from xclib.tests.iostub import iostub
 from xclib.configuration import get_args
 from xclib.authops import perform
+from xclib.check import assertEqual
 
 def setup_module():
     global dirname
@@ -29,4 +35,4 @@ class TestOnline(unittest.TestCase, iostub):
         perform(args)
         output = sys.stdout.getvalue().rstrip('\n')
         logging.debug(output)
-        assert output[0:4] == '400 '
+        assertEqual(output[0:4], '400 ')

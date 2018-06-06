@@ -3,6 +3,7 @@ import sys
 import requests
 from xclib.sigcloud import sigcloud
 import xclib.isuser
+from xclib.utf8 import utf8, unutf8
 
 def verify_with_isuser(url, secret, domain, user, timeout, hook=None):
     xc = xcauth(default_url=url, default_secret=secret, timeout=timeout)
@@ -28,15 +29,16 @@ class xcauth:
         self.session=requests.Session()
 
     def per_domain(self, dom):
-        if dom in self.domain_db:
+        bdom = utf8(dom)
+        if bdom in self.domain_db:
             try:
                 # Already 4-value database format? Great!
-                secret, url, authDomain, extra = self.domain_db[dom].split('\t', 3)
+                secret, url, authDomain, extra = self.domain_db[bdom].split('\t', 3)
             except ValueError:
                 # No, fall back to 3-value format (and update DB)
-                secret, url, extra = self.domain_db[dom].split('\t', 2)
+                secret, url, extra = self.domain_db[bdom].split('\t', 2)
                 authDomain = dom
                 self.domain_db[dom] = '\t'.join((secret, url, authDomain, extra))
-            return secret, url, authDomain
+            return utf8(secret), url, authDomain
         else:
-            return self.default_secret, self.default_url, dom
+            return utf8(self.default_secret), self.default_url, dom

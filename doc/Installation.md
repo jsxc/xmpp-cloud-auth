@@ -15,9 +15,15 @@ Create the `xcauth` user and directories:
 sudo ./install.sh
 ```
 
-Install Python and all desired libraries.
+Install Python3 and all required libraries. On Ubuntu 18.04, this is:
 ```
-sudo apt install python python-requests python-configargparse python-bcrypt
+sudo apt install python3 python3-requests python3-configargparse python3-bcrypt python3-bsddb3
+```
+
+### Developers
+…might want to additionally install
+```
+sudo apt install python3-nosetests python3-rednose python3-nose-cov
 ```
 
 ## Configuration

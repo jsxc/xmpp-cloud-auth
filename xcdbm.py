@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!/usr/bin/python3 -tt
 
 from xclib.configuration import get_args
 from xclib.dbmops import perform

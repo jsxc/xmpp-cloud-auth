@@ -4,6 +4,8 @@ import traceback
 import threading
 import sys
 from xclib.roster_thread import roster_thread
+from xclib.utf8 import utf8
+from xclib.check import assertEqual
 
 class roster(roster_thread):
     def jidsplit(self, jid):
@@ -29,7 +31,7 @@ class roster(roster_thread):
                 try:
                     sr = message['data']['sharedRoster']
                     return sr, text
-                except Exception, e:
+                except Exception as e:
                     logging.warn('Weird response: ' + str(e))
                     return message, text
         else:
@@ -41,8 +43,8 @@ class roster(roster_thread):
             try:
                 response, text = self.roster_cloud()
                 if response is not None and response != False:
-                    texthash = hashlib.sha256(text).hexdigest()
-                    userhash = 'RH:' + self.username + ':' + self.domain
+                    texthash = hashlib.sha256(text.encode('utf-8')).hexdigest()
+                    userhash = utf8('RH:' + self.username + ':' + self.domain)
                     # Response changed or first response for that user?
                     if not userhash in self.ctx.shared_roster_db or self.ctx.shared_roster_db[userhash] != texthash:
                         self.ctx.shared_roster_db[userhash] = texthash
@@ -58,7 +60,7 @@ class roster(roster_thread):
                             # problem experienced especially in Gajim (maybe a race condition?)
                             t.join(1.0)
                         return True
-            except Exception, err:
+            except Exception as err:
                 (etype, value, tb) = sys.exc_info()
                 traceback.print_exception(etype, value, tb)
                 logging.warn('roster_groups thread: %s:\n%s'
