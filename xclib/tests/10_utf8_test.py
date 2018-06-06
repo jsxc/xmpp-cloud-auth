@@ -1,5 +1,8 @@
+import sys
+import io
 from xclib.utf8 import utf8, unutf8, utf8l
 from xclib.check import assertEqual
+from xclib.tests.iostub import iostub
 
 def test_utf8_ascii():
     assertEqual(b'hallo', utf8(u'hallo'))
@@ -30,7 +33,12 @@ def test_unutf8_invalid_strict():
     raise AssertionError('Illegal UTF-8 sequence accepted under "strict"')
 
 def test_unutf8_invalid_illegal():
-    assertEqual(unutf8(b'Hall\x80chen', 'illegal'), u'illegal-utf8-sequence-Hallchen')
+    try:
+        stderr = sys.stderr
+        sys.stderr = io.StringIO()
+        assertEqual(unutf8(b'Hall\x80chen', 'illegal'), u'illegal-utf8-sequence-Hallchen')
+    finally:
+        sys.stderr = stderr
 
 def test_utf8l_match():
     assertEqual([b'b', b'\xc3\xb6', b's', b'e'], utf8l(['b', 'ö', 's', 'e']))
