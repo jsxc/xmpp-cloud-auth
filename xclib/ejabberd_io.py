@@ -26,6 +26,6 @@ class ejabberd_io:
         if flag:
             answer = 1
         token = pack('>HH', 2, answer)
-        sys.stdout.write(token)
+        sys.stdout.buffer.write(token)
         sys.stdout.flush()
 
