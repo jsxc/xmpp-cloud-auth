@@ -1,13 +1,13 @@
 language: python
 
-dist: trusty
+dist: zesty
 
 python:
-  - "2.7"
+  - "3.5"
 
 install:
   - pip install requests configargparse bcrypt
-  - pip install coverage nose
+  - pip install coverage nose rednose
 
 script:
   - nosetests --with-coverage --cover-xml --cover-package=xclib
