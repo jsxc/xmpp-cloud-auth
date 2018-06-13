@@ -6,6 +6,7 @@ python:
   - "3.5"
 
 install:
+  - apt install libdb5.3-dev
   - pip install requests configargparse bcrypt bsddb3
   - pip install coverage nose rednose
 
