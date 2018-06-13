@@ -6,7 +6,7 @@ python:
   - "3.5"
 
 install:
-  - pip install requests configargparse bcrypt
+  - pip install requests configargparse bcrypt bsddb3
   - pip install coverage nose rednose
 
 script:
