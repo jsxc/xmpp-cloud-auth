@@ -1,13 +1,13 @@
 language: python
 
-dist: zesty
+dist: artful
 sudo: required
 
 python:
   - "3.5"
 
 install:
-  - sudo apt install libdb-dev
+  - sudo apt install libdb5.3-dev
   - pip install requests configargparse bcrypt bsddb3
   - pip install coverage nose rednose
 
