@@ -1,6 +1,6 @@
 language: python
 
-dist: artful
+dist: trusty
 sudo: required
 
 python:
