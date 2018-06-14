@@ -1,16 +1,18 @@
 language: python
 
 dist: trusty
+sudo: required
 
 python:
-  - "2.7"
+  - "3.5"
 
 install:
-  - pip install requests configargparse bcrypt
-  - pip install coverage nose
+  - sudo apt install libdb5.3-dev
+  - pip install requests configargparse bcrypt bsddb3
+  - pip install coverage nose rednose
 
 script:
   - nosetests --with-coverage --cover-xml --cover-package=xclib
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)
