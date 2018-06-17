@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The use of the cache is enabled with the new `--enable-cache` option.
     - The use of the shared roster is enabled with `--enable-shared-roster`.
   - There is a new option `--database`, defaulting to `/var/lib/xcauth/xcauth.sqlite`.
+- Now supports [*Postfix* Virtual Mailbox mode](systemd/README.md)
+### Fixed
+- Incorporated *Prosody* upstream mod_auth_external.lua fixes
+### Changed
 
 ## 1.0.0 - 2018-01-29
 ### Added

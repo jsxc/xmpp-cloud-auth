@@ -1,0 +1,12 @@
+[Unit]
+Description=Postfix virtual mailbox to Nextcloud+JSXC bridge
+PartOf=xcpostfix.service
+
+[Socket]
+ListenStream=[::1]:23665
+ListenStream=127.0.0.1:23665
+Accept=yes
+Accept=yes
+
+[Install]
+WantedBy=multi-user.target

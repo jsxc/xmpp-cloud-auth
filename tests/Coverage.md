@@ -3,32 +3,35 @@
 Unit tests result in a code coverage of
 [![codecov](https://codecov.io/gh/jsxc/xmpp-cloud-auth/branch/master/graph/badge.svg)](https://codecov.io/gh/jsxc/xmpp-cloud-auth).
 
-However, with system tests (which require `/etc/xcauth.accounts` based on [xcauth.accounts.sample](./xcauth.accounts.sample) and a running Nextcloud+JSXC instance), code coverage as of [`402636a`](https://github.com/jsxc/xmpp-cloud-auth/commit/402636a317bfda9295e4d84eb9de4210318729f5) raises this to 96%.
+However, with system tests (which require `/etc/xcauth.accounts` based on [xcauth.accounts.sample](./xcauth.accounts.sample) and a running Nextcloud+JSXC instance), code coverage as of [`b3cddd8`](https://github.com/jsxc/xmpp-cloud-auth/commit/b3cddd8) achieves a stunning 99%.
 
-This is the output of `nosetests --with-coverage --cover-package=xclib` in the top-level directory.
+This is the output of `nosetests` in the top-level directory (with online tests, based on the above version).
 
 ```
-.....................................................................
+...........................................................................................
 Name                     Stmts   Miss  Cover   Missing
 ------------------------------------------------------
-xclib.py                    32      0   100%
-xclib/auth.py               96      3    97%   14, 64-65
-xclib/authops.py            73      1    99%   76
-xclib/configuration.py      69      3    96%   122, 134-135
-xclib/dbmops.py             18      0   100%
-xclib/ejabberd_io.py        25      0   100%
-xclib/ejabberdctl.py        30      1    97%   39
-xclib/isuser.py             19      1    95%   5
+xclib/__init__.py           34      0   100%
+xclib/auth.py               98      2    98%   14, 66
+xclib/authops.py            75      1    99%   76
+xclib/check.py               8      0   100%
+xclib/configuration.py      69      0   100%
+xclib/dbmops.py             19      0   100%
+xclib/ejabberd_io.py        26      0   100%
+xclib/ejabberdctl.py        31      0   100%
+xclib/isuser.py             27      1    96%   6
+xclib/postfix_io.py         22      0   100%
 xclib/prosody_io.py         17      0   100%
-xclib/roster.py             46      0   100%
-xclib/roster_thread.py      82      0   100%
-xclib/saslauthd_io.py       27      0   100%
-xclib/sigcloud.py           48      9    81%   31, 58-59, 63-64, 69-70, 74-75
+xclib/roster.py             48      0   100%
+xclib/roster_thread.py      81      0   100%
+xclib/saslauthd_io.py       28      0   100%
+xclib/sigcloud.py           49      5    90%   32, 59, 64, 70, 76
+xclib/utf8.py               18      0   100%
 xclib/version.py             1      0   100%
 ------------------------------------------------------
-TOTAL                      583     18    97%
+TOTAL                      651      9    99%
 ----------------------------------------------------------------------
-Ran 69 tests in 2.457s
+Ran 91 tests in 1.510s
 
 OK
 ```

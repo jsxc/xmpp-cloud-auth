@@ -1,8 +1,9 @@
+# Exercises the roster_cloud() request
 # Test when replacing request.session
-import sys
 import requests
 from xclib.sigcloud import sigcloud
-from xclib import xcauth, verify_with_isuser
+from xclib import xcauth
+from xclib.check import assertEqual
 
 class fakeResponse:
     # Will be called as follows:
@@ -36,15 +37,8 @@ def post_200_ok(url, data='', headers='', allow_redirects=False,
     return fakeResponse(200, {
         'result': 'success',
         'data': {
-            'isUser': '1'
+            'sharedRoster': {'user1@domain1':{'name':'Ah Be','groups':['Lonely']}}
         }}, 'fake body')
-
-def post_200_ok_verify(url, data='', headers='', allow_redirects=False,
-        timeout=5):
-    assert url == 'https://nosuchhost'
-    assert data == 'username=usr&operation=isuser&domain=no.such.doma.in'
-    assert headers['X-JSXC-SIGNATURE'] == 'sha1=a42ba1955c6a8457e3c7396a6827ba824e92b059'
-    return post_200_ok(url, data, headers, allow_redirects, timeout)
 
 def setup_module():
     global xc, sc
@@ -60,25 +54,21 @@ def teardown_module():
 
 def test_timeout():
     xc.session.post = post_timeout
-    assert sc.isuser() == False
+    assertEqual(sc.roster_cloud(), (False, None))
 
 def test_http404():
     xc.session.post = post_404
-    assert sc.isuser() == False
+    assertEqual(sc.roster_cloud(), (False, None))
 
 def test_http200_empty():
     xc.session.post = post_200_empty
-    assert sc.isuser() == False
+    roster, body = sc.roster_cloud()
+    assertEqual(roster, None)
+    assertEqual(body, '200 Success')
 
 def test_success():
     xc.session.post = post_200_ok
-    assert sc.isuser() == True
+    roster, body = sc.roster_cloud()
+    assertEqual(roster, {'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
+    assertEqual(body, 'fake body')
 
-def verify_hook(sc):
-    sc.ctx.session.post = post_200_ok_verify
-
-def test_verify():
-    success, code, response = verify_with_isuser('https://nosuchhost', '999', 'no.such.doma.in', 'usr', (5, 10), verify_hook)
-    assert success == True
-    assert code == None
-    assert response == {'data': {'isUser': '1'}, 'result': 'success'}

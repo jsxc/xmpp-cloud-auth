@@ -1,0 +1,7 @@
+[Unit]
+Description=Postfix virtual mailbox to Nextcloud+JSXC bridge
+
+[Service]
+ExecStart=/opt/xmpp-cloud-auth/xcauth.py -t postfix
+StandardInput=socket
+User=xcauth
