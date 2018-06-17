@@ -24,6 +24,9 @@ class iostub:
 
         testcase_inst.addCleanup(cleanup)
         sys.stdout = ioclass()
+        if ioclass == io.BytesIO:
+            # Fake 'buffer' variable
+            sys.stdout.buffer = sys.stdout
 
     def stub_stdouts(testcase_inst, ioclass=io.StringIO):
         stderr = sys.stderr
@@ -36,3 +39,7 @@ class iostub:
         testcase_inst.addCleanup(cleanup)
         sys.stderr = ioclass()
         sys.stdout = ioclass()
+        if ioclass == io.BytesIO:
+            # Fake 'buffer' variable
+            sys.stdout.buffer = sys.stdout
+            sys.stderr.buffer = sys.stderr
