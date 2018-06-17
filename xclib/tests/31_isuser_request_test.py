@@ -9,6 +9,7 @@ import logging
 import hmac
 import hashlib
 from xclib.check import assertEqual
+from xclib.utf8 import unutf8
 
 class fakeResponse:
     # Will be called as follows:
@@ -45,11 +46,16 @@ def post_200_ok(url, data='', headers='', allow_redirects=False,
             'isUser': '1'
         }}, 'fake body')
 
+def assertSortOf(a, b, separator):
+    '''Check whether 'a' is any permutation of 'b', concatenated by 'separator'.'''
+    sa = sorted(a.split(separator))
+    sb = sorted(b.split(separator))
+    assertEqual(sa, sb)
+
 def post_200_ok_verify(url, data='', headers='', allow_redirects=False,
         timeout=5):
     assertEqual(url, 'https://nosuchhost')
-    assert (data == b'username=usr&operation=isuser&domain=no.such.doma.in' or
-            data == b'operation=isuser&username=usr&domain=no.such.doma.in')
+    assertSortOf(unutf8(data), 'username=usr&operation=isuser&domain=no.such.doma.in', '&')
     hash = hmac.new(b'999', msg=data, digestmod=hashlib.sha1).hexdigest()
     assertEqual(headers['X-JSXC-SIGNATURE'], 'sha1=' + hash)
     return post_200_ok(url, data, headers, allow_redirects, timeout)
