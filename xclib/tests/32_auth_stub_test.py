@@ -97,9 +97,9 @@ def sc_success(data):
 def test_10_success():
     sc.verbose_cloud_request = sc_success
     assertEqual(len(xc.cache_db), 0)
-    assert 'user2:domain2' not in xc.cache_db
+    assert b'user2:domain2' not in xc.cache_db
     assertEqual(sc.auth(), True)
-    assert 'user2:domain2' in xc.cache_db
+    assert b'user2:domain2' in xc.cache_db
 
 # Test group 20: Time-limited tokens
 def sc_trap(data):
@@ -110,7 +110,7 @@ def test_20_token_success():
         'AMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=2000)
     sc.verbose_cloud_request = sc_trap
     assertEqual(sc.auth(), True)
-    assert 'tuser:tdomain' not in xc.cache_db
+    assert b'tuser:tdomain' not in xc.cache_db
 
 def test_20_token_fail():
     # ./generateTimeLimitedToken tuser tdomain 01234 3600 1000
@@ -141,14 +141,14 @@ def test_30_cache():
     # Timeout first: No cache entry
     sc.verbose_cloud_request = sc_timeout
     assertEqual(sc.auth(), False)
-    assert 'user3:domain3' not in xc.cache_db
+    assert b'user3:domain3' not in xc.cache_db
     assertEqual(cloud_count, 1)
 
     # Success: Cache entry
     sc.verbose_cloud_request = sc_success
     assertEqual(sc.auth(), True)
-    assert 'user3:domain3' in xc.cache_db
-    entry = xc.cache_db['user3:domain3']
+    assert b'user3:domain3' in xc.cache_db
+    entry = xc.cache_db[b'user3:domain3']
     fields = entry.split('\t')
     cachedpw = fields[0]
     assert fields[0].startswith('$2b$06$')
@@ -161,7 +161,7 @@ def test_30_cache():
     sc.now = 100
     sc.verbose_cloud_request = sc_trap
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db['user3:domain3']
+    entry = xc.cache_db[b'user3:domain3']
     fields = entry.split('\t')
     assertEqual(cachedpw, fields[0]) # No cache password update
     assertEqual(fields[1], '1')
@@ -174,7 +174,7 @@ def test_30_cache():
     sc.verbose_cloud_request = sc_noauth
     sc.password = 'badpass'
     assertEqual(sc.auth(), False)
-    assertEqual(xc.cache_db['user3:domain3'], entry) # Unmodified
+    assertEqual(xc.cache_db[b'user3:domain3'], entry) # Unmodified
     assertEqual(cloud_count, 3)
 
     # New successful password request again: Should use cloud again
@@ -182,7 +182,7 @@ def test_30_cache():
     sc.password = 'newpass'
     sc.verbose_cloud_request = sc_success
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db['user3:domain3']
+    entry = xc.cache_db[b'user3:domain3']
     fields = entry.split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')
@@ -194,15 +194,15 @@ def test_30_cache():
     # ./generateTimeLimitedToken user3 domain3 01234 3600 1
     sc.password = 'ABbL+6M8K7HGF/vnfaZZi5XFZQAADhE'
     assertEqual(sc.auth(), True)
-    assertEqual(xc.cache_db['user3:domain3'], entry) # Unmodified
+    assertEqual(xc.cache_db[b'user3:domain3'], entry) # Unmodified
     assertEqual(cloud_count, 4)
 
     # More than an hour of waiting: Go to the cloud again
     sc.now = 4000
     sc.password = 'newpass'
     assertEqual(sc.auth(), True)
-    assert xc.cache_db['user3:domain3'] != entry # Updated
-    entry = xc.cache_db['user3:domain3']
+    assert xc.cache_db[b'user3:domain3'] != entry # Updated
+    entry = xc.cache_db[b'user3:domain3']
     fields = entry.split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')
@@ -214,7 +214,7 @@ def test_30_cache():
     sc.now = 8000
     sc.verbose_cloud_request = sc_timeout
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db['user3:domain3']
+    entry = xc.cache_db[b'user3:domain3']
     fields = entry.split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')
@@ -225,7 +225,7 @@ def test_30_cache():
     # Another request shortly after goes to the cache again
     sc.now = 8100
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db['user3:domain3']
+    entry = xc.cache_db[b'user3:domain3']
     fields = entry.split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')

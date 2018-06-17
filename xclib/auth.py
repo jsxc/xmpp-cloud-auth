@@ -75,9 +75,8 @@ class auth:
         except AttributeError:
             pass
 
-
     def auth_with_cache(self, unreach=False):
-        key = self.username + ':' + self.domain
+        key = utf8(self.username + ':' + self.domain)
         if key in self.ctx.cache_db:
             now = self.now
             (pwhash, ts1, tsv, tsa, rest) = self.ctx.cache_db[key].split("\t", 4)
@@ -92,7 +91,7 @@ class auth:
     def auth_update_cache(self):
         if '' in self.ctx.cache_db: # Cache disabled?
             return
-        key = self.username + ':' + self.domain
+        key = utf8(self.username + ':' + self.domain)
         now = self.now # For tests
         snow = str(now)
         try:
