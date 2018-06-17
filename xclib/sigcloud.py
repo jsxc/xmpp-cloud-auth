@@ -1,4 +1,4 @@
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import requests
 import hashlib
 import hmac
@@ -7,6 +7,7 @@ from time import time
 from xclib.isuser import isuser
 from xclib.auth import auth
 from xclib.roster import roster
+from xclib.utf8 import utf8
 
 class sigcloud(isuser, auth, roster):
     def __init__(self, ctx, username, domain, password=None, now=time()):
@@ -45,8 +46,8 @@ class sigcloud(isuser, auth, roster):
         - (False, None, err, None): Connection problem, described in err
         '''
         # logging.debug("Sending %s to %s" % (data, url))
-        payload = urllib.urlencode(data)
-        signature = hmac.new(self.secret, msg=payload, digestmod=hashlib.sha1).hexdigest();
+        payload = utf8(urllib.parse.urlencode(data))
+        signature = hmac.new(self.secret, msg=payload, digestmod=hashlib.sha1).hexdigest()
         headers = {
             'X-JSXC-SIGNATURE': 'sha1=' + signature,
             'content-type':     'application/x-www-form-urlencoded'

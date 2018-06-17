@@ -3,17 +3,12 @@ import traceback
 import unicodedata
 import sys
 from xclib.ejabberdctl import ejabberdctl
+from xclib.utf8 import utf8, unutf8, utf8l
 
 def sanitize(name):
-    name = unicode(name)
-    printable = set(('Lu', 'Ll', 'Lm', 'Lo', 'Nd', 'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po', 'Sm', 'Sc', 'Sk', 'So', 'Zs'))
-    return utf8(''.join(c for c in name if unicodedata.category(c) in printable and c != '@'))
-
-def utf8(u):
-    return u.encode('utf-8', 'ignore')
-
-def unutf8(u):
-    return u.decode('utf-8', 'ignore')
+    name = str(name)
+    printable = {'Lu', 'Ll', 'Lm', 'Lo', 'Nd', 'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po', 'Sm', 'Sc', 'Sk', 'So', 'Zs'}
+    return ''.join(c for c in name if unicodedata.category(c) in printable and c != '@')
 
 class roster_thread:
     def roster_background_thread(self, sr):
@@ -34,7 +29,7 @@ class roster_thread:
             self.ctx.shared_roster_db.sync()
         except AttributeError:
             pass # For tests
-        except Exception, err:
+        except Exception as err:
             (etype, value, tb) = sys.exc_info()
             traceback.print_exception(etype, value, tb)
             logging.warn('roster_groups thread: %s:\n%s'
@@ -50,7 +45,7 @@ For all *users* we have information about:
 Return inverted hash'''
         groups = {}
         commands = []
-        for user, desc in sr.iteritems():
+        for user, desc in sr.items():
             if 'groups' in desc:
                 for g in desc['groups']:
                     if g in groups:
@@ -107,7 +102,7 @@ For all the *groups* we have information about:
             # Was previously there as well, need to be removed from one?
             previous = self.ctx.shared_roster_db[key].split('\t')
             for p in previous:
-                if p not in cleanname.values():
+                if p not in list(cleanname.values()):
                     e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
             # Only update when necessary
             if not cleanname:

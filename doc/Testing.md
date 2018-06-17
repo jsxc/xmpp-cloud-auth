@@ -10,11 +10,11 @@ pip install nose
 ```
 on your system. To run the tests, type
 ```sh
-nosetests
+nosetests3
 ```
 or (if you also want coverage information),
 ```sh
-nosetests --with-coverage --cover-package=xclib
+nosetests3 --with-coverage --cover-package=xclib
 ```
 in this directory. Some of the tests will only run,
 if `/etc/xcauth.accounts` exists. Then, it will read

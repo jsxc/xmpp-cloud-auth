@@ -5,9 +5,9 @@ import bcrypt
 from time import time
 from struct import pack, unpack
 from base64 import b64decode
-from string import maketrans
+from xclib.utf8 import utf8, unutf8
 
-usersafe_encoding = maketrans('-$%', 'OIl')
+usersafe_encoding = str.maketrans('-$%', 'OIl')
 
 class auth:
     def __init__(self, reqdata):
@@ -38,7 +38,7 @@ class auth:
             logging.debug('Token has expired')
             return False
 
-        challenge = pack('> B 6s %ds' % len(jid), version, header, jid)
+        challenge = pack('> B 6s %ds' % len(jid), version, header, utf8(jid))
         response = hmac.new(self.secret, challenge, hashlib.sha256).digest()
 
         return hmac.compare_digest(mac, response[:16])
@@ -57,11 +57,13 @@ class auth:
     def checkpw(self, pwhash):
         '''Compare self.password with pwhash.
         
-        Try to be resistant to timing attacks.'''
+        Try to be resistant to timing attacks and use `checkpw` if available.'''
+        pw = utf8(self.password)
+        pwhash = utf8(pwhash)
         if 'checkpw' in dir(bcrypt):
-            return bcrypt.checkpw(self.password, pwhash)
+            return bcrypt.checkpw(pw, pwhash)
         else:
-            ret = bcrypt.hashpw(self.password, pwhash)
+            ret = bcrypt.hashpw(pw, pwhash)
             return ret == pwhash
 
     def try_db_sync(self):
@@ -73,9 +75,8 @@ class auth:
         except AttributeError:
             pass
 
-
     def auth_with_cache(self, unreach=False):
-        key = self.username + ':' + self.domain
+        key = utf8(self.username + ':' + self.domain)
         if key in self.ctx.cache_db:
             now = self.now
             (pwhash, ts1, tsv, tsa, rest) = self.ctx.cache_db[key].split("\t", 4)
@@ -90,7 +91,7 @@ class auth:
     def auth_update_cache(self):
         if '' in self.ctx.cache_db: # Cache disabled?
             return
-        key = self.username + ':' + self.domain
+        key = utf8(self.username + ':' + self.domain)
         now = self.now # For tests
         snow = str(now)
         try:
@@ -98,7 +99,7 @@ class auth:
         except TypeError:
             # Old versions of bcrypt() apparently do not support the rounds option
             salt = bcrypt.gensalt()
-        pwhash = bcrypt.hashpw(self.password, salt)
+        pwhash = unutf8(bcrypt.hashpw(utf8(self.password), salt))
         if key in self.ctx.cache_db:
             (ignored, ts1, tsv, tsa, rest) = self.ctx.cache_db[key].split("\t", 4)
             self.ctx.cache_db[key] = "\t".join((pwhash, ts1, snow, snow, rest))

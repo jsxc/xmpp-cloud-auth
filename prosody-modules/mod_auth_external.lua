@@ -34,7 +34,8 @@ else
 	log("info", "External auth with pty command %s", command);
 	pty_options = { throw_errors = false, no_local_echo = true, use_path = false };
 end
-assert(script_type == "ejabberd" or script_type == "generic", "Config error: external_auth_protocol must be 'ejabberd' or 'generic'");
+assert(script_type == "ejabberd" or script_type == "generic",
+	"Config error: external_auth_protocol must be 'ejabberd' or 'generic'");
 assert(not host:find(":"), "Invalid hostname");
 
 
@@ -51,6 +52,14 @@ local ptys = {};
 for i = 1, auth_processes do
 	ptys[i] = lpty.new(pty_options);
 end
+
+function module.unload()
+	for i = 1, auth_processes do
+		ptys[i]:endproc();
+	end
+end
+
+module:hook_global("server-cleanup", module.unload);
 
 local curr_process = 0;
 function send_query(text)
@@ -126,12 +135,12 @@ function do_query(kind, username, password)
 		(script_type == "generic" and response:gsub("\r?\n$", "") == "1") then
 			return true;
 	else
-		log("warn", "Unable to interpret data from auth process, %s", (response:match("^error:") and response) or ("["..#response.." bytes]"));
+		log("warn", "Unable to interpret data from auth process, %s",
+			(response:match("^error:") and response) or ("["..#response.." bytes]"));
 		return nil, "internal-server-error";
 	end
 end
 
-local host = module.host;
 local provider = {};
 
 function provider.test_password(username, password)
@@ -146,7 +155,9 @@ function provider.user_exists(username)
 	return do_query("isuser", username);
 end
 
-function provider.create_user(username, password) return nil, "Account creation/modification not available."; end
+function provider.create_user(username, password) -- luacheck: ignore 212
+	return nil, "Account creation/modification not available.";
+end
 
 function provider.get_sasl_handler()
 	local testpass_authentication_profile = {

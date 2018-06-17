@@ -1,4 +1,5 @@
 import logging
+from xclib.utf8 import utf8
 
 class isuser:
     def __init__(self, reqdata):
@@ -13,20 +14,34 @@ class isuser:
         return success, code, response
 
     def isuser_cloud(self):
+        '''Returns:
+- True when user exists
+- False when user does not exist
+- None when there is a problem (connection failure or HTTP error code)'''
         response = self.cloud_request({
             'operation': 'isuser',
             'username':  self.username,
             'domain':    self.authDomain
         })
         try:
-            return response and response['result'] == 'success' and response['data']['isUser']
+            if isinstance(response, dict):
+                if response['result'] == 'success':
+                    return bool(response['data']['isUser'])
+                else:
+                    return None
+            else:
+                return None
         except KeyError:
             logging.error('Request for %s@%s returned malformed response: %s'
                 % (self.username, self.domain, str(response)))
-            return False
+            return None
 
     def isuser(self):
-        if self.isuser_cloud():
+        result = self.isuser_cloud()
+        if result == None:
+            logging.info('Cloud unreachable testing user %s@%s' % (self.username, self.domain))
+        elif result == True:
             logging.info('Cloud says user %s@%s exists' % (self.username, self.domain))
-            return True
-        return False
+        else:
+            logging.info('Cloud says user %s@%s does not exist' % (self.username, self.domain))
+        return result
