@@ -28,5 +28,5 @@ class saslauthd_io:
         if flag:
             answer = b'OK success'
         token = pack('>H', len(answer)) + answer
-        sys.stdout.write(token)
-        sys.stdout.flush()
+        sys.stdout.buffer.write(token)
+        sys.stdout.buffer.flush()
