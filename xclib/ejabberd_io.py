@@ -3,6 +3,8 @@ import logging
 from struct import pack, unpack
 from xclib.utf8 import unutf8
 
+# Message formats described in `../doc/Protocol.md`
+
 class ejabberd_io:
     @classmethod
     def read_request(cls):

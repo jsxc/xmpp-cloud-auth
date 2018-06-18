@@ -39,6 +39,12 @@ Responses are length-prefixed strings:
 - `OK ` + (optional) reason
 - `NO ` + (optional) reason
 
+## Postfix
+
+Similar to SMTP. [A line-based, space-separated protocol](http://www.postfix.org/tcp_table.5.html). Requests are of the format `get <user>@<domain>`, newline-terminated. This maps to the `isuser` command; the other commands are not supported.
+
+Responses start with `200 ` (user exists), `400 ` (problem processing the request, try again), or `500 ` (user does not exist), followed by a newline-terminated human-readable explanation.
+
 # Backend protocol
 
 ## JSXC

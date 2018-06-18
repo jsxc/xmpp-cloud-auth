@@ -1,5 +1,7 @@
 import sys
 
+# Message formats described in `../doc/Protocol.md`
+
 class prosody_io:
     @classmethod
     def read_request(cls):

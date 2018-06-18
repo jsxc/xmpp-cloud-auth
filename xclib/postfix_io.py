@@ -3,6 +3,8 @@ import sys
 import re
 import logging
 
+# Message formats described in `../doc/Protocol.md`
+
 class postfix_io:
     @classmethod
     def read_request(cls):
