@@ -1,0 +1,7 @@
+[Unit]
+Description=XMPP to Nextcloud+JSXC authentication bridge for Prosody
+
+[Service]
+ExecStart=/opt/xmpp-cloud-auth/xcauth.py -t prosody
+StandardInput=socket
+User=xcauth
