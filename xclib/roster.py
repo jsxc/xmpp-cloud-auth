@@ -49,7 +49,7 @@ class roster(roster_thread):
                     if not userhash in self.ctx.shared_roster_db or self.ctx.shared_roster_db[userhash] != texthash:
                         self.ctx.shared_roster_db[userhash] = texthash
                         t = threading.Thread(target=self.roster_background_thread,
-                            args=[response])
+                            args=(response,))
                         t.start()
                         if not async:
                             t.join() # For automated testing only
