@@ -47,7 +47,7 @@ Note that the *xcsaslauth* service listens on the Unix domain socket
 the software configuration files might only mention `/var/run/saslauthd`,
 the `/mux` suffix is added internally by the *SASL* library.
 
-## `postfix` mode (existance check)
+## `postfix` mode (existence check)
 
 When a *Postfix* mail server serves multiple realms (=domains), it
 needs some way to know whether a

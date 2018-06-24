@@ -26,7 +26,7 @@ sudo apt install python3 python3-requests python3-configargparse python3-bcrypt 
 sudo apt install python3-nosetests python3-rednose python3-nose-cov
 ```
 
-## Configuration
+## XMPP Server Configuration
 
 :warning: The API secret must not fall into the wrong hands!
 Anyone knowing it can authenticate as any user to the XMPP server
@@ -78,6 +78,42 @@ All parameters must therefore be set in the configuration file.
 :warning: Use the `mod_auth_external.lua` in this repository.
 This fixes a bug with treating an echo of the request as the answer
 ([xmpp-cloud-auth#21](https://github.com/jsxc/xmpp-cloud-auth/issues/21), [Prosody#855](https://prosody.im/issues/issue/855)).
+
+## Configuration as Mail Server Backend
+
+`xcauth` can also be used to provide
+- user authentication to mail servers using the *saslauthd* protocol and
+- verification of user existence using the *postfix* protocol.
+
+Administrators of small SOHO systems can thus use Nextcloud as their prime
+authentication source for
+- file storage/sharing (Nextcloud),
+- instant messaging (XMPP), and
+- email (tested with Cyrus and Postfix).
+
+### *saslauthd* authentication
+
+In an attempt to move toward Nextcloud as the main authentication source,
+`-t saslauthd` mode is supported, which allows to run services
+which can authenticate against Cyrus *saslauthd* to authenticate against
+JSXC and Nextcloud. It has been successfully tested against *Postfix*
+and *Cyrus IMAP*. More information can be found in
+[systemd/README.md (*saslauthd* mode)](../systemd/README.md#saslauthd-mode-authentication).
+The protocol is described in [doc/Protocol.md](./Protocol.md#saslauthd).
+
+### *postfix* existence tests
+
+When using virtual mailboxes (i.e., mailboxes in multiple domains, nut just
+using virtual addresses), *Postfix* needs a way to check for the existence
+of that mailbox. A *Postfix* `tcp_table` compatible interface has been
+implemented using the `-t postfix` mode, so an `xcauth` instance
+started e.g. by *systemd* can be used to provide the mailbox existence
+information, as explained in
+[systemd/README.md (*postfix* mode)](../systemd/README.md#postfix-mode-existence-check).
+Please note, that aliases or virtual users still need to be configured
+using the standard *postfix* mechanisms.
+
+The protocol is described in [doc/Protocol.md](./Protocol.md#postfix).
 
 ## Options
 ```
@@ -179,15 +215,6 @@ When using the `mod_auth_external.lua` bundled here (together with `pseudolpty.l
 the `external_auth_command = "@localhost:23664";` option to talk over a socket to a process not spawned
 by *Prosody* on port 23664. [systemd/README.md](../systemd/README.md) explains how to automatically start
 such a process using *systemd*.
-
-### Experimental *saslauthd* compatibility
-
-In an attempt to move toward Nextcloud as the main authentication source,
-a new `-t saslauthd` mode is supported, which allows to run services
-which can authenticate against Cyrus *saslauthd* to authenticate against
-JSXC and Nextcloud. It has been successfully tested against *Postfix*
-and *Cyrus IMAP*. More information can be found in
-[systemd/README.md (*saslauthd* mode)](../systemd/README.md#saslauthd-mode)
 
 ### *ejabberd* shared roster support
 
