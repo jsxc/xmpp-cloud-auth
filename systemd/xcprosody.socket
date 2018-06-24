@@ -6,6 +6,7 @@ PartOf=xcprosody.service
 ListenStream=[::1]:23663
 ListenStream=127.0.0.1:23663
 Accept=yes
+FileDescriptorName=prosody
 
 [Install]
 WantedBy=multi-user.target

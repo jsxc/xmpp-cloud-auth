@@ -6,6 +6,8 @@ PartOf=xcauth.service
 ListenStream=[::1]:23664
 ListenStream=127.0.0.1:23664
 Accept=yes
+# Is not one of the recognized protocols, so will be ignored
+FileDescriptorName=deprecated
 
 [Install]
 WantedBy=multi-user.target

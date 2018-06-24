@@ -9,6 +9,7 @@ SocketGroup=sasl
 SocketMode=660
 DirectoryMode=710
 Accept=yes
+FileDescriptorName=saslauthd
 
 [Install]
 WantedBy=multi-user.target

@@ -6,6 +6,7 @@ PartOf=xcejabberd.service
 ListenStream=[::1]:23662
 ListenStream=127.0.0.1:23662
 Accept=yes
+FileDescriptorName=ejabberd
 
 [Install]
 WantedBy=multi-user.target

@@ -4,7 +4,7 @@
 
 1. Starting in *inetd* compatibility mode: For each connection to that socket, a new `xcauth` process is started. `xcauth` reads from stdin/stdout.
 1. Using *systemd* [socket activation](http://0pointer.net/blog/projects/socket-activation.html), single protocol per configuration file: On the first connection, the single `xcauth` process is started for this protocol/port. For each incoming connection, only a thread is spawned. This is more efficient if a new connection is opened for every request (common for *saslauthd* and *postfix* modes, but depends on the requesting application).
-1. Using *systemd* socket activation, multiple protocols per configuration file: Similar to the one above, but only a single `xcauth` process is ever started. All protocols are determined by information passed by *systemd* on process start. **This mode is [currently](https://github.com/systemd/python-systemd#60) not supported by [python-systemd](https://github.com/systemd/python-systemd) library** and therefore not available for use. However, it is supported by `xcauth`.
+1. Using *systemd* socket activation, multiple protocols per configuration file: Similar to the one above, but only a single `xcauth` process is ever started. All protocols are determined by information passed by *systemd* on process start. **This mode is [currently](https://github.com/systemd/python-systemd#60) not supported by [python-systemd](https://github.com/systemd/python-systemd) library** and therefore not available for use. However, it is supported by `xcauth` and future file descriptor names passed by *systemd* will override the command line.
 
 The following ports are used by default:
 - TCP port 23662: *ejabberd* protocol support
