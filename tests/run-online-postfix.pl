@@ -6,7 +6,22 @@ if ( ! -r "/etc/xcauth.accounts" ) {
 }
 $| = 1; # Autoflush on
 open STDIN, "</etc/xcauth.accounts" or die;
-my $pid = open2(\*PROG, \*COMMAND, "./xcauth.py", "-t", "postfix") or die "$!";
+my $child = -1;
+my $pid = -1;
+if (shift eq "socket") {
+  $child = fork();
+  if ($child < 0) {
+    die "fork: $!";
+  } elsif ($child == 0) {
+    exec 'systemd-socket-activate', '-l', '12561', './xcauth.py', '-t', 'postfix';
+    die "exec: $!";
+  } else {
+    sleep(1);
+    $pid = open2(\*PROG, \*COMMAND, "socket", "localhost", "12561") or die "$!";
+  }
+} else {
+  $pid = open2(\*PROG, \*COMMAND, "./xcauth.py", "-t", "postfix") or die "$!";
+}
 binmode(PROG);
 binmode(COMMAND);
 $u = '';
@@ -52,4 +67,10 @@ while (<>) {
   } else {
     ($u, $d, $p) = @fields;
   }
+}
+if ($child > 0) {
+  kill('TERM', $child);
+}
+if ($pid > 0) {
+  kill('TERM', $pid);
 }

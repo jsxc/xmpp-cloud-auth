@@ -5,3 +5,4 @@ Description=SASL to Nextcloud+JSXC authentication bridge
 ExecStart=/opt/xmpp-cloud-auth/xcauth.py -t saslauthd
 StandardInput=socket
 User=xcauth
+Requires=xcsaslauthd.socket

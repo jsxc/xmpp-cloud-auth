@@ -5,7 +5,7 @@ PartOf=xcauth.service
 [Socket]
 ListenStream=[::1]:23664
 ListenStream=127.0.0.1:23664
-Accept=yes
+Accept=no
 # Is not one of the recognized protocols, so will be ignored
 FileDescriptorName=deprecated
 

@@ -20,7 +20,7 @@ For some environments, it might be advantageous to use *xcauth* over a network s
 ### Installation (as root)
 
 1. Perform the *xcauth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xcauth/wiki). Especially install source into `/opt/xcauth` and put the configuration in `/etc/xcauth.conf`.
-1. Copy `xcauth@.service` and `xcauth.socket` to `/etc/systemd/system` (if no modifications to these files are needed, you may also symlink them manually or using `systemctl link`; beware that some versions of *systemd* have problems with symlinks ([systemd#3010](https://github.com/systemd/systemd/issues/3010))
+1. Copy `xcauth.service` and `xcauth.socket` to `/etc/systemd/system` (if no modifications to these files are needed, you may also symlink them manually or using `systemctl link`; beware that some versions of *systemd* have problems with symlinks ([systemd#3010](https://github.com/systemd/systemd/issues/3010))
 1. Create the user `xcauth` and the directories: `sudo ../install.sh`
 1. Activate the service: `systemctl enable xcauth.socket` and `systemctl start xcauth.socket`
 
@@ -53,7 +53,7 @@ respective documentation for how to do this). Then, run the following
 commands to have *xcauth.py* pose as *saslauthd*:
 
 1. Install *xcauth* as described above.
-1. Copy `xcsaslauth@.service` and `xcsaslauth.socket` to `/etc/systemd/system` (see above for symlink issues)
+1. Copy `xcsaslauth.service` and `xcsaslauth.socket` to `/etc/systemd/system` (see above for symlink issues)
 1. Disable "normal" *saslauthd*: `systemctl disable saslauthd`
 1. Enable *xcauth.py* in *saslauthd* mode: `systemctl enable xcsaslauth.socket` and `systemctl start xcsaslauth.socket`
 
@@ -95,7 +95,7 @@ user's mailbox.
    to `/etc/postfix/main.cf`. Integrate any existing assignment to
    `virtual_mailbox_maps`.
 1. Install *xcauth* as described above.
-1. Copy `xcpostfix@.service` and `xcpostfix.socket` to `/etc/systemd/system` (see above for symlink issues)
+1. Copy `xcpostfix.service` and `xcpostfix.socket` to `/etc/systemd/system` (see above for symlink issues)
 1. Enable *xcauth.py* in *postfix* mode: `systemctl enable xcpostfix.socket` and `systemctl start xcpostfix.socket`
 
 ## Security considerations

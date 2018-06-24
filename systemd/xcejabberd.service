@@ -5,3 +5,4 @@ Description=XMPP to Nextcloud+JSXC authentication bridge for ejabberd
 ExecStart=/opt/xmpp-cloud-auth/xcauth.py -t ejabberd
 StandardInput=socket
 User=xcauth
+Requires=xcejabberd.socket

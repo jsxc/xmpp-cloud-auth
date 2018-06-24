@@ -7,6 +7,7 @@ from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
 
 def perform(args):
+    # Read configuration
     logfile = args.log + '/xcauth.log'
     if (args.interactive or args.auth_test or args.isuser_test or args.roster_test):
         logging.basicConfig(stream=sys.stderr,
@@ -23,6 +24,7 @@ def perform(args):
 
     logging.debug('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, args.url)
 
+    # Open databases
     if args.domain_db:
         domain_db = bsddb3.hashopen(args.domain_db, 'c', 0o600)
         atexit.register(domain_db.close)
@@ -41,6 +43,7 @@ def perform(args):
         # Will never be accessed, as `ejabberdctl` will not be set
         shared_roster_db = None
 
+    # Set up environment
     ttls = {'query': args.cache_query_ttl,
             'verify': args.cache_verification_ttl,
             'unreach': args.cache_unreachable_ttl}
@@ -51,6 +54,7 @@ def perform(args):
             timeout = args.timeout, ttls = ttls,
             bcrypt_rounds = args.cache_bcrypt_rounds)
 
+    # Check for one-shot commands
     if args.isuser_test:
         sc = sigcloud(xc, args.isuser_test[0], args.isuser_test[1])
         success = sc.isuser()
@@ -69,20 +73,91 @@ def perform(args):
         print(success)
         return
 
-    if args.type == 'ejabberd':
+    # Read commands from file descriptors
+    # Acceptor socket?
+    try:
+        from systemd.daemon import listen_fds_with_names
+        listeners = listen_fds_with_names()
+        perform_from_listeners(listeners, xc, args.type)
+        return
+    except ImportError:
+        pass
+    try:
+        from systemd.daemon import listen_fds
+        fds = listen_fds()
+        if fds:
+            listeners = {}
+            for fd in fds:
+                listeners[fd] = 'missing'
+            perform_from_listeners(listeners, xc, args.type)
+            return
+    except ImportError:
+        pass
+    # Normal (connected) socket
+    perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
+
+# Handle possibly multiple listening sockets
+def perform_from_listeners(listeners, xc, proto):
+    import select
+    import threading
+    import socket
+    sockets = {}
+    while True:
+        inputs = listeners.keys()
+        r, w, x = select.select(inputs, (), inputs)
+        for sfd in r:
+            logging.debug('Read %r, sockets=%r' % (r, sockets))
+            if sfd not in sockets:
+                s = socket.socket(fileno=sfd)
+                sockets[sfd] = s
+            s = sockets[sfd]
+            conn, remote_addr = s.accept()
+            lproto = listeners[sfd]
+            if lproto in ('generic', 'prosody', 'ejabberd', 'saslauthd', 'postfix'):
+                fdproto = lproto
+            else:
+                fdproto = proto
+                lproto = "%s/%s" % (lproto, fdproto)
+            threading.Thread(target=perform_from_fd,
+                    name='worker-%s(%d)-%r' % (lproto, sfd, remote_addr),
+                    args=(conn, conn, xc, fdproto),
+                    kwargs={'closefds': (conn,)}).start()
+        for sfd in x:
+            logging.warn("Socket %d logged a complaint, dropping" % sfd)
+            del(listeners, sfd)
+
+# Handle a single I/O stream (stdin/stdout or acepted socket)
+def perform_from_fd(infd, outfd, xc, proto, closefds=()):
+    if proto == 'ejabberd':
         from xclib.ejabberd_io import ejabberd_io
         xmpp = ejabberd_io
-    elif args.type == 'saslauthd':
+        if infd == outfd:
+            infd = infd.makefile("rb")
+            outfd = outfd.makefile("wb")
+            closefds = closefds + (infd, outfd)
+    elif proto == 'saslauthd':
         from xclib.saslauthd_io import saslauthd_io
         xmpp = saslauthd_io
-    elif args.type == 'postfix':
+        if infd == outfd:
+            infd = infd.makefile("rb")
+            outfd = outfd.makefile("wb")
+            closefds = closefds + (infd, outfd)
+    elif proto == 'postfix':
         from xclib.postfix_io import postfix_io
         xmpp = postfix_io
+        if infd == outfd:
+            infd = infd.makefile("r")
+            outfd = outfd.makefile("w")
+            closefds = closefds + (infd, outfd)
     else: # 'generic' or 'prosody'
         from xclib.prosody_io import prosody_io
         xmpp = prosody_io
+        if infd == outfd:
+            infd = infd.makefile("r")
+            outfd = outfd.makefile("w")
+            closefds = closefds + (infd, outfd)
 
-    for data in xmpp.read_request():
+    for data in xmpp.read_request(infd, outfd):
         logging.debug('Receive operation ' + data[0]);
 
         success = False
@@ -100,8 +175,10 @@ def perform(args):
         elif data[0] == "quit" or data[0] == "exit":
             break
 
-        xmpp.write_response(success)
+        xmpp.write_response(success, outfd)
 
-    logging.debug('Shutting down...');
+    logging.debug('Shutting down...')
+    for c in closefds:
+        c.close()
 
 # vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4

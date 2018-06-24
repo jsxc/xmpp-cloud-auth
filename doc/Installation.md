@@ -23,8 +23,9 @@ sudo apt install python3 python3-requests python3-configargparse python3-bcrypt 
 ### Developers
 …might want to additionally install
 ```
-sudo apt install python3-nosetests python3-rednose python3-nose-cov
+sudo apt install python3-nosetests python3-rednose python3-nose-cov socket
 ```
+They are required to run the tests.
 
 ## XMPP Server Configuration
 

@@ -5,7 +5,7 @@ PartOf=xcejabberd.service
 [Socket]
 ListenStream=[::1]:23662
 ListenStream=127.0.0.1:23662
-Accept=yes
+Accept=no
 FileDescriptorName=ejabberd
 
 [Install]
