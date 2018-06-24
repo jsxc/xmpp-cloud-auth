@@ -33,7 +33,7 @@ def perform(args):
         cache_db = bsddb3.hashopen(args.cache_db, 'c', 0o600)
         atexit.register(cache_db.close)
     else:
-        cache_db = {b'': b''} # "Do not use" marker
+        cache_db = {b'': b''} # Magic "do not use" marker
     if args.shared_roster_db:
         shared_roster_db = bsddb3.hashopen(args.shared_roster_db, 'c', 0o600)
         atexit.register(shared_roster_db.close)
