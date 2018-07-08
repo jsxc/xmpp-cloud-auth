@@ -29,9 +29,20 @@ def perform(args):
     else:
         domain_db = {}
     if args.cache_db:
-        import bcrypt
-        cache_db = bsddb3.hashopen(args.cache_db, 'c', 0o600)
-        atexit.register(cache_db.close)
+        try:
+            import bcrypt
+            cache_db = bsddb3.hashopen(args.cache_db, 'c', 0o600)
+            atexit.register(cache_db.close)
+        except ImportError as e:
+            logging.warn('Cannot import bcrypt (%s); caching disabled' % e)
+            cache_db = {b'': b''} # "Do not use" marker
+        except bsddb3.db.DBError as e:
+            # Fall back to in-memory DB; use faster password hashing, as
+            # it is not persistent, so an attacker must have live access
+            # (and then, there are easier ways, unfortunately)
+            cache_db = {}
+            args.cache_bcrypt_rounds = max(6, args.cache_bcrypt_rounds-2)
+            logging.warn('Trouble opening cache-db=%s (%s); falling back to in-memory caching with reduced cache-bcrypt-rounds=%d' % (args.cache_db, e, args.cache_bcrypt_rounds))
     else:
         cache_db = {b'': b''} # "Do not use" marker
     if args.shared_roster_db:
