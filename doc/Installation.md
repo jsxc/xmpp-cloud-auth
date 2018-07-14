@@ -61,7 +61,7 @@ This cache interferes with multiple valid passwords (app passwords, tokens)
 and thus needs to be deactivated with `auth_use_cache: false`.
 
 ### Prosody
-Install *lua-lpty* (not necessary when using the new (experimental) *socket mode*):
+Install *lua-lpty* (not necessary when using the [*socket mode*](#socket-interface):
 ```
 apt install lua-lpty
 ```
@@ -78,6 +78,9 @@ All parameters must therefore be set in the configuration file.
 :warning: Use the `mod_auth_external.lua` in this repository.
 This fixes a bug with treating an echo of the request as the answer
 ([xmpp-cloud-auth#21](https://github.com/jsxc/xmpp-cloud-auth/issues/21), [Prosody#855](https://prosody.im/issues/issue/855)).
+
+Even then, several users report problems with `lua-lpty`, [such as
+processes not dying and still occupying sockets](https://github.com/jsxc/xmpp-cloud-auth/issues/63). Please look at the [socket mode](#socket-interface) for an alternative.
 
 ## Options
 ```
@@ -172,7 +175,7 @@ If Conversations cannot connect and complains about "Downgrade attack", see the 
 [No (obvious?) way to accept SASL downgrade (Conversations#2498)](https://github.com/siacs/Conversations/issues/2498).
 Current workaround: Delete the account in Conversations and then add it again.
 
-### Experimental socket interface
+### Socket interface
 
 If you see unreliable behavior with *Prosody*, you might want to try the experimental socket interface.
 When using the `mod_auth_external.lua` bundled here (together with `pseudolpty.lua`), you can use
