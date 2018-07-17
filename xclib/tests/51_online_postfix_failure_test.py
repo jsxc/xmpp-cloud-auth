@@ -24,7 +24,7 @@ def setup_module():
 def teardown_module():
     shutil.rmtree(dirname)
 
-class TestOnline(unittest.TestCase, iostub):
+class TestOnlinePostfix(unittest.TestCase, iostub):
     # Run this (connection-error) online test even when /etc/xcauth.accounts does not exist
     def test_postfix_connection_error(self):
         self.stub_stdin('get user@example.org\n')
