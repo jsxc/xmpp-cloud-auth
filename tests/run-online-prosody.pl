@@ -13,11 +13,16 @@ if (shift eq "socket") {
   if ($child < 0) {
     die "fork: $!";
   } elsif ($child == 0) {
-    exec 'systemd-socket-activate', '-l', '12561', './xcauth.py', '-t', 'prosody';
+    exec 'systemd-socket-activate', 
+    	'-l', '13662', '--fdname', 'ejabberd',
+    	'-l', '13663', '--fdname', 'prosody',
+    	'-l', '13664', '--fdname', 'postfix',
+    	'-l', '/tmp/saslauthd-mux', '--fdname', 'saslauthd',
+       	'./xcauth.py', '-t', 'generic';
     die "exec: $!";
   } else {
     sleep(1);
-    $pid = open2(\*PROG, \*COMMAND, "socket", "localhost", "12561") or die "$!";
+    $pid = open2(\*PROG, \*COMMAND, "socket", "localhost", "13663") or die "$!";
   }
 } else {
   $pid = open2(\*PROG, \*COMMAND, "./xcauth.py", "-t", "prosody") or die "$!";

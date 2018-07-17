@@ -5,6 +5,7 @@ import bsddb3
 from xclib import xcauth
 from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
+from xclib.sockact import listen_fds_with_names
 
 def perform(args):
     # Read configuration
@@ -75,26 +76,12 @@ def perform(args):
 
     # Read commands from file descriptors
     # Acceptor socket?
-    try:
-        from systemd.daemon import listen_fds_with_names
-        listeners = listen_fds_with_names()
+    listeners = listen_fds_with_names()
+    if listeners is None:
+        # Normal (connected) socket
+        perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
+    else:
         perform_from_listeners(listeners, xc, args.type)
-        return
-    except ImportError:
-        pass
-    try:
-        from systemd.daemon import listen_fds
-        fds = listen_fds()
-        if fds:
-            listeners = {}
-            for fd in fds:
-                listeners[fd] = 'missing'
-            perform_from_listeners(listeners, xc, args.type)
-            return
-    except ImportError:
-        pass
-    # Normal (connected) socket
-    perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
 
 # Handle possibly multiple listening sockets
 def perform_from_listeners(listeners, xc, proto):
