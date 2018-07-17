@@ -14,6 +14,10 @@ def systemd_present():
             have_systemd = False
     return have_systemd
 
+def cleanUpModule():
+    os.unsetenv('LISTEN_FDS')
+    os.unsetenv('LISTEN_PID')
+
 @unittest.skipUnless(systemd_present(), 'systemd.daemon not available')
 class TestSystemdAvailable(unittest.TestCase):
     def setUp(self):
@@ -61,3 +65,4 @@ class TestSystemdUnavailable(unittest.TestCase):
         os.environ['LISTEN_PID'] = str(os.getpid())
         with self.assertRaises(ImportError):
             listen_fds_with_names()
+
