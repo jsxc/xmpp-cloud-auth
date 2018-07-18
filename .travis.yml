@@ -8,8 +8,8 @@ python:
 
 install:
   - sudo apt install libdb5.3-dev
-  - pip install requests configargparse bcrypt bsddb3 python-systemd
-  - pip install coverage nose rednose
+  - pip3 install requests configargparse bcrypt bsddb3 python-systemd
+  - pip3 install coverage nose rednose
 
 script:
   - nosetests --with-coverage --cover-xml --cover-package=xclib
