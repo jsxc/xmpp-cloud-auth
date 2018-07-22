@@ -14,9 +14,7 @@ def systemd_present():
             have_systemd = False
     return have_systemd
 
-def cleanUpModule():
-    os.unsetenv('LISTEN_FDS')
-    os.unsetenv('LISTEN_PID')
+# ============================================
 
 @unittest.skipUnless(systemd_present(), 'systemd.daemon not available')
 class TestSystemdAvailable(unittest.TestCase):
@@ -53,6 +51,13 @@ class TestSystemdAvailable(unittest.TestCase):
         self.assertEqual(listen_fds_with_names(),
             {3: 'one', 4: 'two', 5: 'three'})
 
+    @classmethod
+    def cleanUpModule(cls):
+        del os.environ['LISTEN_FDS']
+        del os.environ['LISTEN_PID']
+
+# ============================================
+
 @unittest.skipIf(systemd_present(), 'systemd.daemon available')
 class TestSystemdUnavailable(unittest.TestCase):
     def test_no_systemd_at_all(self):
@@ -60,9 +65,22 @@ class TestSystemdUnavailable(unittest.TestCase):
         os.unsetenv('LISTEN_PID')
         self.assertEqual(listen_fds_with_names(), None)
 
+    @unittest.skipUnless(os.path.exists('/run/systemd/system'), 'systemd not installed')
     def test_no_systemd_module_only(self):
         os.environ['LISTEN_FDS'] = '5'
         os.environ['LISTEN_PID'] = str(os.getpid())
         with self.assertRaises(ImportError):
             listen_fds_with_names()
 
+    @classmethod
+    def cleanUpModule(cls):
+        if 'LISTEN_FDS' in os.environ:
+            del os.environ['LISTEN_FDS']
+        del os.environ['LISTEN_PID']
+
+# Needed to reliably clean the environment (why?!?)
+def cleanup_test():
+    if 'LISTEN_FDS' in os.environ:
+        del os.environ['LISTEN_FDS']
+    if 'LISTEN_PID' in os.environ:
+        del os.environ['LISTEN_PID']

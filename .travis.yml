@@ -8,7 +8,7 @@ python:
 
 install:
   - sudo apt install libdb5.3-dev
-  - pip install requests configargparse bcrypt bsddb3 python-systemd
+  - pip install requests configargparse bcrypt bsddb3
   - pip install coverage nose rednose
 
 script:
