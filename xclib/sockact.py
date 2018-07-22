@@ -20,7 +20,7 @@ def listen_fds_with_names():
             from systemd.daemon import listen_fds
         except ImportError:
             if os.path.exists('/run/systemd/system') and 'LISTEN_FDS' in os.environ:
-                logging.error('Software from https://github.com/systemd/python-systemd/ missing; do `apt install python3-systemd` or `pip3 install systemd-python` (please note the similarly-named `pip3 install python-systemd` does not provide the interfaces needed). Please note it is incompatible with `pip3 install systemd-python`!')
+                logging.error('Software from https://github.com/systemd/python-systemd/ missing; do `apt install python3-systemd` or `pip3 install systemd-python`. Please note the similarly-named `pip3 install python-systemd` does not provide the interfaces needed and may actually need to be UNINSTALLED first!')
                 raise
             else:
                 logging.info('Please `apt install python3-systemd` for future compatibility')
