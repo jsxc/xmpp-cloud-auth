@@ -80,5 +80,7 @@ class TestSystemdUnavailable(unittest.TestCase):
 
 # Needed to reliably clean the environment (why?!?)
 def cleanup_test():
-    del os.environ['LISTEN_FDS']
-    del os.environ['LISTEN_PID']
+    if 'LISTEN_FDS' in os.environ:
+        del os.environ['LISTEN_FDS']
+    if 'LISTEN_PID' in os.environ:
+        del os.environ['LISTEN_PID']
