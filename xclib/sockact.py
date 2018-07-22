@@ -9,6 +9,7 @@ def listen_fds_with_names():
         # We have the real McCoy
         return listen_fds_with_names()
     except ModuleNotFoundError: # Inherits from ImportError, needs thus to be first
+        # Not yet there in Python 3.5
         # No systemd.daemon found; try to fail appropriately:
         # - If $LISTEN_FDS is set, then insist on having systemd.daemon
         # - Else be lenient and remain compatible with pre-systemd users
