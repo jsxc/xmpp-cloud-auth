@@ -14,6 +14,8 @@ def systemd_present():
             have_systemd = False
     return have_systemd
 
+# ============================================
+
 @unittest.skipUnless(systemd_present(), 'systemd.daemon not available')
 class TestSystemdAvailable(unittest.TestCase):
     def setUp(self):
@@ -54,6 +56,8 @@ class TestSystemdAvailable(unittest.TestCase):
         del os.environ['LISTEN_FDS']
         del os.environ['LISTEN_PID']
 
+# ============================================
+
 @unittest.skipIf(systemd_present(), 'systemd.daemon available')
 class TestSystemdUnavailable(unittest.TestCase):
     def test_no_systemd_at_all(self):
@@ -61,6 +65,7 @@ class TestSystemdUnavailable(unittest.TestCase):
         os.unsetenv('LISTEN_PID')
         self.assertEqual(listen_fds_with_names(), None)
 
+    @unittest.skipUnless(os.path.exists('/run/systemd/system'), 'systemd not installed')
     def test_no_systemd_module_only(self):
         os.environ['LISTEN_FDS'] = '5'
         os.environ['LISTEN_PID'] = str(os.getpid())
