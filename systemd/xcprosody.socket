@@ -4,7 +4,7 @@ PartOf=xcprosody.service
 
 [Socket]
 ListenStream=[::1]:23663
-ListenStream=127.0.0.1:23663
+#ListenStream=127.0.0.1:23663
 Accept=no
 FileDescriptorName=prosody
 

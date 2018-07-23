@@ -1,8 +1,8 @@
 [Unit]
 Description=Postfix virtual mailbox to Nextcloud+JSXC bridge
+Requires=xcpostfix.socket
 
 [Service]
 ExecStart=/opt/xmpp-cloud-auth/xcauth.py -t postfix
 StandardInput=socket
 User=xcauth
-Requires=xcpostfix.socket

@@ -4,7 +4,7 @@ PartOf=xcpostfix.service
 
 [Socket]
 ListenStream=[::1]:23665
-ListenStream=127.0.0.1:23665
+#ListenStream=127.0.0.1:23665
 Accept=no
 FileDescriptorName=postfix
 
