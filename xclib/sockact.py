@@ -19,8 +19,6 @@ def listen_fds_with_names():
         try:
             from systemd.daemon import listen_fds
         except ImportError:
-            logging.debug('/run/systemd/system: %s' % os.path.exists('/run/systemd/system'))
-            logging.debug('LISTEN_FDS: %s' % ('LISTEN_FDS' in os.environ))
             if os.path.exists('/run/systemd/system') and 'LISTEN_FDS' in os.environ:
                 logging.error('Software from https://github.com/systemd/python-systemd/ missing; do `apt install python3-systemd` or `pip3 install systemd-python`. Please note the similarly-named `pip3 install python-systemd` does not provide the interfaces needed and may actually need to be UNINSTALLED first!')
                 raise
@@ -30,15 +28,14 @@ def listen_fds_with_names():
         fds = listen_fds()
         if fds:
             listeners = {}
-            fdnames = os.getenv('LISTEN_FDNAMES')
-            if fdnames:
+            if 'LISTEN_FDNAMES' in os.environ:
                 # Evil hack, should not be here!
                 # Is here only because it seems unlikely
                 # https://github.com/systemd/python-systemd/pull/60
                 # will be merged and distributed anyting soon ;-(.
                 # Diverges from original if not enough fdnames are provided
                 # (but this should not happen anyway).
-                names = fdnames.split(':')
+                names = os.environ['LISTEN_FDNAMES'].split(':')
             else:
                 names = ()
             for i in range(0, len(fds)):
