@@ -3,7 +3,9 @@ use IPC::Open2;
 $| = 1; # Autoflush on
 my $child = -1;
 my $pid = -1;
-if (shift eq "socket") {
+my $opt = shift;
+if ($opt eq "socket1366x" or $opt eq "socket2366x") {
+  # Start our own service on a special port, because we need to fail
   $child = fork();
   if ($child < 0) {
     die "fork: $!";
@@ -15,6 +17,7 @@ if (shift eq "socket") {
     $pid = open2(\*PROG, \*COMMAND, "socket", "localhost", "12561") or die "$!";
   }
 } else {
+  # Use pipe to child process
   $pid = open2(\*PROG, \*COMMAND, "./xcauth.py", "-t", "postfix", "-u", "https://no-connection.jsxc.org/", "-s", "0") or die "$!";
 }
 print COMMAND "get user\@example.org\n";
