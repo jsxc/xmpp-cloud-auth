@@ -16,6 +16,8 @@ class postfix_io:
             match = re.match('^get ([^\000- @%]+)@([^\000- @%]+)\r?\n$', line)
             if match:
                 yield ('isuser',) + match.group(1,2)
+            elif line == 'quit':
+                yield ('quit',)
             else:
                 logging.error('Illegal request format: ' + line)
                 outfd.write('500 Illegal request format\n')
