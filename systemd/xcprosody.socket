@@ -1,12 +1,12 @@
 [Unit]
 Description=XMPP to Nextcloud+JSXC authentication bridge for Prosody
-PartOf=xcprosody.service
 
 [Socket]
 ListenStream=[::1]:23663
-#ListenStream=127.0.0.1:23663
-Accept=no
+ListenStream=127.0.0.1:23663
+Accept=false
 FileDescriptorName=prosody
 
 [Install]
 WantedBy=multi-user.target
+#RequiredBy=xcprosody.service

@@ -4,5 +4,7 @@ Requires=xcsaslauth.socket
 
 [Service]
 ExecStart=/opt/xmpp-cloud-auth/xcauth.py -t saslauthd
-StandardInput=socket
 User=xcauth
+
+[Install]
+WantedBy=multi-user.target

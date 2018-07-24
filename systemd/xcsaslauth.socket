@@ -1,6 +1,5 @@
 [Unit]
 Description=SASL to Nextcloud+JSXC authentication bridge
-PartOf=xcsaslauth.service
 
 [Socket]
 ListenStream=/var/run/saslauthd/mux
@@ -8,7 +7,7 @@ SocketUser=root
 SocketGroup=sasl
 SocketMode=660
 DirectoryMode=710
-Accept=no
+Accept=false
 FileDescriptorName=saslauthd
 
 [Install]
