@@ -6,7 +6,33 @@ if ( ! -r "/etc/xcauth.accounts" ) {
 }
 $| = 1; # Autoflush on
 open STDIN, "</etc/xcauth.accounts" or die;
-my $pid = open2(\*PROG, \*COMMAND, "./xcauth.py", "-t", "prosody") or die "$!";
+my $child = -1;
+my $pid = -1;
+my $opt = shift;
+if ($opt eq "socket1366x") {
+  # Start our own service on ports 1366x
+  $child = fork();
+  if ($child < 0) {
+    die "fork: $!";
+  } elsif ($child == 0) {
+    exec 'systemd-socket-activate', 
+    	'-l', '13662', '--fdname', 'ejabberd',
+    	'-l', '13663', '--fdname', 'prosody',
+    	'-l', '13665', '--fdname', 'postfix',
+    	'-l', '/tmp/saslauthd-mux', '--fdname', 'saslauthd',
+       	'./xcauth.py', '-t', 'generic';
+    die "exec: $!";
+  } else {
+    sleep(1);
+    $pid = open2(\*PROG, \*COMMAND, "socket", "localhost", "13663") or die "$!";
+  }
+} elsif ($opt eq "socket2366x") {
+  # Use active systemd services on ports 2366x
+  $pid = open2(\*PROG, \*COMMAND, "socket", "localhost", "23663") or die "$!";
+} else {
+  # Use pipe to child process
+  $pid = open2(\*PROG, \*COMMAND, "./xcauth.py", "-t", "prosody") or die "$!";
+}
 binmode(PROG);
 binmode(COMMAND);
 $u = '';
@@ -52,4 +78,10 @@ while (<>) {
   } else {
     ($u, $d, $p) = @fields;
   }
+}
+if ($child > 0) {
+  kill('TERM', $child);
+}
+if ($pid > 0) {
+  kill('TERM', $pid);
 }

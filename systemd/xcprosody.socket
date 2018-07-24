@@ -1,0 +1,9 @@
+[Unit]
+Description=XMPP to Nextcloud+JSXC authentication bridge for Prosody
+
+[Socket]
+ListenStream=[::1]:23663
+ListenStream=127.0.0.1:23663
+Accept=false
+FileDescriptorName=prosody
+Service=xcauth.service

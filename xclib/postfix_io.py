@@ -7,26 +7,29 @@ import logging
 
 class postfix_io:
     @classmethod
-    def read_request(cls):
+    def read_request(cls, infd, outfd):
         # "for line in sys.stdin:" would be more concise but adds unwanted buffering
         while True:
-            line = sys.stdin.readline()
+            line = infd.readline()
             if not line:
                 break
-            match = re.match('^get ([^\000- @%]+)@([^\000- @%]+)\r?\n$', line)
+            line = line.rstrip("\r\n")
+            match = re.match('^get ([^\000- @%]+)@([^\000- @%]+)$', line)
             if match:
                 yield ('isuser',) + match.group(1,2)
+            elif line == 'quit':
+                yield ('quit',)
             else:
                 logging.error('Illegal request format: ' + line)
-                sys.stdout.write('500 Illegal request format\n')
-                sys.stdout.flush()
+                outfd.write('500 Illegal request format\n')
+                outfd.flush()
 
     @classmethod
-    def write_response(cls, flag):
+    def write_response(cls, flag, outfd):
         if flag == None:
-            sys.stdout.write('400 Trouble connecting to backend\n')
+            outfd.write('400 Trouble connecting to backend\n')
         elif flag:
-            sys.stdout.write('200 OK\n')
+            outfd.write('200 OK\n')
         else:
-            sys.stdout.write('500 No such user\n')
-        sys.stdout.flush()
+            outfd.write('500 No such user\n')
+        outfd.flush()

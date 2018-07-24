@@ -23,10 +23,11 @@ sudo apt install python3 python3-requests python3-configargparse python3-bcrypt 
 ### Developers
 …might want to additionally install
 ```
-sudo apt install python3-nosetests python3-rednose python3-nose-cov
+sudo apt install python3-nosetests python3-rednose python3-nose-cov socket
 ```
+They are required to run the tests.
 
-## Configuration
+## XMPP Server Configuration
 
 :warning: The API secret must not fall into the wrong hands!
 Anyone knowing it can authenticate as any user to the XMPP server
@@ -82,47 +83,94 @@ This fixes a bug with treating an echo of the request as the answer
 Even then, several users report problems with `lua-lpty`, [such as
 processes not dying and still occupying sockets](https://github.com/jsxc/xmpp-cloud-auth/issues/63). Please look at the [socket mode](#socket-interface) for an alternative.
 
+## Configuration as Mail Server Backend
+
+`xcauth` can also be used to provide
+- user authentication to mail servers using the *saslauthd* protocol and
+- verification of user existence using the *postfix* protocol.
+
+Administrators of small SOHO systems can thus use Nextcloud as their prime
+authentication source for
+- file storage/sharing (Nextcloud),
+- instant messaging (XMPP), and
+- email (tested with Cyrus and Postfix).
+
+### *saslauthd* authentication
+
+In an attempt to move toward Nextcloud as the main authentication source,
+`-t saslauthd` mode is supported, which allows to run services
+which can authenticate against Cyrus *saslauthd* to authenticate against
+JSXC and Nextcloud. It has been successfully tested against *Postfix*
+and *Cyrus IMAP*. More information can be found in
+[systemd/README.md (*saslauthd* mode)](../systemd/README.md#saslauthd-mode-authentication).
+The protocol is described in [doc/Protocol.md](./Protocol.md#saslauthd).
+
+### *postfix* existence tests
+
+When using virtual mailboxes (i.e., mailboxes in multiple domains, nut just
+using virtual addresses), *Postfix* needs a way to check for the existence
+of that mailbox. A *Postfix* `tcp_table` compatible interface has been
+implemented using the `-t postfix` mode, so an `xcauth` instance
+started e.g. by *systemd* can be used to provide the mailbox existence
+information, as explained in
+[systemd/README.md (*postfix* mode)](../systemd/README.md#postfix-mode-existence-check).
+Please note, that aliases or virtual users still need to be configured
+using the standard *postfix* mechanisms.
+
+The protocol is described in [doc/Protocol.md](./Protocol.md#postfix).
+
 ## Options
 ```
 $ ./xcauth.py --help
-usage: xcauth.py [-h] [-c CONFIG_FILE] -u URL -s SECRET [-l LOG]
-                 [-p PER_DOMAIN_CONFIG] [-b DOMAIN_DB] [-d] [-i]
-                 [-t {generic,prosody,ejabberd,saslauthd}] [--timeout TIMEOUT]
-                 [--cache-db CACHE_DB] [--cache-query-ttl CACHE_QUERY_TTL]
+usage: xcauth.py [-h] [--config-file CONFIG_FILE] [--domain-db DOMAIN_DB]
+                 [--auth-test USER DOMAIN PASSWORD]
+                 [--isuser-test USER DOMAIN] [--roster-test USER DOMAIN]
+                 [--update-roster] --url URL --secret SECRET [--log LOG]
+                 [--debug] [--interactive]
+                 [--type {generic,prosody,ejabberd,saslauthd,postfix}]
+                 [--timeout TIMEOUT] [--cache-db CACHE_DB]
+                 [--cache-query-ttl CACHE_QUERY_TTL]
                  [--cache-verification-ttl CACHE_VERIFICATION_TTL]
                  [--cache-unreachable-ttl CACHE_UNREACHABLE_TTL]
                  [--cache-bcrypt-rounds CACHE_BCRYPT_ROUNDS]
-                 [-A USER DOMAIN PASSWORD] [-I USER DOMAIN] [--version]
+                 [--ejabberdctl PATH] [--shared-roster-db SHARED_ROSTER_DB]
+                 [--version]
 
 XMPP server authentication against JSXC>=3.2.0 on Nextcloud. See
 https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth. Args that start
-with '--' (eg. -u) can also be set in a config file (/etc/xcauth.conf or
-/etc/external_cloud.conf or ./xcauth.conf or specified via -c). Config file
-syntax allows: key=value, flag=true, stuff=[a,b,c] (for details, see syntax at
-https://goo.gl/R74nmi). If an arg is specified in more than one place, then
-commandline values override config file values which override defaults.
+with '--' (eg. --domain-db) can also be set in a config file (/etc/xcauth.conf
+or specified via --config-file). Config file syntax allows: key=value,
+flag=true, stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi).
+If an arg is specified in more than one place, then commandline values
+override config file values which override defaults.
 
 optional arguments:
   -h, --help            show this help message and exit
-  -c CONFIG_FILE, --config-file CONFIG_FILE
+  --config-file CONFIG_FILE, -c CONFIG_FILE
                         config file path
-  -u URL, --url URL     base URL
-  -s SECRET, --secret SECRET
+  --domain-db DOMAIN_DB, -b DOMAIN_DB
+                        persistent domain database; manipulated with xcdbm.py
+  --auth-test USER DOMAIN PASSWORD, -A USER DOMAIN PASSWORD
+                        single, one-shot query of the user, domain, and
+                        password triple
+  --isuser-test USER DOMAIN, -I USER DOMAIN
+                        single, one-shot query of the user and domain tuple
+  --roster-test USER DOMAIN, -R USER DOMAIN
+                        single, one-shot query of the user's shared roster
+  --update-roster, -T   also try to update ejabberd shared roster; requires
+                        --ejabberdctl and --shared-roster-db
+  --url URL, -u URL     base URL
+  --secret SECRET, -s SECRET
                         secure api token
-  -l LOG, --log LOG     log directory (default: /var/log/xcauth)
-  -p PER_DOMAIN_CONFIG, --per-domain-config PER_DOMAIN_CONFIG
-                        name of file containing whitespace-separated (domain,
-                        secret, url) tuples
-  -b DOMAIN_DB, --domain-db DOMAIN_DB
-                        persistent domain database; manipulated with -G, -P,
-                        -D, -L, -U
-  -d, --debug           enable debug mode
-  -i, --interactive     log to stdout
-  -t {generic,prosody,ejabberd,saslauthd}, --type {generic,prosody,ejabberd,saslauthd}
-                        XMPP server type (prosody=generic); implies reading
-                        requests from stdin
-  --timeout TIMEOUT     Timeout for each of connection setup and request
-                        processing
+  --log LOG, -l LOG     log directory (default: /var/log/xcauth)
+  --debug, -d           enable debug mode
+  --interactive, -i     log to stderr
+  --type {generic,prosody,ejabberd,saslauthd,postfix}, -t {generic,prosody,ejabberd,saslauthd,postfix}
+                        XMPP server/query protocol type (prosody≘generic);
+                        implies reading requests from stdin. See
+                        doc/Installation.md and systemd/README.md for more
+                        information and overrides.
+  --timeout TIMEOUT     Timeout for connection setup, request processing
   --cache-db CACHE_DB   Database path for the user cache; enables cache if set
   --cache-query-ttl CACHE_QUERY_TTL
                         Maximum time between queries
@@ -133,17 +181,17 @@ optional arguments:
                         (overrides the other TTLs)
   --cache-bcrypt-rounds CACHE_BCRYPT_ROUNDS
                         Encrypt passwords with 2^ROUNDS before storing (i.e.,
-                        every increasing ROUNDS takes twice as much
+                        every increment of ROUNDS results in twice the
                         computation time)
-  -A USER DOMAIN PASSWORD, --auth-test USER DOMAIN PASSWORD
-                        single, one-shot query of the user, domain, and
-                        password triple
-  -I USER DOMAIN, --isuser-test USER DOMAIN
-                        single, one-shot query of the user and domain tuple
+  --ejabberdctl PATH    Enables shared roster updates on authentication; use
+                        ejabberdctl command at PATH to modify them
+  --shared-roster-db SHARED_ROSTER_DB
+                        Which groups a user has been added to (to ensure
+                        proper deletion)
   --version             show program's version number and exit
 
--A takes precedence over -I over -t. -A and -I imply -d. -A, -I, -G, -P, -D,
--L, and -U imply -i. The database operations require -b.
+-I, -R, and -A take precedence over -t. One of them is required. -I, -R, and
+-A imply -i and -d.
 ```
 
 Note that `-t generic` is identical to `-t prosody`. This is just to indicate
@@ -182,15 +230,6 @@ When using the `mod_auth_external.lua` bundled here (together with `pseudolpty.l
 the `external_auth_command = "@localhost:23664";` option to talk over a socket to a process not spawned
 by *Prosody* on port 23664. [systemd/README.md](../systemd/README.md) explains how to automatically start
 such a process using *systemd*.
-
-### Experimental *saslauthd* compatibility
-
-In an attempt to move toward Nextcloud as the main authentication source,
-a new `-t saslauthd` mode is supported, which allows to run services
-which can authenticate against Cyrus *saslauthd* to authenticate against
-JSXC and Nextcloud. It has been successfully tested against *Postfix*
-and *Cyrus IMAP*. More information can be found in
-[systemd/README.md (*saslauthd* mode)](../systemd/README.md#saslauthd-mode)
 
 ### *ejabberd* shared roster support
 
