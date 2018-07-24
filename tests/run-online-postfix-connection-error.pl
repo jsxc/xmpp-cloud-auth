@@ -4,7 +4,7 @@ $| = 1; # Autoflush on
 my $child = -1;
 my $pid = -1;
 my $opt = shift;
-if ($opt eq "socket1366x" or $opt eq "socket2366x") {
+if ($opt eq "socket1366x") {
   # Start our own service on a special port, because we need to fail
   $child = fork();
   if ($child < 0) {
@@ -16,6 +16,9 @@ if ($opt eq "socket1366x" or $opt eq "socket2366x") {
     sleep(1);
     $pid = open2(\*PROG, \*COMMAND, "socket", "localhost", "12561") or die "$!";
   }
+} elsif ($opt eq "socket2366x") {
+  # Don't do anything here
+  exit;
 } else {
   # Use pipe to child process
   $pid = open2(\*PROG, \*COMMAND, "./xcauth.py", "-t", "postfix", "-u", "https://no-connection.jsxc.org/", "-s", "0") or die "$!";
