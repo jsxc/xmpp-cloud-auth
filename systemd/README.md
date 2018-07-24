@@ -2,9 +2,9 @@
 
 `xcauth` can also be started from *systemd*. Three modes are supported:
 
-1. Starting in *inetd* compatibility mode: For each connection to that socket, a new `xcauth` process is started. `xcauth` reads from stdin/stdout.
+1. Starting in *inetd* compatibility mode: For each connection to that socket, a new `xcauth` process is started. `xcauth` reads from stdin/stdout (DEPRECATED).
 1. Using *systemd* [socket activation](http://0pointer.net/blog/projects/socket-activation.html), single protocol per configuration file: On the first connection, the single `xcauth` process is started for this protocol/port. For each incoming connection, only a thread is spawned. This is more efficient if a new connection is opened for every request (common for *saslauthd* and *postfix* modes, but depends on the requesting application).
-1. Using *systemd* socket activation, multiple protocols per configuration file: Similar to the one above, but only a single `xcauth` process is ever started. All protocols are determined by information passed by *systemd* on process start. **This mode is [currently](https://github.com/systemd/python-systemd#60) not supported by [python-systemd](https://github.com/systemd/python-systemd) library** and therefore not available for use. However, it is supported by `xcauth` and future file descriptor names passed by *systemd* will override the command line.
+1. Using *systemd* socket activation, multiple protocols per configuration file: Similar to the one above, but only a single `xcauth` process is ever started. All protocols are determined by information passed by *systemd* on process start (RECOMMENDED).
 
 The following ports are used by default:
 - TCP port 23662: *ejabberd* protocol support
@@ -15,21 +15,30 @@ The following ports are used by default:
 
 ## XMPP authentication over *systemd* socket
 
-For some environments, it might be advantageous to use *xcauth* over a network socket. Here is a pair of sample *systemd* configuration files, accepting network connection to `localhost:23664`.
+For some environments, it might be advantageous to use *xcauth* over a network socket. Here is a set of sample *systemd* configuration files, accepting the network connections described above.
 
 ### Installation (as root)
 
 1. Perform the *xcauth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xcauth/wiki). Especially install source into `/opt/xcauth` and put the configuration in `/etc/xcauth.conf`.
-1. Copy `xcauth.service` and `xcauth.socket` to `/etc/systemd/system` (if no modifications to these files are needed, you may also symlink them manually or using `systemctl link`; beware that some versions of *systemd* have problems with symlinks ([systemd#3010](https://github.com/systemd/systemd/issues/3010))
 1. Create the user `xcauth` and the directories: `sudo ../install.sh`
-1. Activate the service: `systemctl enable xcauth.socket` and `systemctl start xcauth.socket`
+1. Copy `xc*` to `/etc/systemd/system` (if no modifications to these files are needed, you may also symlink them manually or using `systemctl link`; beware that some versions of *systemd* have problems with symlinks ([systemd#3010](https://github.com/systemd/systemd/issues/3010))
+1. Activate the service:
+```sh
+systemctl enable xcauth.service
+for i in xc*.socket; do
+  systemctl start $i
+done
+systemctl start xcauth.service
+```
+
+:warning: If you do not want to replace an existing *saslauthd* on your system, do not copy or start `xcsaslauth.socket`.
 
 ### Testing
 
-If you have set `type=generic` (equivalent to `type=prosody`) in `/etc/xcauth.conf`, then the following should work (`$` indicates the command line prompt, `<` is data received and `>` data sent):
+Trye the following (`$` indicates the command line prompt, `<` is data received and `>` data sent):
 
 ```
-$ telnet localhost 23664
+$ telnet localhost 23663
 < Trying ::1...
 < Connected to localhost.
 < Escape character is '^]'.

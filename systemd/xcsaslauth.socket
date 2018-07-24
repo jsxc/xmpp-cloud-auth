@@ -7,8 +7,9 @@ SocketUser=root
 SocketGroup=sasl
 SocketMode=660
 DirectoryMode=710
+# Does not work for me yet, despite the documentation in
+# https://www.freedesktop.org/software/systemd/man/systemd.socket.html#ExecStartPre=
+#ExecStartPost=/bin/chgrp sasl /var/run/saslauthd/
 Accept=false
 FileDescriptorName=saslauthd
-
-[Install]
-WantedBy=multi-user.target
+Service=xcauth.service

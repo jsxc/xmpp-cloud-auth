@@ -6,7 +6,4 @@ ListenStream=[::1]:23663
 ListenStream=127.0.0.1:23663
 Accept=false
 FileDescriptorName=prosody
-
-[Install]
-WantedBy=multi-user.target
-#RequiredBy=xcprosody.service
+Service=xcauth.service

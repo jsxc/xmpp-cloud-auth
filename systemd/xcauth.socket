@@ -5,8 +5,6 @@ Description=XMPP to Nextcloud+JSXC authentication bridge
 ListenStream=[::1]:23664
 ListenStream=127.0.0.1:23664
 Accept=false
-# Is not one of the recognized protocols, so will be ignored
+# Is not one of the recognized protocols, so this name will be ignored
+# (i.e., the protocol defaults to what is passed by "-t")
 FileDescriptorName=deprecated
-
-[Install]
-WantedBy=multi-user.target

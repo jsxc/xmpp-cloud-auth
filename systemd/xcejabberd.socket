@@ -6,7 +6,4 @@ ListenStream=[::1]:23662
 ListenStream=127.0.0.1:23662
 Accept=false
 FileDescriptorName=ejabberd
-
-[Install]
-WantedBy=multi-user.target
-#RequiredBy=xcejabberd.service
+Service=xcauth.service
