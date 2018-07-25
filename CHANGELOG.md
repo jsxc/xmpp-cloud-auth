@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.1.0+ - [Unreleased]
+### Added
+- Added support for *inetd*-style servers (acceptor socket as fd 0)
+### Fixed
+### Changed
+
 ## 1.1.0 - 2018-07-24
 ### Added
 - Support *systemd* socket activation

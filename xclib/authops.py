@@ -2,6 +2,9 @@ import logging
 import sys
 import atexit
 import bsddb3
+import select
+import threading
+import socket
 from xclib import xcauth
 from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
@@ -89,18 +92,29 @@ def perform(args):
     # Acceptor socket?
     listeners = listen_fds_with_names()
     if listeners is None:
-        # Normal (connected) socket
-        perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
+        # Single socket; unclear whether it is connected or an acceptor
+        stdinfd = sys.stdin.fileno()
+        if stdinfd is None:
+            # Not a real socket, assume stdio communication
+            perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
+        else:
+            s = socket.socket(fileno=stdinfd)
+            try:
+                # Is it an acceptor socket?
+                s.listen()
+                # Yes, accept connections (fake systemd context)
+                perform_from_listeners({0: args.type}, xc, args.type)
+            except OSError:
+                # Not an acceptor socket, use for stdio
+                perform_from_fd(sys.stdin, sys.stdout, xc, args.type, closefds=(sys.stdin,sys.stdout,s))
     else:
+        # Uses systemd socket activation
         perform_from_listeners(listeners, xc, args.type)
 
 # Handle possibly multiple listening sockets
 def perform_from_listeners(listeners, xc, proto):
-    import select
-    import threading
-    import socket
     sockets = {}
-    while True:
+    while listeners:
         inputs = listeners.keys()
         r, w, x = select.select(inputs, (), inputs)
         for sfd in r:
@@ -122,7 +136,7 @@ def perform_from_listeners(listeners, xc, proto):
                     kwargs={'closefds': (conn,)}).start()
         for sfd in x:
             logging.warn("Socket %d logged a complaint, dropping" % sfd)
-            del(listeners, sfd)
+            del listeners[sfd]
 
 # Handle a single I/O stream (stdin/stdout or acepted socket)
 def perform_from_fd(infd, outfd, xc, proto, closefds=()):
@@ -175,8 +189,6 @@ def perform_from_fd(infd, outfd, xc, proto, closefds=()):
 
         xmpp.write_response(success, outfd)
 
-    logging.debug('Shutting down...')
+    logging.debug('Closing connection')
     for c in closefds:
         c.close()
-
-# vim: tabstop=8 softtabstop=0 expandtab shiftwidth=4
