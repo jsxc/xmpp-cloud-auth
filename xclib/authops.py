@@ -5,6 +5,7 @@ import bsddb3
 import select
 import threading
 import socket
+import io
 from xclib import xcauth
 from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
@@ -93,7 +94,10 @@ def perform(args):
     listeners = listen_fds_with_names()
     if listeners is None:
         # Single socket; unclear whether it is connected or an acceptor
-        stdinfd = sys.stdin.fileno()
+        try:
+            stdinfd = sys.stdin.fileno()
+        except io.UnsupportedOperation:
+            stdinfd = None
         if stdinfd is None:
             # Not a real socket, assume stdio communication
             perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
