@@ -3,6 +3,7 @@
 from xclib.sigcloud import sigcloud
 from xclib import xcauth
 from xclib.check import assertEqual
+from xclib.utf8 import unutf8
 
 cloud_count = 0
 
@@ -149,7 +150,7 @@ def test_30_cache():
     assertEqual(sc.auth(), True)
     assert b'user3:domain3' in xc.cache_db
     entry = xc.cache_db[b'user3:domain3']
-    fields = entry.split('\t')
+    fields = unutf8(entry).split('\t')
     cachedpw = fields[0]
     assert fields[0].startswith('$2b$06$')
     assertEqual(fields[1], '1')
@@ -162,7 +163,7 @@ def test_30_cache():
     sc.verbose_cloud_request = sc_trap
     assertEqual(sc.auth(), True)
     entry = xc.cache_db[b'user3:domain3']
-    fields = entry.split('\t')
+    fields = unutf8(entry).split('\t')
     assertEqual(cachedpw, fields[0]) # No cache password update
     assertEqual(fields[1], '1')
     assertEqual(fields[2], '1')
@@ -183,7 +184,7 @@ def test_30_cache():
     sc.verbose_cloud_request = sc_success
     assertEqual(sc.auth(), True)
     entry = xc.cache_db[b'user3:domain3']
-    fields = entry.split('\t')
+    fields = unutf8(entry).split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')
     assertEqual(fields[2], '300')
@@ -203,7 +204,7 @@ def test_30_cache():
     assertEqual(sc.auth(), True)
     assert xc.cache_db[b'user3:domain3'] != entry # Updated
     entry = xc.cache_db[b'user3:domain3']
-    fields = entry.split('\t')
+    fields = unutf8(entry).split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')
     assertEqual(fields[2], '4000')
@@ -215,7 +216,7 @@ def test_30_cache():
     sc.verbose_cloud_request = sc_timeout
     assertEqual(sc.auth(), True)
     entry = xc.cache_db[b'user3:domain3']
-    fields = entry.split('\t')
+    fields = unutf8(entry).split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')
     assertEqual(fields[2], '4000')
@@ -226,7 +227,7 @@ def test_30_cache():
     sc.now = 8100
     assertEqual(sc.auth(), True)
     entry = xc.cache_db[b'user3:domain3']
-    fields = entry.split('\t')
+    fields = unutf8(entry).split('\t')
     assert cachedpw != fields[0] # Update cached password
     assertEqual(fields[1], '1')
     assertEqual(fields[2], '4000')

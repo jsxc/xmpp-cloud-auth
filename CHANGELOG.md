@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 1.0.0+ - [Unreleased]
+## 1.1.0+ - [Unreleased]
 ### Added
+- Added support for *inetd*-style servers (acceptor socket as fd 0)
 ### Fixed
 ### Changed
 - Changed away from multiple `dbm` storages, due to corruption/locking
@@ -24,10 +25,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The use of the cache is enabled with the new `--enable-cache` option.
     - The use of the shared roster is enabled with `--enable-shared-roster`.
   - There is a new option `--database`, defaulting to `/var/lib/xcauth/xcauth.sqlite`.
+
+## 1.1.0 - 2018-07-24
+### Added
+- Support *systemd* socket activation
 - Now supports [*Postfix* Virtual Mailbox mode](systemd/README.md)
 ### Fixed
 - Incorporated *Prosody* upstream mod_auth_external.lua fixes
 ### Changed
+- Starting from *systemd* is now the recommended mode
 
 ## 1.0.0 - 2018-01-29
 ### Added

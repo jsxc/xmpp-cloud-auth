@@ -77,7 +77,7 @@ For all the *groups* we have information about:
             cleanname[g] = sanitize(g)
             key = utf8('RGC:%s:%s' % (cleanname[g], self.domain))
             if key in self.ctx.shared_roster_db:
-                previous_users = self.ctx.shared_roster_db[key].split('\t')
+                previous_users = unutf8(self.ctx.shared_roster_db[key]).split('\t')
             else:
                 e.execute(['srg_create', cleanname[g], self.domain, cleanname[g], cleanname[g], cleanname[g]])
                 # Fill cache (again)
@@ -93,14 +93,14 @@ For all the *groups* we have information about:
                 (lhs, rhs) = self.jidsplit(p)
                 if p not in new_users:
                     e.execute(['srg_user_del', lhs, rhs, cleanname[g], self.domain])
-            self.ctx.shared_roster_db[key] = '\t'.join(sorted(new_users.keys()))
+            self.ctx.shared_roster_db[key] = utf8('\t'.join(sorted(new_users.keys())))
 
         # For all the groups the login user was previously a member of:
         # - delete her from the shared roster group if no longer a member
         key = utf8('LIG:%s@%s' % (self.username, self.domain))
-        if key in self.ctx.shared_roster_db and self.ctx.shared_roster_db[key] != '':
+        if key in self.ctx.shared_roster_db and self.ctx.shared_roster_db[key] != b'':
             # Was previously there as well, need to be removed from one?
-            previous = self.ctx.shared_roster_db[key].split('\t')
+            previous = unutf8(self.ctx.shared_roster_db[key]).split('\t')
             for p in previous:
                 if p not in list(cleanname.values()):
                     e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
@@ -110,7 +110,7 @@ For all the *groups* we have information about:
             else:
                 new = '\t'.join(sorted(cleanname.values()))
                 if previous != new:
-                    self.ctx.shared_roster_db[key] = new
+                    self.ctx.shared_roster_db[key] = utf8(new)
         else: # New, always set
             if cleanname:
-                self.ctx.shared_roster_db[key] = '\t'.join(sorted(cleanname.values()))
+                self.ctx.shared_roster_db[key] = utf8('\t'.join(sorted(cleanname.values())))

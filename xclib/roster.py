@@ -43,13 +43,13 @@ class roster(roster_thread):
             try:
                 response, text = self.roster_cloud()
                 if response is not None and response != False:
-                    texthash = hashlib.sha256(utf8(text)).hexdigest()
+                    texthash = utf8(hashlib.sha256(utf8(text)).hexdigest())
                     userhash = utf8('RH:' + self.username + ':' + self.domain)
                     # Response changed or first response for that user?
                     if not userhash in self.ctx.shared_roster_db or self.ctx.shared_roster_db[userhash] != texthash:
                         self.ctx.shared_roster_db[userhash] = texthash
                         t = threading.Thread(target=self.roster_background_thread,
-                            args=[response])
+                            args=(response,))
                         t.start()
                         if not async:
                             t.join() # For automated testing only
