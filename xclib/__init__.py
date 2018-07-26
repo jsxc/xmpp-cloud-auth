@@ -33,12 +33,12 @@ class xcauth:
         if bdom in self.domain_db:
             try:
                 # Already 4-value database format? Great!
-                secret, url, authDomain, extra = self.domain_db[bdom].split('\t', 3)
+                secret, url, authDomain, extra = unutf8(self.domain_db[bdom]).split('\t', 3)
             except ValueError:
                 # No, fall back to 3-value format (and update DB)
-                secret, url, extra = self.domain_db[bdom].split('\t', 2)
+                secret, url, extra = unutf8(self.domain_db[bdom]).split('\t', 2)
                 authDomain = dom
-                self.domain_db[dom] = '\t'.join((secret, url, authDomain, extra))
+                self.domain_db[dom] = utf8('\t'.join((secret, url, authDomain, extra)))
             return utf8(secret), url, authDomain
         else:
             return utf8(self.default_secret), self.default_url, dom

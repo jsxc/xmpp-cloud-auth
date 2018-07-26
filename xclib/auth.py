@@ -79,17 +79,17 @@ class auth:
         key = utf8(self.username + ':' + self.domain)
         if key in self.ctx.cache_db:
             now = self.now
-            (pwhash, ts1, tsv, tsa, rest) = self.ctx.cache_db[key].split("\t", 4)
+            (pwhash, ts1, tsv, tsa, rest) = unutf8(self.ctx.cache_db[key]).split("\t", 4)
             if ((int(tsa) + self.ctx.ttls['query'] > now and int(tsv) + self.ctx.ttls['verify'] > now)
                or (unreach and int(tsv) + self.ctx.ttls['unreach'] > now)):
                 if self.checkpw(pwhash):
-                    self.ctx.cache_db[key] = "\t".join((pwhash, ts1, tsv, str(now), rest))
+                    self.ctx.cache_db[key] = utf8("\t".join((pwhash, ts1, tsv, str(now), rest)))
                     self.try_db_sync()
                     return True
         return False
 
     def auth_update_cache(self):
-        if '' in self.ctx.cache_db: # Cache disabled?
+        if b'' in self.ctx.cache_db: # Cache disabled?
             return
         key = utf8(self.username + ':' + self.domain)
         now = self.now # For tests
@@ -101,10 +101,10 @@ class auth:
             salt = bcrypt.gensalt()
         pwhash = unutf8(bcrypt.hashpw(utf8(self.password), salt))
         if key in self.ctx.cache_db:
-            (ignored, ts1, tsv, tsa, rest) = self.ctx.cache_db[key].split("\t", 4)
-            self.ctx.cache_db[key] = "\t".join((pwhash, ts1, snow, snow, rest))
+            (ignored, ts1, tsv, tsa, rest) = unutf8(self.ctx.cache_db[key]).split("\t", 4)
+            self.ctx.cache_db[key] = utf8("\t".join((pwhash, ts1, snow, snow, rest)))
         else:
-            self.ctx.cache_db[key] = "\t".join((pwhash, snow, snow, snow, ''))
+            self.ctx.cache_db[key] = utf8("\t".join((pwhash, snow, snow, snow, '')))
         self.try_db_sync()
 
     def auth(self):

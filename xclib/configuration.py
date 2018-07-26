@@ -81,7 +81,9 @@ DEPRECATED, will only be used for migration purposes.''')
         help='log to stderr')
     add_maybe('--type', '-t',
         choices=['generic', 'prosody', 'ejabberd', 'saslauthd', 'postfix'],
-        help='XMPP server type (prosody=generic); implies reading requests from stdin')
+        help='''XMPP server/query protocol type (prosody≘generic);
+            implies reading requests from stdin. See doc/Installation.md
+            and systemd/README.md for more information and overrides.''')
     add_maybe('--timeout',
         default='5,10',
         help='Timeout for connection setup, request processing')

@@ -1,0 +1,18 @@
+[Unit]
+Description=XMPP to Nextcloud+JSXC authentication bridge
+
+[Service]
+ExecStart=/opt/xmpp-cloud-auth/xcauth.py
+User=xcauth
+Sockets=xcauth.socket xcejabberd.socket xcpostfix.socket xcprosody.socket xcsaslauth.socket
+# Should be doable in `xcsaslauth.socket` according to
+# https://www.freedesktop.org/software/systemd/man/systemd.socket.html#ExecStartPre=
+# but doesn't for me in Ubuntu 18.04. So I moved it here.
+#
+# The downside of this setup: salsauth connection may not occur before
+# manual `systemctl start xcauth.service` or connection to one of the
+# other sockets.
+ExecStartPre=+/bin/chgrp sasl /var/run/saslauthd/
+
+[Install]
+WantedBy=multi-user.target

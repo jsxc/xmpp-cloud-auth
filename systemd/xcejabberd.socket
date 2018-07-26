@@ -1,0 +1,9 @@
+[Unit]
+Description=XMPP to Nextcloud+JSXC authentication bridge for ejabberd
+
+[Socket]
+ListenStream=[::1]:23662
+ListenStream=127.0.0.1:23662
+Accept=false
+FileDescriptorName=ejabberd
+Service=xcauth.service

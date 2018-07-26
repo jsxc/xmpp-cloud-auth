@@ -3,6 +3,7 @@ if ( ! -r "/etc/xcauth.accounts" ) {
   print STDERR "/etc/xcauth.accounts must exist and be readable\n";
   exit(1);
 }
+open STDIN, "</etc/xcauth.accounts" or die;
 $u = '';
 $d = '';
 $p = '';
