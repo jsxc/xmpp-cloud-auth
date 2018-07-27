@@ -7,8 +7,8 @@ CREATE TABLE domains (xmppdomain TEXT PRIMARY KEY,
                       authurl    TEXT,
                       authdomain TEXT,
                       regcontact TEXT,
-                      regfirst   TEXT DEFAULT datetime('now'),
-                      reglatest  TEXT DEFAULT datetime('now'));
+                      regfirst   TEXT DEFAULT CURRENT_TIMESTAMP,
+                      reglatest  TEXT DEFAULT CURRENT_TIMESTAMP);
 ```
 The `xmppdomain` is the part behind the `@` in the XMPP JID
 (aka "the XMPP address"). The `authurl` is then contacted with
@@ -28,9 +28,9 @@ They may be freely used by configuration-related tools.
 ```sql
 CREATE TABLE authcache (jid        TEXT PRIMARY KEY,
                         pwhash     TEXT,
-                        firstauth  TEXT DEFAULT datetime('now'),
-                        anyauth    TEXT DEFAULT datetime('now'),
-                        remoteauth TEXT DEFAULT datetime('now'));
+                        firstauth  TEXT DEFAULT CURRENT_TIMESTAMP,
+                        anyauth    TEXT DEFAULT CURRENT_TIMESTAMP,
+                        remoteauth TEXT DEFAULT CURRENT_TIMESTAMP);
 ```
 
 The authentication cache can reduce the load on the remote Nextcloud
