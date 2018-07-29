@@ -18,6 +18,7 @@ sudo ./install.sh
 Install Python3 and all required libraries. On Ubuntu 18.04, this is:
 ```
 sudo apt install python3 python3-requests python3-configargparse python3-bcrypt python3-bsddb3
+sudo apt install socket
 ```
 
 ### Developers
@@ -60,6 +61,17 @@ cache, which is enabled by default, but not (yet) documented in the
 [*ejabberd* configuration documentation](https://docs.ejabberd.im/admin/configuration/).
 This cache interferes with multiple valid passwords (app passwords, tokens)
 and thus needs to be deactivated with `auth_use_cache: false`.
+
+:warning: If you want to host multiple instances,
+```yaml
+extauth_program: "/usr/bin/socket 127.0.0.1 23662"
+```
+and using the [*systemd* socket activation mode](../systemd/README.md)
+will conserve significant amounts of memory. (In the first case, *ejabberd*
+starts one large *Python* process per virtual host, while in the second
+case, there will only be one (slightly larger) *Python* process and many
+tiny *socket* processes talking to individual threads in the *Python*
+process.)
 
 ### Prosody
 Install *lua-lpty* (not necessary when using the [*socket mode*](#socket-interface):
