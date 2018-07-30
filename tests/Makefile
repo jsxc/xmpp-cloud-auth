@@ -1,4 +1,4 @@
-all:	nosetests perltests
+all:	nosetests perltests loggingtests
 more:	really-all
 really-all:	nosetests perltests-all
 
@@ -16,3 +16,9 @@ perltests-socket1366x:
 	for i in run-online-*.pl; do echo == $$i; (cd .. && tests/$$i socket1366x) || exit 1; sleep 1; done
 perltests-socket2366x:
 	for i in run-online-*.pl; do echo == $$i; (cd .. && tests/$$i socket2366x) || exit 1; done
+
+loggingtests:
+# Permission denied
+	echo isuser:john.doe:example.org | ../xcauth.py -t generic -l /etc
+# No such file or directory
+	echo isuser:john.doe:example.org | ../xcauth.py -t generic -l /no/such/file/or/directory
