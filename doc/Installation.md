@@ -1,6 +1,10 @@
-## Quick installation
-[Full step-by-step instructions to install *Nextcloud* with an external XMPP server](https://github.com/jsxc/xmpp-cloud-auth/wiki/) are in the Wiki.
+# Installation instructions
+Alternative installation instructions:
+* [Step-by-step setup of a new server](https://github.com/jsxc/xmpp-cloud-auth/wiki/raspberry-pi-en)
+* [Quick setup for an existing *ejabberd* installation](./QuickInstallEjabberd.md)
+* [Quick setup for an existing *Prosody* installation](./QuickInstallProsody.md)
 
+## Download software
 Download [the latest release](https://github.com/jsxc/xmpp-cloud-auth/releases)
 and put it to your desired location (e.g. `/opt/xmpp-cloud-auth`) or clone this
 repository to remain on the leading edge:
@@ -18,9 +22,10 @@ sudo ./install.sh
 Install Python3 and all required libraries. On Ubuntu 18.04, this is:
 ```
 sudo apt install python3 python3-requests python3-configargparse python3-bcrypt python3-bsddb3
+sudo apt install socket
 ```
 
-### Developers
+## Developers
 …might want to additionally install
 ```
 sudo apt install python3-nosetests python3-rednose python3-nose-cov socket
@@ -31,10 +36,10 @@ They are required to run the tests.
 
 :warning: The API secret must not fall into the wrong hands!
 Anyone knowing it can authenticate as any user to the XMPP server
-(and create arbitrary new users).
+(and create arbitrary new users on the XMPP server).
 
 1. Copy `xcauth.conf` to `/etc` as root and restrict the access rights
-   (e.g., `chown ejabberd /etc/xcauth.conf; chmod 600 /etc/xcauth.conf`)
+   (e.g., `chown xcauth:xcauth /etc/xcauth.conf; chmod 660 /etc/xcauth.conf`)
 1. Modify `/etc/xcauth.conf` according to your environment. The values for
    API URL and API SECRET can be found in your Nextcloud/ownCloud JSXC admin page.
 1. Adapt your ejabberd/prosody configuration to use this authentication script:
@@ -60,6 +65,17 @@ cache, which is enabled by default, but not (yet) documented in the
 [*ejabberd* configuration documentation](https://docs.ejabberd.im/admin/configuration/).
 This cache interferes with multiple valid passwords (app passwords, tokens)
 and thus needs to be deactivated with `auth_use_cache: false`.
+
+:warning: If you want to host multiple instances,
+```yaml
+extauth_program: "/usr/bin/socket 127.0.0.1 23662"
+```
+and using the [*systemd* socket activation mode](../systemd/README.md)
+will conserve significant amounts of memory. (In the first case, *ejabberd*
+starts one large *Python* process per virtual host, while in the second
+case, there will only be one (slightly larger) *Python* process and many
+tiny *socket* processes talking to individual threads in the *Python*
+process.)
 
 ### Prosody
 Install *lua-lpty* (not necessary when using the [*socket mode*](#socket-interface):

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.1.0+ - [Unreleased]
 ### Added
 - Added support for *inetd*-style servers (acceptor socket as fd 0)
+- Added `tools/xcauth.logrotate` (see [tools/README.md](./tools/README.md)
+- Added quick setup instructions for existing *Prosody* or *ejabberd* setups
 ### Fixed
 ### Changed
 - Changed away from multiple `dbm` storages, due to corruption/locking
@@ -25,8 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The use of the cache is enabled with the new `--enable-cache` option.
     - The use of the shared roster is enabled with `--enable-shared-roster`.
   - There is a new option `--database`, defaulting to `/var/lib/xcauth/xcauth.sqlite`.
-### Fixed
-### Changed
+- Explain `socket` setup for more efficient multi-domain hosting
 
 ## 1.1.0 - 2018-07-24
 ### Added
