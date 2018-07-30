@@ -55,7 +55,7 @@ Add the following to your *Prosody* config (probably `/etc/prosody/prosody.cfg.l
 ```lua
 authentication = "external"
 external_auth_command = "/opt/xmpp-cloud-auth/xcauth.py"
-plugin_paths = { "/opt/xmpp-cloud-auth/prosody" }
+plugin_paths = { "/opt/xmpp-cloud-auth/prosody-modules/" }
 ```
 
 Ready!
