@@ -19,13 +19,19 @@ def perform(args):
             level=logging.DEBUG,
             format='%(asctime)s %(levelname)s: %(message)s')
     else:
-        logging.basicConfig(filename=logfile,
-            level=logging.DEBUG if args.debug else logging.INFO,
-            format='%(asctime)s %(levelname)s: %(message)s')
-
-        # redirect stderr
         errfile = args.log + '/xcauth.err'
-        sys.stderr = open(errfile, 'a+')
+        try:
+            # redirect stderr
+            sys.stderr = open(errfile, 'a+')
+        except OSError as e:
+            logging.warning('Cannot redirect stderr to %s: %s' % (errfile, str(e)))
+        try:
+            logging.basicConfig(filename=logfile,
+                level=logging.DEBUG if args.debug else logging.INFO,
+                format='%(asctime)s %(levelname)s: %(message)s')
+        except OSError as e:
+            logging.basicConfig(stream=sys.stderr)
+            logging.warning('Cannot log to %s: %s' % (logfile, str(e)))
 
     logging.debug('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, args.url)
 
