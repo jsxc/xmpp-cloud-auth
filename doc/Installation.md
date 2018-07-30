@@ -1,6 +1,10 @@
-## Quick installation
-[Full step-by-step instructions to install *Nextcloud* with an external XMPP server](https://github.com/jsxc/xmpp-cloud-auth/wiki/) are in the Wiki.
+# Installation instructions
+Alternative installation instructions:
+* [Step-by-step setup of a new server](https://github.com/jsxc/xmpp-cloud-auth/wiki/raspberry-pi-en)
+* [Quick setup for an existing *ejabberd* installation](./QuickInstallEjabberd.md)
+* [Quick setup for an existing *Prosody* installation](./QuickInstallProsody.md)
 
+## Download software
 Download [the latest release](https://github.com/jsxc/xmpp-cloud-auth/releases)
 and put it to your desired location (e.g. `/opt/xmpp-cloud-auth`) or clone this
 repository to remain on the leading edge:
@@ -21,7 +25,7 @@ sudo apt install python3 python3-requests python3-configargparse python3-bcrypt 
 sudo apt install socket
 ```
 
-### Developers
+## Developers
 …might want to additionally install
 ```
 sudo apt install python3-nosetests python3-rednose python3-nose-cov socket
@@ -32,10 +36,10 @@ They are required to run the tests.
 
 :warning: The API secret must not fall into the wrong hands!
 Anyone knowing it can authenticate as any user to the XMPP server
-(and create arbitrary new users).
+(and create arbitrary new users on the XMPP server).
 
 1. Copy `xcauth.conf` to `/etc` as root and restrict the access rights
-   (e.g., `chown ejabberd /etc/xcauth.conf; chmod 600 /etc/xcauth.conf`)
+   (e.g., `chown xcauth:xcauth /etc/xcauth.conf; chmod 660 /etc/xcauth.conf`)
 1. Modify `/etc/xcauth.conf` according to your environment. The values for
    API URL and API SECRET can be found in your Nextcloud/ownCloud JSXC admin page.
 1. Adapt your ejabberd/prosody configuration to use this authentication script:

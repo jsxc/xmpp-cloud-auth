@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Added support for *inetd*-style servers (acceptor socket as fd 0)
 - Added `tools/xcauth.logrotate` (see [tools/README.md](./tools/README.md)
+- Added quick setup instructions for existing *Prosody* or *ejabberd* setups
 ### Fixed
 ### Changed
+- Explain `socket` setup for more efficient multi-domain hosting
 
 ## 1.1.0 - 2018-07-24
 ### Added
