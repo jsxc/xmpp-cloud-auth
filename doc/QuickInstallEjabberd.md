@@ -15,12 +15,12 @@ or run into trouble with this setup, read the
 
 Download [the latest release](https://github.com/jsxc/xmpp-cloud-auth/releases)
 and put it to your desired location (the documentation and several tools assume
-`/opt/xmpp-cloud-auth` throughout). Replace `v1.1.0` with the desired version.
+`/opt/xmpp-cloud-auth` throughout). Replace `v1.2.0` with the desired version.
 ```sh
 sudo -s
 cd /opt
-wget https://github.com/jsxc/xmpp-cloud-auth/archive/v1.1.0.tar.gz
-tar xvfz v1.1.0.tar.gz
+wget https://github.com/jsxc/xmpp-cloud-auth/archive/v1.2.0.tar.gz
+tar xvfz v1.2.0.tar.gz
 ```
 
 Create the `xcauth` user and directories:

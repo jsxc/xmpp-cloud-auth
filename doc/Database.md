@@ -29,8 +29,8 @@ They may be freely used by configuration-related tools.
 CREATE TABLE authcache (jid        TEXT PRIMARY KEY,
                         pwhash     TEXT,
                         firstauth  TEXT DEFAULT CURRENT_TIMESTAMP,
-                        anyauth    TEXT DEFAULT CURRENT_TIMESTAMP,
-                        remoteauth TEXT DEFAULT CURRENT_TIMESTAMP);
+                        remoteauth TEXT DEFAULT CURRENT_TIMESTAMP,
+                        anyauth    TEXT DEFAULT CURRENT_TIMESTAMP);
 ```
 
 The authentication cache can reduce the load on the remote Nextcloud
