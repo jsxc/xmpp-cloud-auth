@@ -1,0 +1,14 @@
+/var/log/xcauth/xcauth.log
+/var/log/xcauth/xcauth.err {
+        daily
+        missingok
+        rotate 14
+        compress
+        delaycompress
+        notifempty
+        create 660 xcauth xcauth
+        sharedscripts
+        postrotate
+                killall xcauth.py
+        endscript
+}

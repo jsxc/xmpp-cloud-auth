@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.1.0+ - [Unreleased]
 ### Added
 - Added support for *inetd*-style servers (acceptor socket as fd 0)
+- Added `tools/xcauth.logrotate` (see [tools/README.md](./tools/README.md)
 ### Fixed
 ### Changed
 
