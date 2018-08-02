@@ -1,5 +1,14 @@
 # New `sqlite` database format
 
+Basic design rationale: All the tables can be extended with
+additional fields by the user; code will only ever look at
+and modify the fields it needs.
+
+An example for this are the `reg*` fields in the `domains`
+table, which are not used by `xcauth`, but could be useful
+for multi-domain servers (and are in fact used by our
+[Managed server](https://jsxc.org/managed.html)).
+
 ## Domains
 ```sql
 CREATE TABLE domains (xmppdomain TEXT PRIMARY KEY,
@@ -77,7 +86,7 @@ of the legacy files pointed to by `--domain-db`, `--cache-db`,
 and `--shared-roster-db` are imported.
 
 
-# Legacy database formats (<=1.0)
+# Legacy database formats (up to v1.1.x)
 
 ## Domain DB
 Location specified by `--domain-db`, this database is an `andybm`-based key/value storage.
