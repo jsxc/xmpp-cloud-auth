@@ -19,18 +19,18 @@ class auth:
         try:
             token = b64decode(self.password.translate(usersafe_encoding) + '=======')
         except:
-            logging.debug('Could not decode token (maybe not a token?)')
+            logging.debug('Not a token (not base64)')
             return False
 
         jid = self.username + '@' + self.domain
 
         if len(token) != 23:
-            logging.debug('Token is too short: %d != 23 (maybe not a token?)' % len(token))
+            logging.debug('Not a token (len: %d != 23)' % len(token))
             return False
 
         (version, mac, header) = unpack('> B 16s 6s', token)
         if version != 0:
-            logging.debug('Wrong token version (maybe not a token?)')
+            logging.debug('Not a token (version: %d != 0)' % version)
             return False;
 
         (secretID, expiry) = unpack('> H I', header)
@@ -40,8 +40,11 @@ class auth:
 
         challenge = pack('> B 6s %ds' % len(jid), version, header, utf8(jid))
         response = hmac.new(self.secret, challenge, hashlib.sha256).digest()
-
-        return hmac.compare_digest(mac, response[:16])
+        if hmac.compare_digest(mac, response[:16]):
+            return True
+        else:
+            logging.warning('Token for %s has invalid signature (possible attack attempt!)' % jid)
+            return False
 
     def auth_cloud(self):
         response = self.cloud_request({
