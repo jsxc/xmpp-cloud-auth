@@ -54,19 +54,6 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--cache-unreachable-ttl', '1w',
                       '--cache-query-ttl', '3600'])
 
-    def test_xcauth_exit_a(self):
-        self.stub_stdouts()
-        self.assertRaises(SystemExit, get_args,
-                '/var/log/xcauth', None, None, 'xcauth',
-                config_file_contents='#',
-                args=['-b', '/tmp/domdb.db',
-                      '--secret', '012345678',
-                      '--ejabberdctl', '012345678',
-                      '--url', 'https://unconfigured.example.ch',
-                      '--type', 'generic',
-                      '--cache-unreachable-ttl', '1w',
-                      '--cache-query-ttl', '3600'])
-
     def test_xcauth_exit_b(self):
         self.stub_stdouts()
         self.assertRaises(SystemExit, get_args,

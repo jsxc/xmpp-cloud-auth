@@ -43,9 +43,11 @@ def post_200_ok(url, data='', headers='', allow_redirects=False,
 def setup_module():
     global xc, sc
     xc = xcauth(domain_db={
-            'xdomain': '99999\thttps://remotehost\tydomain\t',
-            'udomain': '8888\thttps://oldhost\t',
+            b'xdomain': b'99999\thttps://remotehost\tydomain\t',
+            b'udomain': b'8888\thttps://oldhost\t',
         },
+        sql_db=':memory:',
+        cache_storage='db',
         default_url='https://localhost', default_secret='01234')
     sc = sigcloud(xc, 'user1', 'domain1')
 

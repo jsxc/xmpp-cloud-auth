@@ -18,7 +18,7 @@ class TestDBM(unittest.TestCase, iostub):
 
     @classmethod
     def setup_class(cls):
-        global domname, cacname, rosname, sqlname, domfile, dirname
+        global domname, cacname, rosname, sqlname, domfile, dirname, ucdname
         dirname = tempfile.mkdtemp()
         domname = dirname + "/domains.db"
         rosname = dirname + "/shared_roster.db"
@@ -29,7 +29,7 @@ class TestDBM(unittest.TestCase, iostub):
     @classmethod
     def teardown_class(cls):
         domfile.close()
-        shutil.rmtree(dirname)
+#        shutil.rmtree(dirname)
 
     def mkns(self, **kwargs):
         params = {'domain_db': domname, 'get': None, 'put': None, 
@@ -38,7 +38,9 @@ class TestDBM(unittest.TestCase, iostub):
         return Namespace(**params)
 
     def mkpaths(self, **kwargs):
-        paths = {'db': sqlname, 'domain_db': domname, 'cache_db': rosname}
+        paths = {'db': sqlname, 'domain_db': domname,
+                'shared_roster_db': rosname,
+                'cache_storage': 'memory', 'cache_db': ucdname}
         paths.update(**kwargs)
         return Namespace(**paths)
 
@@ -55,9 +57,8 @@ class TestDBM(unittest.TestCase, iostub):
         paths = self.mkpaths()
         sqlconn = connection(paths)
         r = set()
-        with sqlconn as c:
-            for row in c.execute('select * from domains'):
-                r.add(row[0:4])
+        for row in sqlconn.conn.execute('select * from domains'):
+            r.add(row[0:4])
         logging.error('r = %r', r)
         assertEqual(len(r), 2)
         assert ('example.ch', 'XmplScrt', 'https://example.ch/index.php/apps/ojsxc/ajax/externalApi.php', 'example.ch') in r

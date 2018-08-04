@@ -48,9 +48,13 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
         parser.add_argument('--db',
             default=default_db,
             help='Path to the SQLite state database')
+        parser.add_argument('--cache-storage',
+            choices=['none', 'memory', 'db'],
+            default='none',
+            help='How to cache authentication information')
         parser.add_argument('--domain-db', '-b',
             help='''persistent domain database; manipulated with xcdbm.py.
-DEPRECATED, will only be used for migration purposes.''')
+                DEPRECATED, will only be used for migration purposes.''')
         parser.add_argument('--auth-test', '-A',
             nargs=3, metavar=("USER", "DOMAIN", "PASSWORD"),
             help='single, one-shot query of the user, domain, and password triple')
@@ -62,7 +66,7 @@ DEPRECATED, will only be used for migration purposes.''')
             help='single, one-shot query of the user\'s shared roster')
         parser.add_argument('--update-roster', '-T',
             action='store_true',
-            help='also try to update ejabberd shared roster; requires --ejabberdctl and --shared-roster-db')
+            help='DEPRECATED. Automatically activated when --ejabberdctl is set')
 
     add_maybe('--url', '-u',
         required=True,
@@ -88,7 +92,7 @@ DEPRECATED, will only be used for migration purposes.''')
         default='5,10',
         help='Timeout for connection setup, request processing')
     add_maybe('--cache-db',
-        help='Database path for the user cache; enables cache if set. DEPRECATED, only for conversion purposes')
+        help='Database path for the user cache. DEPRECATED, only for conversion purposes')
     add_maybe('--cache-query-ttl',
         default='1h',
         help='Maximum time between queries')
@@ -102,12 +106,14 @@ DEPRECATED, will only be used for migration purposes.''')
         type=int, default=12,
         help='''Encrypt passwords with 2^ROUNDS before storing
             (i.e., every increment of ROUNDS results in twice the
-            computation time)''')
+            computation time, both for us and an attacker).''')
     add_maybe('--ejabberdctl',
         metavar="PATH",
-        help='Enables shared roster updates on authentication; use ejabberdctl command at PATH to modify them')
+        help='''Enables shared roster updates on authentication;
+            use ejabberdctl command at PATH to modify them''')
     add_maybe('--shared-roster-db',
-        help='Which groups a user has been added to (to ensure proper deletion)')
+        help='''Which groups a user has been added to (to ensure proper deletion).
+            DEPRECATED, only for conversion purposes.''')
 
     parser.add_argument('--version',
         action='version', version=VERSION)
@@ -122,12 +128,6 @@ DEPRECATED, will only be used for migration purposes.''')
             args.timeout = (int(a), int(b))
         else:
             args.timeout = int(args.timeout)
-        if (args.ejabberdctl is None) != (args.shared_roster_db is None):
-            sys.stderr.write('Define either both --ejabberdctl and --shared-roster-db, or neither\n')
-            sys.exit(1)
-        if args.update_roster == True and args.ejabberdctl is None:
-            sys.stderr.write('--try-roster requires --ejabberdctl and --shared-roster-db\n')
-            sys.exit(1)
         if (args.auth_test is None and args.isuser_test is None and args.roster_test is None
           and args.type is None): # No work to do
             parser.print_help(sys.stderr)

@@ -49,11 +49,13 @@ def make_rosterfunc(sharedRoster):
 def setup_module():
     global xc, sc
     xc = xcauth(domain_db={
-            'xdomain': '99999\thttps://remotehost\tydomain\t',
-            'udomain': '8888\thttps://oldhost\t',
+            b'xdomain': b'99999\thttps://remotehost\tydomain\t',
+            b'udomain': b'8888\thttps://oldhost\t',
         },
         default_url='https://localhost', default_secret='01234',
         ejabberdctl='/no/bin/ejabberdctl',
+        sql_db=':memory:',
+        cache_storage='db',
         shared_roster_db={}
     )
     xc.ejabberd_controller = ejabberdctl(xc)
@@ -116,6 +118,9 @@ def ctrl_collect(args):
     collect.append(args)
     return ''
 def test_try_30add_lonely_group():
+    #logging.debug('isol = %s' % xc.db.conn.isolation_level)
+    #xc.db.conn.dump('sqlite_master')
+    #xc.db.conn.dump('rosterinfo')
     # Expected: groups calls
     global collect
     collect = []
@@ -128,6 +133,9 @@ def test_try_30add_lonely_group():
         ['srg_get_members', 'Lonely', 'domain1'],
         ['srg_user_add', 'user1', 'domain1', 'Lonely', 'domain1'],
         ])
+    #xc.db.conn.dump('sqlite_master')
+    #xc.db.conn.dump('rosterinfo')
+    #assert False
 def test_try_31login_again():
     # Expected: groups calls
     global collect

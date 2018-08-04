@@ -69,6 +69,7 @@ class TestOnline(unittest.TestCase, iostub):
                     if len(has_run) == 0:
                         params += ['-b', dirname + '/domain.db',
                             '-l', dirname,
+                            '--db', ':memory:',
                             '--cache-db', dirname + '/cache.db',
                             '--shared-roster-db', dirname + '/roster.db',
                             '--ejabberdctl', '/bin/true']

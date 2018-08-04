@@ -7,6 +7,7 @@ from xclib.roster_thread import roster_thread
 from xclib.utf8 import utf8
 from xclib.check import assertEqual
 
+# Is merged into sigcloud
 class roster(roster_thread):
     def jidsplit(self, jid):
         '''Split jid into lhs@rhs'''
@@ -43,11 +44,26 @@ class roster(roster_thread):
             try:
                 response, text = self.roster_cloud()
                 if response is not None and response != False:
-                    texthash = utf8(hashlib.sha256(utf8(text)).hexdigest())
-                    userhash = utf8('RH:' + self.username + ':' + self.domain)
+                    jid = '@'.join((self.username, self.domain))
+                    texthash = hashlib.sha256(utf8(text)).hexdigest()
                     # Response changed or first response for that user?
-                    if not userhash in self.ctx.shared_roster_db or self.ctx.shared_roster_db[userhash] != texthash:
-                        self.ctx.shared_roster_db[userhash] = texthash
+                    cache_valid = False
+                    for row in self.ctx.db.conn.execute(
+                            'SELECT responsehash FROM rosterinfo where jid=?',
+                            (jid,)):
+                        if row['responsehash'] == texthash:
+                            cache_valid = True
+                    if not cache_valid:
+                        self.ctx.db.conn.begin()
+                        self.ctx.db.conn.execute(
+                                '''INSERT OR IGNORE
+                                INTO rosterinfo (jid)
+                                VALUES (?)''', (jid,))
+                        self.ctx.db.conn.execute(
+                                '''UPDATE rosterinfo
+                                SET responsehash = ?
+                                WHERE jid = ?''', (texthash, jid))
+                        self.ctx.db.conn.commit()
                         t = threading.Thread(target=self.roster_background_thread,
                             args=(response,))
                         t.start()

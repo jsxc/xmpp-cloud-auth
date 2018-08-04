@@ -3,20 +3,20 @@ import requests
 import hashlib
 import hmac
 import logging
-from time import time
+from datetime import datetime
 from xclib.isuser import isuser
 from xclib.auth import auth
 from xclib.roster import roster
 from xclib.utf8 import utf8
 
 class sigcloud(isuser, auth, roster):
-    def __init__(self, ctx, username, domain, password=None, now=time()):
+    def __init__(self, ctx, username, domain, password=None, now=datetime.utcnow()):
         self.ctx = ctx
         self.username = username
         self.domain = domain
         self.password = password
         self.secret, self.url, self.authDomain = ctx.per_domain(domain)
-        self.now = int(now)
+        self.now = now
 
     def cloud_request(self, data):
         '''Performs a signed cloud request on data.

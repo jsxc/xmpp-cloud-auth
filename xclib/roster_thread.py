@@ -22,13 +22,13 @@ class roster_thread:
                 e = ejabberdctl(self.ctx)
             groups, commands = self.roster_update_users(e, sr)
             self.roster_update_groups(e, groups)
-            # For some reason, the vcard changes are not pushed to the clients. Rinse and repeat.
-# Maybe not necessary with synchronous thread?
+            # For some reason, the vcard changes are (were?)
+            # not pushed to the clients. Rinse and repeat.
+# Maybe no longer necessary with (mostly) synchronous thread?
 #            for cmd in commands:
 #                e.execute(cmd)
-            self.ctx.shared_roster_db.sync()
-        except AttributeError:
-            pass # For tests
+#        except AttributeError:
+#            pass # For tests
         except Exception as err:
             (etype, value, tb) = sys.exc_info()
             traceback.print_exception(etype, value, tb)
@@ -54,12 +54,22 @@ Return inverted hash'''
                         groups[g] = [user]
             if 'name' in desc:
                 lhs, rhs = self.jidsplit(user)
-                fnc = utf8('FNC:' + user) # No unicode keys
-                if fnc in self.ctx.shared_roster_db:
-                    cached_name = unutf8(self.ctx.shared_roster_db[fnc])
-                else:
-                    cached_name = None
-                self.ctx.shared_roster_db[fnc] = utf8(desc['name'])
+                jid = '@'.join((lhs, rhs))
+                cached_name = None
+                for row in self.ctx.db.conn.execute(
+                        'SELECT fullname FROM rosterinfo WHERE jid=?',
+                        (jid,)):
+                    cached_name = row['fullname']
+                if cached_name != desc['name']:
+                    self.ctx.db.conn.begin()
+                    self.ctx.db.conn.execute(
+                            '''INSERT OR IGNORE INTO rosterinfo (jid)
+                            VALUES (?)''', (jid,))
+                    self.ctx.db.conn.execute(
+                            '''UPDATE rosterinfo
+                            SET fullname = ?
+                            WHERE jid = ?''', (desc['name'], jid))
+                    self.ctx.db.conn.commit()
                 cmd = e.maybe_set_fn(lhs, rhs, desc['name'], cached_name=cached_name)
                 if cmd is not None:
                     commands.append(cmd)
@@ -75,10 +85,13 @@ For all the *groups* we have information about:
         cleanname = {}
         for g in groups:
             cleanname[g] = sanitize(g)
-            key = utf8('RGC:%s:%s' % (cleanname[g], self.domain))
-            if key in self.ctx.shared_roster_db:
-                previous_users = unutf8(self.ctx.shared_roster_db[key]).split('\t')
-            else:
+            key = '@'.join((cleanname[g], self.domain))
+            previous_users = ()
+            for row in self.ctx.db.conn.execute(
+                    '''SELECT userlist FROM rostergroups
+                    WHERE groupname=?''', (key,)):
+                previous_users = row['userlist'].split('\t')
+            if previous_users == ():
                 e.execute(['srg_create', cleanname[g], self.domain, cleanname[g], cleanname[g], cleanname[g]])
                 # Fill cache (again)
                 previous_users = e.members(cleanname[g], self.domain)
@@ -93,24 +106,40 @@ For all the *groups* we have information about:
                 (lhs, rhs) = self.jidsplit(p)
                 if p not in new_users:
                     e.execute(['srg_user_del', lhs, rhs, cleanname[g], self.domain])
-            self.ctx.shared_roster_db[key] = utf8('\t'.join(sorted(new_users.keys())))
+            # Here, we could use INSERT OR REPLACE, because we fill
+            # all the fields. But only until someone would add
+            # extra fields, which then would be reset to default values.
+            # Better safe than sorry.
+            self.ctx.db.conn.begin()
+            self.ctx.db.conn.execute(
+                    '''INSERT OR IGNORE INTO rostergroups (groupname)
+                    VALUES (?)''', (key,))
+            self.ctx.db.conn.execute(
+                    '''UPDATE rostergroups
+                    SET userlist = ?
+                    WHERE groupname = ?''', ('\t'.join(sorted(new_users.keys())), key))
+            self.ctx.db.conn.commit()
 
         # For all the groups the login user was previously a member of:
         # - delete her from the shared roster group if no longer a member
-        key = utf8('LIG:%s@%s' % (self.username, self.domain))
-        if key in self.ctx.shared_roster_db and self.ctx.shared_roster_db[key] != b'':
-            # Was previously there as well, need to be removed from one?
-            previous = unutf8(self.ctx.shared_roster_db[key]).split('\t')
-            for p in previous:
-                if p not in list(cleanname.values()):
-                    e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
-            # Only update when necessary
-            if not cleanname:
-                del self.ctx.shared_roster_db[key]
-            else:
-                new = '\t'.join(sorted(cleanname.values()))
-                if previous != new:
-                    self.ctx.shared_roster_db[key] = utf8(new)
-        else: # New, always set
-            if cleanname:
-                self.ctx.shared_roster_db[key] = utf8('\t'.join(sorted(cleanname.values())))
+        key = '@'.join((self.username, self.domain))
+        previous = ()
+        for row in self.ctx.db.conn.execute(
+                '''SELECT grouplist FROM rosterinfo WHERE jid=?''', (key,)):
+            if row['grouplist']: # Not None or ''
+                previous = row['grouplist'].split('\t')
+        for p in previous:
+            if p not in list(cleanname.values()):
+                e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
+        # Only update when necessary
+        new = '\t'.join(sorted(cleanname.values()))
+        if previous != new:
+            self.ctx.db.conn.begin()
+            self.ctx.db.conn.execute(
+                    '''INSERT OR IGNORE INTO rosterinfo (jid)
+                    VALUES (?)''', (key,))
+            self.ctx.db.conn.execute(
+                    '''UPDATE rosterinfo
+                    SET grouplist = ?
+                    WHERE jid = ?''', (new, key))
+            self.ctx.db.conn.commit()

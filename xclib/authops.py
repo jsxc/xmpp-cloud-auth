@@ -35,44 +35,19 @@ def perform(args):
 
     logging.debug('Start external auth script %s for %s with endpoint: %s', VERSION, args.type, args.url)
 
-    # Open databases
-    if args.domain_db:
-        domain_db = bsddb3.hashopen(args.domain_db, 'c', 0o600)
-        atexit.register(domain_db.close)
-    else:
-        domain_db = {}
-    if args.cache_db:
+    # Set up global environment (incl. cache, db)
+    if args.cache_storage != 'none':
         try:
             import bcrypt
-            cache_db = bsddb3.hashopen(args.cache_db, 'c', 0o600)
-            atexit.register(cache_db.close)
         except ImportError as e:
             logging.warn('Cannot import bcrypt (%s); caching disabled' % e)
-            cache_db = {b'': b''} # "Do not use" marker
-        except bsddb3.db.DBError as e:
-            # Fall back to in-memory DB; use faster password hashing, as
-            # it is not persistent, so an attacker must have live access
-            # (and then, there are easier ways, unfortunately)
-            cache_db = {}
-            args.cache_bcrypt_rounds = max(6, args.cache_bcrypt_rounds-2)
-            logging.warn('Trouble opening cache-db=%s (%s); falling back to in-memory caching with reduced cache-bcrypt-rounds=%d' % (args.cache_db, e, args.cache_bcrypt_rounds))
-    else:
-        cache_db = {b'': b''} # Magic "do not use" marker
-    if args.shared_roster_db:
-        shared_roster_db = bsddb3.hashopen(args.shared_roster_db, 'c', 0o600)
-        atexit.register(shared_roster_db.close)
-    else:
-        # Will never be accessed, as `ejabberdctl` will not be set
-        shared_roster_db = None
-
-    # Set up environment
+            args.cache_storage = 'none'
     ttls = {'query': args.cache_query_ttl,
             'verify': args.cache_verification_ttl,
             'unreach': args.cache_unreachable_ttl}
     xc = xcauth(default_url = args.url, default_secret = args.secret,
             ejabberdctl = args.ejabberdctl if 'ejabberdctl' in args else None,
-            shared_roster_db = shared_roster_db,
-            domain_db = domain_db, cache_db = cache_db,
+            sql_db = args.db, cache_storage = args.cache_storage,
             timeout = args.timeout, ttls = ttls,
             bcrypt_rounds = args.cache_bcrypt_rounds)
 
@@ -86,7 +61,7 @@ def perform(args):
         sc = sigcloud(xc, args.roster_test[0], args.roster_test[1])
         success, response = sc.roster_cloud()
         print(str(response))
-        if args.update_roster:
+        if args.ejabberdctl:
             sc.try_roster(async=False)
         return
     elif args.auth_test:

@@ -1,10 +1,8 @@
 import logging
 from xclib.utf8 import utf8
 
+# Is merged into sigcloud
 class isuser:
-    def __init__(self, reqdata):
-        self.reqdata = reqdata
-
     def isuser_verbose(self):
         success, code, response, text = self.verbose_cloud_request({
             'operation': 'isuser',

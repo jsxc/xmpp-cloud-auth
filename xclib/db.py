@@ -1,56 +1,88 @@
 import bsddb3
 import sqlite3
+import os
+import logging
+from datetime import datetime
 from xclib.utf8 import unutf8
 
+class sq3c_debugger(sqlite3.Connection):
+#    def execute(self, sql, *args, **kwargs):
+#        logging.debug('EXECUTE: %s' % sql)
+#        return super().execute(sql, *args, **kwargs)
+
+    def begin(self, mode = ''):
+        self.execute('BEGIN %s' % mode)
+
+    def dump(self, tbl):
+        logging.debug('DUMP %s START' % tbl)
+        for row in self.execute('SELECT * from %s' % tbl):
+            out = map(str, row)
+            logging.debug(' | '.join(out))
+        logging.debug('DUMP %s STOP' % tbl)
+
 class connection:
-    def __init__(self, paths):
-        self.paths = paths
+    def __init__(self, args):
+        logging.debug('Opening database connections')
+        db_was_there = (args.db != ':memory:'
+                and os.access(args.db, os.R_OK|os.W_OK))
+        # PySQLite by default does a weird
+        # auto-start-transaction-but-don't-stop mode,
+        # causing so much pain. Reset back to
+        # SQLite default of 'autocommit'.
+        self.conn = sqlite3.connect(args.db,
+                factory=sq3c_debugger,
+                check_same_thread=False,
+                isolation_level = None,
+                detect_types=sqlite3.PARSE_DECLTYPES)
+        self.conn.row_factory = sqlite3.Row
 
-    def __enter__(self):
-        self.conn = sqlite3.connect(self.paths.db, factory=sconn)
-        self.conn.set_paths(self.paths)
-        return self.conn
+        if args.cache_storage == 'memory':
+            self.cache = sqlite3.connect(':memory:',
+                    factory=sq3c_debugger,
+                    check_same_thread=False,
+                    isolation_level = None,
+                    detect_types=sqlite3.PARSE_DECLTYPES)
+            self.cache.row_factory = sqlite3.Row
+            # Create in-memory structure on every creation (db is empty)
+            self.db_create_cache(self.cache)
+            self.cache_disabled = False
+        elif args.cache_storage == 'db':
+            self.cache = self.conn
+            self.cache_disabled = False
+        else: # 'none'
+            self.cache = fake_db()
+            self.cache_disabled = True
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.conn.close()
-        return False # Do not suppress exceptions
+        if not db_was_there: # First-time opening of the SQLite3 db
+            # Ensure persistent cache table is always created
+            # on upgrade, independent of the --cache-storage mode
+            # (so that a later mode change will not require any changes)
+            logging.info('Initializing %s from %s, %s, and %s'
+                    % (args.db, args.domain_db,
+                        args.shared_roster_db, args.cache_db))
+            self.db_create_cache(self.conn)
+            self.db_upgrade_domain(args.domain_db)
+            self.db_upgrade_roster(args.shared_roster_db)
+            if self.cache == self.conn: # Persistent?
+                self.db_upgrade_cache(args.cache_db)
 
-class sconn(sqlite3.Connection):
-    def set_paths(self, paths):
-        self.paths = paths
-        self.upgrade = False
-
-    def execute(self, *args, **kwargs):
-        '''If the schema is not yet there, create it and fill the database first'''
-        if self.upgrade:
-            # Avoid recursion problems on upgrade errors (or after upgrading)
-            return super().execute(*args, **kwargs)
-        else:
-            try:
-                return super().execute(*args, **kwargs)
-            except sqlite3.OperationalError as e:
-                # Convert and try again
-                self.upgrade = True
-                self.db_upgrade()
-                return super().execute(*args, **kwargs)
-
-    def db_upgrade(self):
-        self.db_upgrade_domain()
-        self.db_upgrade_cache()
-        self.db_upgrade_roster()
-
-    def db_upgrade_domain(self):
-        self.execute('''CREATE TABLE domains
+    def db_upgrade_domain(self, olddb):
+        logging.debug('Upgrading domain from %s' % olddb)
+        self.conn.execute('''CREATE TABLE domains
                      (xmppdomain TEXT PRIMARY KEY,
                       authsecret TEXT,
                       authurl    TEXT,
                       authdomain TEXT,
                       regcontact TEXT,
-                      regfirst   TEXT DEFAULT CURRENT_TIMESTAMP,
-                      reglatest  TEXT DEFAULT CURRENT_TIMESTAMP)''')
-        self.execute('BEGIN TRANSACTION')
+                      regfirst   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      reglatest  TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         try:
-            db = bsddb3.hashopen(self.paths.domain_db, 'r')
+            if olddb is None:
+                return
+            elif isinstance(olddb, str):
+                db = bsddb3.hashopen(olddb, 'r')
+            else: # dict
+                db = olddb
             for k,v in db.items():
                 k = unutf8(k)
                 v = unutf8(v)
@@ -59,44 +91,52 @@ class sconn(sqlite3.Connection):
                 except ValueError:
                     (authsecret, authurl, authdomain) = v.split("\t", 2)
                     extra = None
-                self.execute('''INSERT INTO domains (xmppdomain, authsecret, authurl, authdomain)
-                     VALUES (?, ?, ?, ?)''', (k, authsecret, authurl, authdomain))
-            db.close()
+                self.conn.execute('''INSERT INTO domains (xmppdomain, authsecret, authurl, authdomain) VALUES (?, ?, ?, ?)''', (k, authsecret, authurl, authdomain))
+            if isinstance(olddb, str):
+                db.close()
         except bsddb3.db.DBError as e:
-            pass
-        self.execute('COMMIT')
+            logging.error('Trouble converting %s: %s' % (olddb, e))
 
-    def db_upgrade_cache(self):
-        self.execute('''CREATE TABLE authcache
+    def db_create_cache(self, conn):
+        logging.debug('Creating cache table in %s' % str(conn))
+        conn.execute('''CREATE TABLE authcache
                        (jid        TEXT PRIMARY KEY,
                         pwhash     TEXT,
-                        firstauth  TEXT DEFAULT CURRENT_TIMESTAMP,
-                        anyauth    TEXT DEFAULT CURRENT_TIMESTAMP,
-                        remoteauth TEXT DEFAULT CURRENT_TIMESTAMP)''')
-        self.execute('BEGIN TRANSACTION')
+                        firstauth  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        remoteauth TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        anyauth    TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+
+    def db_upgrade_cache(self, olddb):
+        logging.debug('Upgrading cache from %s' % olddb)
         try:
-            db = bsddb3.hashopen(self.paths.cache_db, 'r')
+            if olddb is None:
+                return
+            elif isinstance(olddb, str):
+                db = bsddb3.hashopen(olddb, 'r')
+            else: # dict
+                db = olddb
             for k,v in db.items():
                 k = unutf8(k)
                 v = unutf8(v)
                 (pwhash, ts1, tsv, tsa, rest) = v.split("\t", 4)
-                self.execute('''INSERT INTO authcache (jid, pwhash, firstauth, anyauth, remoteauth)
-                     VALUES (?, ?,
-                     datetime('unixepoch' || ?),
-                     datetime('unixepoch' || ?),
-                     datetime('unixepoch' || ?))''', (k, pwhash, ts1, tsv, tsa))
-            db.close()
+                ts1 = datetime.utcfromtimestamp(ts1)
+                tsv = datetime.utcfromtimestamp(tsv)
+                tsa = datetime.utcfromtimestamp(tsa)
+                self.cache.execute('''INSERT INTO authcache (jid, pwhash, firstauth, remoteauth, anyauth)
+                     VALUES (?, ?, ?, ?, ?)''', (k, pwhash, ts1, tsv, tsa))
+            if isinstance(olddb, str):
+                db.close()
         except bsddb3.db.DBError as e:
-            pass
-        self.execute('COMMIT')
+            logging.error('Trouble converting %s: %s' % (olddb, e))
 
-    def db_upgrade_roster(self):
-        self.execute('''CREATE TABLE rosterinfo
+    def db_upgrade_roster(self, olddb):
+        logging.debug('Upgrading roster from %s' % olddb)
+        self.conn.execute('''CREATE TABLE rosterinfo
                           (jid          TEXT PRIMARY KEY,
                            fullname     TEXT,
                            grouplist    TEXT,
                            responsehash TEXT)''')
-        self.execute('''CREATE TABLE rostergroups
+        self.conn.execute('''CREATE TABLE rostergroups
                           (groupname    TEXT PRIMARY KEY,
                            userlist     TEXT)''')
         rosterinfo_fn = {}
@@ -106,36 +146,42 @@ class sconn(sqlite3.Connection):
         rosterusers = set([])
         rostergroups = {}
         try:
-            db = bsddb3.hashopen(self.paths.cache_db, 'r')
+            if olddb is None:
+                return
+            elif isinstance(olddb, str):
+                db = bsddb3.hashopen(olddb, 'r')
+            else: # dict
+                db = olddb
             for k,v in db.items():
                 k = unutf8(k)
                 v = unutf8(v)
-                if k[:4] == 'FNC:': # Full name (cache only)
+                if k.startswith('FNC:'): # Full name (cache only)
                     jid = k[4:].replace(':', '@')
                     rosterusers = rosterusers + jid
                     if '@' in jid: # Do not copy malformed (old buggy) entries
                         rosterinfo_fn[jid] = v
-                if k[:4] == 'LIG:': # Login In Group (state information)
+                if k.startswith('LIG:'): # Login In Group (state information)
                     jid = k[4:].replace(':', '@')
                     rosterusers = rosterusers + jid
                     rosterinfo_lg[jid] = v
-                if k[:4] == 'RGC:': # Reverse Group Cache (state information)
+                if k.startswith('RGC:'): # Reverse Group Cache (state information)
                     gid = k[4:]
                     rosterinfo_rg[gid] = v
-                elif k[:3] == 'RH:': # Response body hash (cache only)
+                elif k.startswith('RH:'): # Response body hash (cache only)
                     jid = k[3:].replace(':', '@')
                     rosterusers = rosterusers + jid
                     rosterinfo_rc[jid] = v
-            db.close()
+            if isinstance(olddb, str):
+                db.close()
         except bsddb3.db.DBError as e:
-            pass
+            logging.error('Trouble converting %s: %s' % (olddb, e))
 
         rg = []
         for k,v in rostergroups.items():
             k = unutf8(k)
             v = unutf8(v)
             rg.append([k,v])
-        self.executemany('INSERT INTO rostergroups (groupname, userlist) VALUES (?, ?)', rg)
+        self.conn.executemany('INSERT INTO rostergroups (groupname, userlist) VALUES (?, ?)', rg)
 
         ri = []
         for k in rosterusers:
@@ -143,5 +189,10 @@ class sconn(sqlite3.Connection):
                 rosterinfo_fn[k] if k in rosterinfo_fn else None,
                 rosterinfo_lg[k] if k in rosterinfo_lg else None,
                 rosterinfo_rh[k] if k in rosterinfo_rh else None])
-        self.executemany('INSERT INTO rosterinfo (jid, fullname, grouplist, responsehash) VALUES (?, ?, ?, ?)', ri)
+        self.conn.executemany('INSERT INTO rosterinfo (jid, fullname, grouplist, responsehash) VALUES (?, ?, ?, ?)', ri)
 
+class fake_db:
+    def execute(self, cmd, args=None):
+        return None
+    def close(self):
+        return None

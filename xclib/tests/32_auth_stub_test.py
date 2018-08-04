@@ -1,8 +1,10 @@
 # Check whether the auth() function works as it should
 # Stubs the cloud_request() functions for this
+import time
+from datetime import datetime, timedelta
 from xclib.sigcloud import sigcloud
 from xclib import xcauth
-from xclib.check import assertEqual
+from xclib.check import assertEqual, assertSimilar
 from xclib.utf8 import unutf8
 
 cloud_count = 0
@@ -10,11 +12,23 @@ cloud_count = 0
 def setup_module():
     global xc, sc
     xc = xcauth(default_url='https://localhost', default_secret='01234',
+        #sql_db='/tmp/auth.sqlite3', cache_storage='db',
+        #sql_db='/tmp/auth.sqlite3', cache_storage='db',
+        #sql_db=':memory:', cache_storage='db',
+        sql_db=':memory:', cache_storage='memory',
         bcrypt_rounds=6)
     sc = sigcloud(xc, 'user2', 'domain2', 'pass2')
 
 def teardown_module():
     pass
+
+def sql0(sql, *args, **kwargs):
+    xc.db.cache.execute(sql, *args, **kwargs)
+def sql1(sql, *args, **kwargs):
+    return xc.db.cache.execute(sql, *args, **kwargs).fetchone()
+
+def utc(ts):
+    return datetime.utcfromtimestamp(int(ts))
 
 # Test group 10: Cloud operations (with cloud request stubs)
 def sc_params2(data):
@@ -97,10 +111,10 @@ def sc_success(data):
         }, 'fake body')
 def test_10_success():
     sc.verbose_cloud_request = sc_success
-    assertEqual(len(xc.cache_db), 0)
-    assert b'user2:domain2' not in xc.cache_db
+    assertEqual(0, sql1('SELECT COUNT(*) FROM authcache')[0])
     assertEqual(sc.auth(), True)
-    assert b'user2:domain2' in xc.cache_db
+    assertEqual(1, sql1('SELECT COUNT(*) FROM authcache')[0])
+    assertEqual(1, sql1('''SELECT COUNT(*) FROM authcache WHERE jid = 'user2@domain2' ''')[0])
 
 # Test group 20: Time-limited tokens
 def sc_trap(data):
@@ -108,15 +122,15 @@ def sc_trap(data):
 def test_20_token_success():
     # ./generateTimeLimitedToken tuser tdomain 01234 3600 1000
     sc = sigcloud(xc, 'tuser', 'tdomain',
-        'AMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=2000)
+        'AMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=utc(2000))
     sc.verbose_cloud_request = sc_trap
     assertEqual(sc.auth(), True)
-    assert b'tuser:tdomain' not in xc.cache_db
+    assertEqual(0, sql1('''SELECT COUNT(*) FROM authcache WHERE jid = 'tuser@tdomain' ''')[0])
 
 def test_20_token_fail():
     # ./generateTimeLimitedToken tuser tdomain 01234 3600 1000
     sc = sigcloud(xc, 'tuser', 'tdomain',
-        'AMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=5000)
+        'AMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=utc(5000))
     sc.verbose_cloud_request = sc_noauth
     global cloud_count
     cloud_count = 0
@@ -126,7 +140,7 @@ def test_20_token_fail():
 def test_20_token_version():
     # Wrong version
     sc = sigcloud(xc, 'tuser', 'tdomain',
-        'BMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=5000)
+        'BMydsCzkh8-8vjcb9U2gqV/FZQAAEfg', now=utc(5000))
     sc.verbose_cloud_request = sc_noauth
     global cloud_count
     cloud_count = 0
@@ -137,115 +151,114 @@ def test_20_token_version():
 def test_30_cache():
     global cloud_count
     cloud_count = 0
-    sc = sigcloud(xc, 'user3', 'domain3', 'pass3', now=1)
+    sc = sigcloud(xc, 'user3', 'domain3', 'pass3', now=utc(1))
 
     # Timeout first: No cache entry
     sc.verbose_cloud_request = sc_timeout
     assertEqual(sc.auth(), False)
-    assert b'user3:domain3' not in xc.cache_db
+    assertEqual(0, sql1('''SELECT COUNT(*) FROM authcache WHERE jid = 'user3@domain3' ''')[0])
     assertEqual(cloud_count, 1)
 
     # Success: Cache entry
     sc.verbose_cloud_request = sc_success
     assertEqual(sc.auth(), True)
-    assert b'user3:domain3' in xc.cache_db
-    entry = xc.cache_db[b'user3:domain3']
-    fields = unutf8(entry).split('\t')
-    cachedpw = fields[0]
-    assert fields[0].startswith('$2b$06$')
-    assertEqual(fields[1], '1')
-    assertEqual(fields[2], '1')
-    assertEqual(fields[3], '1')
+    assertEqual(1, sql1('''SELECT COUNT(*) FROM authcache WHERE jid = 'user3@domain3' ''')[0])
+    entry = sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')
+    assert(entry != None)
+    assert entry['pwhash'].startswith('$2b$06$')
+    cachedpw = entry['pwhash']
+    assertEqual(entry['firstauth'], utc(1))
+    firstauth = entry['firstauth']
+    assertEqual(entry['remoteauth'], utc(1))
+    assertEqual(entry['anyauth'], utc(1))
     assertEqual(cloud_count, 2)
 
     # Same request a little bit later: Should use cache (and note it)
-    sc.now = 100
+    sc.now = utc(100)
     sc.verbose_cloud_request = sc_trap
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db[b'user3:domain3']
-    fields = unutf8(entry).split('\t')
-    assertEqual(cachedpw, fields[0]) # No cache password update
-    assertEqual(fields[1], '1')
-    assertEqual(fields[2], '1')
-    assertEqual(fields[3], '100')
+    entry = sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')
+    assertEqual(cachedpw, entry['pwhash']) # No cache password update
+    assertEqual(entry['firstauth'], firstauth)
+    assertEqual(entry['remoteauth'], utc(1))
+    assertEqual(entry['anyauth'], utc(100))
     assertEqual(cloud_count, 2)
 
     # Bad password request
-    sc.now = 200
+    sc.now = utc(200)
     sc.verbose_cloud_request = sc_noauth
     sc.password = 'badpass'
     assertEqual(sc.auth(), False)
-    assertEqual(xc.cache_db[b'user3:domain3'], entry) # Unmodified
+    assertEqual(entry, sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')) # Unmodified
     assertEqual(cloud_count, 3)
+    # Test whether the DEFAULT values from the database are reapplied
+    # (is the case when using INSERT OR REPLACE with DEFAULTs in schema)
+    time.sleep(1)
 
     # New successful password request again: Should use cloud again
-    sc.now = 300
+    sc.now = utc(300)
     sc.password = 'newpass'
     sc.verbose_cloud_request = sc_success
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db[b'user3:domain3']
-    fields = unutf8(entry).split('\t')
-    assert cachedpw != fields[0] # Update cached password
-    assertEqual(fields[1], '1')
-    assertEqual(fields[2], '300')
-    assertEqual(fields[3], '300')
+    entry = sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')
+    assert cachedpw != entry['pwhash'] # Update cached password
+    assertEqual(entry['firstauth'], firstauth)
+    assertEqual(entry['remoteauth'], utc(300))
+    assertEqual(entry['anyauth'], utc(300))
     assertEqual(cloud_count, 4)
 
     # Token request should not change anything
     # ./generateTimeLimitedToken user3 domain3 01234 3600 1
     sc.password = 'ABbL+6M8K7HGF/vnfaZZi5XFZQAADhE'
     assertEqual(sc.auth(), True)
-    assertEqual(xc.cache_db[b'user3:domain3'], entry) # Unmodified
+    assertEqual(entry, sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')) # Unmodified
     assertEqual(cloud_count, 4)
 
     # More than an hour of waiting: Go to the cloud again
-    sc.now = 4000
+    sc.now = utc(4000)
     sc.password = 'newpass'
     assertEqual(sc.auth(), True)
-    assert xc.cache_db[b'user3:domain3'] != entry # Updated
-    entry = xc.cache_db[b'user3:domain3']
-    fields = unutf8(entry).split('\t')
-    assert cachedpw != fields[0] # Update cached password
-    assertEqual(fields[1], '1')
-    assertEqual(fields[2], '4000')
-    assertEqual(fields[3], '4000')
+    assert entry != sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''') # Updated
+    entry = sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')
+    assert cachedpw != entry['pwhash'] # Update cached password
+    assertEqual(entry['firstauth'], firstauth)
+    assertEqual(entry['remoteauth'], utc(4000))
+    assertEqual(entry['anyauth'], utc(4000))
     assertEqual(cloud_count, 5)
 
     # Another hour has passed, but the server is now unreachable
-    sc.now = 8000
+    sc.now = utc(8000)
     sc.verbose_cloud_request = sc_timeout
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db[b'user3:domain3']
-    fields = unutf8(entry).split('\t')
-    assert cachedpw != fields[0] # Update cached password
-    assertEqual(fields[1], '1')
-    assertEqual(fields[2], '4000')
-    assertEqual(fields[3], '8000')
+    entry = sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')
+    assert cachedpw != entry['pwhash'] # Update cached password
+    assertEqual(entry['firstauth'], firstauth)
+    assertEqual(entry['remoteauth'], utc(4000))
+    assertEqual(entry['anyauth'], utc(8000))
     assertEqual(cloud_count, 6)
 
     # Another request shortly after goes to the cache again
-    sc.now = 8100
+    sc.now = utc(8100)
     assertEqual(sc.auth(), True)
-    entry = xc.cache_db[b'user3:domain3']
-    fields = unutf8(entry).split('\t')
-    assert cachedpw != fields[0] # Update cached password
-    assertEqual(fields[1], '1')
-    assertEqual(fields[2], '4000')
-    assertEqual(fields[3], '8100')
+    entry = sql1('''SELECT * FROM authcache WHERE jid = 'user3@domain3' ''')
+    assert cachedpw != entry['pwhash'] # Update cached password
+    assertEqual(entry['firstauth'], firstauth)
+    assertEqual(entry['remoteauth'], utc(4000))
+    assertEqual(entry['anyauth'], utc(8100))
     assertEqual(cloud_count, 6)
 
     # Now 46 more requests spaced half an hour apart should all go to the cache
-    while sc.now < 4000 + 86400 - 1800:
-        sc.now += 1800
+    while sc.now < utc(4000 + 86400 - 1800):
+        sc.now += timedelta(seconds=1800)
         assertEqual(sc.auth(), True)
         assertEqual(cloud_count, 6)
 
     # The next goes to the cloud again, but as that times out, is considered OK as well
-    sc.now += 1800
+    sc.now += timedelta(seconds=1800)
     assertEqual(sc.auth(), True)
     assertEqual(cloud_count, 7)
 
     # This could go on for the rest of a week, but then it should finally fail
-    sc.now += 6*86400
+    sc.now += timedelta(days=6)
     assertEqual(sc.auth(), False)
     assertEqual(cloud_count, 8)
