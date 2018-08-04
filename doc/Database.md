@@ -112,7 +112,13 @@ Location specified by `--cache-db`, this database is an `andydbm`-based key/valu
 ## Shared Roster
 Location specified by `--shared-roster-db`, this database is an `anydbm`-based key/value storage.
 
-It contains two types of key/value pairs, differentiated whether the key contains one or two colons (`:`):
+It contains multiple types of key/value pairs, prefixed by:
+- `FNC:`user`:`domain: Full-name cache. Value: full name
+- `RH:`user`:`domain: Response Hash. Value: SHA-256 hash of the `shared_roster` response body
+  (to shortcircuit the next two lookups/processes)
+- `LIG:`user`:`domain: Login In Group. Value: tab-separated lists of groups
+  the user was in at last login
+- `RGC:`group`:`domain: Reverse Group Cache. Value: tab-separated lists of users in that group
 
 ### User memberships
 
