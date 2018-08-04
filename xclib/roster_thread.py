@@ -95,16 +95,16 @@ For all the *groups* we have information about:
                 e.execute(['srg_create', cleanname[g], self.domain, cleanname[g], cleanname[g], cleanname[g]])
                 # Fill cache (again)
                 previous_users = e.members(cleanname[g], self.domain)
-            new_users = {}
+            current_users = {}
             for u in groups[g]:
                 (lhs, rhs) = self.jidsplit(u)
                 fulljid = '%s@%s' % (lhs, rhs)
-                new_users[fulljid] = True
+                current_users[fulljid] = True
                 if not fulljid in previous_users:
                     e.execute(['srg_user_add', lhs, rhs, cleanname[g], self.domain])
             for p in previous_users:
                 (lhs, rhs) = self.jidsplit(p)
-                if p not in new_users:
+                if p not in current_users:
                     e.execute(['srg_user_del', lhs, rhs, cleanname[g], self.domain])
             # Here, we could use INSERT OR REPLACE, because we fill
             # all the fields. But only until someone would add
@@ -117,7 +117,7 @@ For all the *groups* we have information about:
             self.ctx.db.conn.execute(
                     '''UPDATE rostergroups
                     SET userlist = ?
-                    WHERE groupname = ?''', ('\t'.join(sorted(new_users.keys())), key))
+                    WHERE groupname = ?''', ('\t'.join(sorted(current_users.keys())), key))
             self.ctx.db.conn.commit()
 
         # For all the groups the login user was previously a member of:
