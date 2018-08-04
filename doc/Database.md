@@ -61,7 +61,8 @@ The lookup is based on the `jid` (the XMPP ID) and stores
 CREATE TABLE rosterinfo   (jid          TEXT PRIMARY KEY,
                            fullname     TEXT,
                            grouplist    TEXT,
-                           responsehash TEXT);
+                           responsehash TEXT,
+                           last_update  TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE rostergroups (groupname    TEXT PRIMARY KEY,
                            userlist     TEXT);
 ```

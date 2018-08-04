@@ -2,6 +2,7 @@ import hashlib
 import logging
 import traceback
 import threading
+from datetime import datetime
 import sys
 from xclib.roster_thread import roster_thread
 from xclib.utf8 import utf8
@@ -61,8 +62,8 @@ class roster(roster_thread):
                                 VALUES (?)''', (jid,))
                         self.ctx.db.conn.execute(
                                 '''UPDATE rosterinfo
-                                SET responsehash = ?
-                                WHERE jid = ?''', (texthash, jid))
+                                SET (responsehash, last_update) = (?, ?)
+                                WHERE jid = ?''', (texthash, datetime.utcnow(), jid))
                         self.ctx.db.conn.commit()
                         t = threading.Thread(target=self.roster_background_thread,
                             args=(response,))

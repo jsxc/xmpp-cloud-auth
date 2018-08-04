@@ -133,7 +133,8 @@ class connection:
                           (jid          TEXT PRIMARY KEY,
                            fullname     TEXT,
                            grouplist    TEXT,
-                           responsehash TEXT)''')
+                           responsehash TEXT,
+                           last_update  TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         self.conn.execute('''CREATE TABLE rostergroups
                           (groupname    TEXT PRIMARY KEY,
                            userlist     TEXT)''')
