@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for *inetd*-style servers (acceptor socket as fd 0)
 - Added `tools/xcauth.logrotate` (see [tools/README.md](./tools/README.md)
 - Added quick setup instructions for existing *Prosody* or *ejabberd* setups
+- Added support for fewer bcrypt() rounds for in-memory databases
+  (please perform your own security/risk analysis before using it)
 ### Fixed
 ### Changed
 - Changed away from multiple `dbm` storages, due to corruption/locking

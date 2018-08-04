@@ -16,7 +16,7 @@ def setup_module():
         #sql_db='/tmp/auth.sqlite3', cache_storage='db',
         #sql_db=':memory:', cache_storage='db',
         sql_db=':memory:', cache_storage='memory',
-        bcrypt_rounds=6)
+        bcrypt_rounds=(6, 6))
     sc = sigcloud(xc, 'user2', 'domain2', 'pass2')
 
 def teardown_module():

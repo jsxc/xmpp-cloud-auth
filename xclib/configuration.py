@@ -103,10 +103,12 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
         default='1w',
         help='Maximum cache time when backend is unreachable (overrides the other TTLs)')
     add_maybe('--cache-bcrypt-rounds',
-        type=int, default=12,
+        default='12,4',
         help='''Encrypt passwords with 2^ROUNDS before storing
             (i.e., every increment of ROUNDS results in twice the
-            computation time, both for us and an attacker).''')
+            computation time, both for us and an attacker).
+            First value is for persistent, second value for in-memory
+            cache, if both values are present.''')
     add_maybe('--ejabberdctl',
         metavar="PATH",
         help='''Enables shared roster updates on authentication;
@@ -123,11 +125,20 @@ def get_args(logdir, desc, epilog, name, args=None, config_file_contents=None):
         args.cache_query_ttl        = parse_timespan(args.cache_query_ttl)
         args.cache_verification_ttl = parse_timespan(args.cache_verification_ttl)
         args.cache_unreachable_ttl  = parse_timespan(args.cache_unreachable_ttl)
+
         if ',' in args.timeout:
             (a, b) = args.timeout.split(',', 1)
             args.timeout = (int(a), int(b))
         else:
             args.timeout = int(args.timeout)
+
+        if ',' in args.cache_bcrypt_rounds:
+            (a, b) = args.cache_bcrypt_rounds.split(',', 1)
+            args.cache_bcrypt_rounds = (int(a), int(b))
+        else:
+            args.cache_bcrypt_rounds = (int(args.cache_bcrypt_rounds),
+                    int(args.cache_bcrypt_rounds))
+
         if (args.auth_test is None and args.isuser_test is None and args.roster_test is None
           and args.type is None): # No work to do
             parser.print_help(sys.stderr)

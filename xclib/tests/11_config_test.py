@@ -22,10 +22,12 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--url', 'https://unconfigured.example.ch',
                   '--type', 'generic',
                   '--timeout', '5',
+                  '--cache-bcrypt-rounds', '9',
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
         print(args.timeout)
         self.assertEqual(args.timeout, 5)
+        self.assertEqual(args.cache_bcrypt_rounds, (9, 9))
 
     def test_xcauth_timeout(self):
         args = get_args('/var/log/xcauth', None, None, 'xcauth',
@@ -35,10 +37,12 @@ class TestConfiguration(unittest.TestCase, iostub):
                   '--url', 'https://unconfigured.example.ch',
                   '--type', 'generic',
                   '--timeout', '1,2',
+                  '--cache-bcrypt-rounds', '8,4',
                   '--cache-unreachable-ttl', '1w',
                   '--cache-query-ttl', '3600'])
         print(args.timeout)
         self.assertEqual(args.timeout, (1, 2))
+        self.assertEqual(args.cache_bcrypt_rounds, (8, 4))
 
     def test_xcauth_crash_timeout(self):
         self.stub_stdouts()
@@ -51,6 +55,20 @@ class TestConfiguration(unittest.TestCase, iostub):
                       '--url', 'https://unconfigured.example.ch',
                       '--type', 'generic',
                       '--timeout', '1,2,3',
+                      '--cache-unreachable-ttl', '1w',
+                      '--cache-query-ttl', '3600'])
+
+    def test_xcauth_crash_bcrypt(self):
+        self.stub_stdouts()
+        self.assertRaises(ValueError, get_args, 
+                '/var/log/xcauth', None, None, 'xcauth',
+                config_file_contents='#',
+                args=['-b', '/tmp/domdb.db',
+                      '--secret', '012345678',
+                      '--ejabberdctl', '012345678',
+                      '--url', 'https://unconfigured.example.ch',
+                      '--type', 'generic',
+                      '--cache-bcrypt-rounds', '1,2,3',
                       '--cache-unreachable-ttl', '1w',
                       '--cache-query-ttl', '3600'])
 

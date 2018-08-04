@@ -69,7 +69,7 @@ class auth:
             return ret == pwhash
 
     def auth_with_cache(self, unreach=False):
-        if self.ctx.db.cache_disabled:
+        if self.ctx.db.cache_storage == 'none':
             return False
         jid = self.username + '@' + self.domain
         now = self.now # For tests
@@ -85,12 +85,16 @@ class auth:
         return False
 
     def auth_update_cache(self):
-        if self.ctx.db.cache_disabled:
+        if self.ctx.db.cache_storage == 'none':
             return False
         jid = self.username + '@' + self.domain
         now = self.now
         try:
-            salt = bcrypt.gensalt(rounds=self.ctx.bcrypt_rounds)
+            if self.ctx.db.cache_storage == 'memory':
+                rounds = self.ctx.bcrypt_rounds[1]
+            else:
+                rounds = self.ctx.bcrypt_rounds[0]
+            salt = bcrypt.gensalt(rounds=rounds)
         except TypeError:
             # Old versions of bcrypt() apparently do not support the rounds option
             salt = bcrypt.gensalt()

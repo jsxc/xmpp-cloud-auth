@@ -45,13 +45,11 @@ class connection:
             self.cache.row_factory = sqlite3.Row
             # Create in-memory structure on every creation (db is empty)
             self.db_create_cache(self.cache)
-            self.cache_disabled = False
         elif args.cache_storage == 'db':
             self.cache = self.conn
-            self.cache_disabled = False
         else: # 'none'
             self.cache = fake_db()
-            self.cache_disabled = True
+        self.cache_storage = args.cache_storage
 
         if not db_was_there: # First-time opening of the SQLite3 db
             # Ensure persistent cache table is always created
