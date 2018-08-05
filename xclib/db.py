@@ -156,20 +156,20 @@ class connection:
                 v = unutf8(v)
                 if k.startswith('FNC:'): # Full name (cache only)
                     jid = k[4:].replace(':', '@')
-                    rosterusers = rosterusers + jid
+                    rosterusers.add(jid)
                     if '@' in jid: # Do not copy malformed (old buggy) entries
                         rosterinfo_fn[jid] = v
                 if k.startswith('LIG:'): # Login In Group (state information)
                     jid = k[4:].replace(':', '@')
-                    rosterusers = rosterusers + jid
+                    rosterusers.add(jid)
                     rosterinfo_lg[jid] = v
                 if k.startswith('RGC:'): # Reverse Group Cache (state information)
                     gid = k[4:]
                     rosterinfo_rg[gid] = v
                 elif k.startswith('RH:'): # Response body hash (cache only)
                     jid = k[3:].replace(':', '@')
-                    rosterusers = rosterusers + jid
-                    rosterinfo_rc[jid] = v
+                    rosterusers.add(jid)
+                    rosterinfo_rh[jid] = v
             if isinstance(olddb, str):
                 db.close()
         except bsddb3.db.DBError as e:
