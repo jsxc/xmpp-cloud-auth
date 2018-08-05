@@ -18,6 +18,7 @@ perltests-socket2366x:
 	for i in run-online-*.pl; do echo == $$i; (cd .. && tests/$$i socket2366x) || exit 1; done
 
 loggingtests:
+	echo "### Expect warnings, but no aborts"
 # Permission denied
 	echo isuser:john.doe:example.org | ../xcauth.py -t generic -l /etc
 # No such file or directory
