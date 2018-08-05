@@ -30,7 +30,12 @@ class TestOnlinePostfix(unittest.TestCase, iostub):
         self.stub_stdin('get user@example.org\n')
         self.stub_stdout()
         args = get_args(None, None, None, 'xcauth',
-           args=['-t', 'postfix', '-u', 'https://no-connection.jsxc.org/', '-s', '0', '-l', dirname],
+           args=['-t', 'postfix',
+               '-u', 'https://no-connection.jsxc.org/',
+               '-s', '0',
+               '-l', dirname,
+               '--db', ':memory:'
+               ],
            config_file_contents='#')
         perform(args)
         output = sys.stdout.getvalue().rstrip('\n')
