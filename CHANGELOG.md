@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   intermediate step of 1.2.x for the automatic database conversion process
   to kick in.
 - Explain `socket` setup for more efficient multi-domain hosting
+- Retired `xcauth.sh` (*ejabberd* versions requiring this
+  should no longer be around)
 
 ## 1.1.0 - 2018-07-24
 ### Added
