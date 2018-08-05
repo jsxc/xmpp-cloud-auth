@@ -141,7 +141,6 @@ class connection:
         rosterinfo_fn = {}
         rosterinfo_rh = {}
         rosterinfo_lg = {}
-        rosterinfo_rg = {}
         rosterusers = set([])
         rostergroups = {}
         try:
@@ -164,8 +163,8 @@ class connection:
                     rosterusers.add(jid)
                     rosterinfo_lg[jid] = v
                 if k.startswith('RGC:'): # Reverse Group Cache (state information)
-                    gid = k[4:]
-                    rosterinfo_rg[gid] = v
+                    gid = k[4:].replace(':', '@')
+                    rostergroups[gid] = v
                 elif k.startswith('RH:'): # Response body hash (cache only)
                     jid = k[3:].replace(':', '@')
                     rosterusers.add(jid)
@@ -177,8 +176,6 @@ class connection:
 
         rg = []
         for k,v in rostergroups.items():
-            k = unutf8(k)
-            v = unutf8(v)
             rg.append([k,v])
         self.conn.executemany('INSERT INTO rostergroups (groupname, userlist) VALUES (?, ?)', rg)
 
