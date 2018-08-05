@@ -82,8 +82,8 @@ class connection:
             else: # dict
                 db = olddb
             for k,v in db.items():
-                k = unutf8(k)
-                v = unutf8(v)
+                k = unutf8(k, 'illegal')
+                v = unutf8(v, 'illegal')
                 try:
                     (authsecret, authurl, authdomain, extra) = v.split("\t", 3)
                 except ValueError:
@@ -114,8 +114,8 @@ class connection:
             else: # dict
                 db = olddb
             for k,v in db.items():
-                k = unutf8(k)
-                v = unutf8(v)
+                k = unutf8(k, 'illegal')
+                v = unutf8(v, 'illegal')
                 (pwhash, ts1, tsv, tsa, rest) = v.split("\t", 4)
                 ts1 = datetime.utcfromtimestamp(ts1)
                 tsv = datetime.utcfromtimestamp(tsv)
