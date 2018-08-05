@@ -48,6 +48,8 @@ def perform(args):
     xc = xcauth(default_url = args.url, default_secret = args.secret,
             ejabberdctl = args.ejabberdctl if 'ejabberdctl' in args else None,
             sql_db = args.db, cache_storage = args.cache_storage,
+            domain_db = args.domain_db, cache_db = args.cache_db,
+            shared_roster_db = args.shared_roster_db,
             timeout = args.timeout, ttls = ttls,
             bcrypt_rounds = args.cache_bcrypt_rounds)
 
