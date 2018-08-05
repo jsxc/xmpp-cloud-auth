@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added quick setup instructions for existing *Prosody* or *ejabberd* setups
 - Added support for fewer bcrypt() rounds for in-memory databases
   (please perform your own security/risk analysis before using it)
+
 ### Fixed
+
 ### Changed
 - Changed away from multiple `dbm` storages, due to corruption/locking
   problems and the growing number of partially-related databases. The
@@ -40,16 +42,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Retired `xcauth.sh` (*ejabberd* versions requiring this
   should no longer be around)
 
+
 ## 1.1.0 - 2018-07-24
+
 ### Added
 - Support *systemd* socket activation
 - Now supports [*Postfix* Virtual Mailbox mode](systemd/README.md)
+
 ### Fixed
 - Incorporated *Prosody* upstream mod_auth_external.lua fixes
+
 ### Changed
 - Starting from *systemd* is now the recommended mode
 
+
 ## 1.0.0 - 2018-01-29
+
 ### Added
 - Authentication against multiple cloud instances based on
   a dynamic database
@@ -63,7 +71,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for creating/updating *ejabberd* shared roster
   - Automatically on every login (after 0.5s, background the roster update)
   - Trigger manually from the command line (`--update-roster`)
+
 ### Fixed
+
 ### Changed
 - `external_cloud.*` has been renamed to `xcauth.*` everywhere. :warning: You will also need to rename your configuration file, the old name is deprecated and disappear soon.
 - `xcauth.conf` in the installation directory will no longer be considered
@@ -72,6 +82,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - No longer load configuration from `/etc/external_cloud.conf`
 - Improved test coverage
 
+
 ## 0.2.3 - 2017-07-09
 ### Added
 - Can now authenticate against multiple cloud instances
@@ -79,12 +90,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - *systemd* configuration files for sending the authentication requests/responses over a socket
   with `multi-user.target` depending on it
 - "quit" and "exit" commands (useful, when used behind a socket)
+
 ### Fixed
+
 ### Changed
 - Now requires "configargparse"
 - Use HTTP/1.1 persistent connections for higher throughput
 - The new `-t generic` (equivalent to `-t prosody`) is now default (simplifies interactive testing)
 - Some refactoring
+
 
 ## 0.2.2 - 2017-06-23
 ### Added
@@ -93,8 +107,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Meaningful error messages when using old SSL library ([#18](https://github.com/jsxc/xmpp-cloud-auth/issues/18))
 - Information that leaking API secrets on the command line
   or in a world-readable configuration file is a security risk.
+
 ### Fixed
 - Typos ([#17](https://github.com/jsxc/xmpp-cloud-auth/issues/17))
+
 ### Changed
 - Improved documentation (SSL proxy, Prosody support, …)
 - Cleanup: The default configuration method is now via configuration file.
@@ -102,6 +118,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   no longer necessary with configuration file.
   ([#2](https://github.com/jsxc/xmpp-cloud-auth/issues/2))
 - Debugging output more consistent
+
 
 ## 0.2.1 - 2017-06-08
 ### Added
@@ -123,6 +140,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   file) is now deprecated.
 - Minor debug output corrections
 - Clarifications in the `--help` output
+
 
 ## 0.2.0 - 2017-06-02
 ### Added
