@@ -11,14 +11,14 @@ perltests-all: perltests perltests-socket2366x
 perltests-direct:
 	cd .. && tests/run-online.pl
 perltests-subprocess:
-	for i in run-online-*.pl; do echo == $$i; (cd .. && tests/$$i subprocess) || exit 1; done
+	for i in run-online-*.pl; do echo ""; echo ===============================; echo == $$i; (cd .. && tests/$$i subprocess) || exit 1; done
 perltests-socket1366x:
-	for i in run-online-*.pl; do echo == $$i; (cd .. && tests/$$i socket1366x) || exit 1; sleep 1; done
+	for i in run-online-*.pl; do echo ""; echo ===============================; echo == $$i; (cd .. && tests/$$i socket1366x) || exit 1; sleep 1; done
 perltests-socket2366x:
-	for i in run-online-*.pl; do echo == $$i; (cd .. && tests/$$i socket2366x) || exit 1; done
+	for i in run-online-*.pl; do echo ""; echo ===============================; echo == $$i; (cd .. && tests/$$i socket2366x) || exit 1; done
 
 loggingtests:
-	echo "### Expect warnings, but no aborts"
+	@echo ""; echo "### Expect warnings, but no aborts"
 # Permission denied
 	echo isuser:john.doe:example.org | ../xcauth.py -t generic -l /etc
 # No such file or directory
