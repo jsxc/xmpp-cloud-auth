@@ -31,8 +31,6 @@ class xcauth:
         self.default_url=default_url
         self.default_secret=default_secret
         self.ejabberdctl_path=ejabberdctl
-        self.domain_db=domain_db
-        self.cache_db=cache_db
         self.ttls=ttls
         self.timeout=timeout
         self.bcrypt_rounds=bcrypt_rounds
