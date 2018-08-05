@@ -152,8 +152,8 @@ class connection:
             else: # dict
                 db = olddb
             for k,v in db.items():
-                k = unutf8(k)
-                v = unutf8(v)
+                k = unutf8(k, 'illegal')
+                v = unutf8(v, 'illegal')
                 if k.startswith('FNC:'): # Full name (cache only)
                     jid = k[4:].replace(':', '@')
                     rosterusers.add(jid)
