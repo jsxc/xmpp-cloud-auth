@@ -62,7 +62,7 @@ class roster(roster_thread):
                                 VALUES (?)''', (jid,))
                         self.ctx.db.conn.execute(
                                 '''UPDATE rosterinfo
-                                SET (responsehash, last_update) = (?, ?)
+                                SET responsehash = ?, last_update = ?
                                 WHERE jid = ?''', (texthash, datetime.utcnow(), jid))
                         self.ctx.db.conn.commit()
                         t = threading.Thread(target=self.roster_background_thread,

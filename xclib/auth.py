@@ -111,7 +111,7 @@ class auth:
                 (jid, now))
         self.ctx.db.cache.execute(
                 '''UPDATE authcache
-                SET (pwhash, remoteauth, anyauth) = (?, ?, ?)
+                SET pwhash = ?, remoteauth = ?, anyauth = ?
                 WHERE jid = ?''', (pwhash, now, now, jid))
         self.ctx.db.cache.commit()
 
