@@ -1,6 +1,7 @@
 import bsddb3
 import sqlite3
 import os
+import time
 import logging
 from datetime import datetime
 from xclib.utf8 import unutf8
@@ -66,7 +67,8 @@ class connection:
 
     def db_upgrade_domain(self, olddb):
         logging.debug('Upgrading domain from %s' % olddb)
-        self.conn.execute('''CREATE TABLE domains
+        try:
+            self.conn.execute('''CREATE TABLE domains
                      (xmppdomain TEXT PRIMARY KEY,
                       authsecret TEXT,
                       authurl    TEXT,
@@ -74,6 +76,13 @@ class connection:
                       regcontact TEXT,
                       regfirst   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                       reglatest  TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+        except sqlite3.OperationalError as e:
+            logging.warning('Cannot create `domains` table; maybe multiple processes started in parallel? %s' % str(e))
+            # Try to get out of the way of a parallel updater
+            time.sleep(1)
+            # Someone else already created the table; he probably also
+            # migrated it
+            return
         try:
             if olddb is None:
                 return
@@ -97,12 +106,17 @@ class connection:
 
     def db_create_cache(self, conn):
         logging.debug('Creating cache table in %s' % str(conn))
-        conn.execute('''CREATE TABLE authcache
+        try:
+            conn.execute('''CREATE TABLE authcache
                        (jid        TEXT PRIMARY KEY,
                         pwhash     TEXT,
                         firstauth  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         remoteauth TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         anyauth    TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+        except sqlite3.OperationalError as e:
+            logging.warning('Cannot create `domains` table; maybe multiple processes started in parallel? %s' % str(e))
+            # Try to get out of the way of a parallel updater
+            time.sleep(1)
 
     def db_upgrade_cache(self, olddb):
         logging.debug('Upgrading cache from %s' % olddb)
@@ -129,15 +143,30 @@ class connection:
 
     def db_upgrade_roster(self, olddb):
         logging.debug('Upgrading roster from %s' % olddb)
-        self.conn.execute('''CREATE TABLE rosterinfo
+        try:
+            self.conn.execute('''CREATE TABLE rosterinfo
                           (jid          TEXT PRIMARY KEY,
                            fullname     TEXT,
                            grouplist    TEXT,
                            responsehash TEXT,
                            last_update  TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-        self.conn.execute('''CREATE TABLE rostergroups
+        except sqlite3.OperationalError as e:
+            logging.warning('Cannot create `domains` table; maybe multiple processes started in parallel? %s' % str(e))
+            # Try to get out of the way of a parallel updater
+            time.sleep(1)
+            # Continue, in case a previous table creation was aborted
+        try:
+            self.conn.execute('''CREATE TABLE rostergroups
                           (groupname    TEXT PRIMARY KEY,
                            userlist     TEXT)''')
+        except sqlite3.OperationalError as e:
+            logging.warning('Cannot create `domains` table; maybe multiple processes started in parallel? %s' % str(e))
+            # Try to get out of the way of a parallel updater
+            time.sleep(1)
+            # Someone else already created the table; he probably also
+            # migrated it
+            return
+
         rosterinfo_fn = {}
         rosterinfo_rh = {}
         rosterinfo_lg = {}
