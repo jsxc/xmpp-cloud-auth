@@ -11,8 +11,9 @@ class ejabberdctl:
         try:
             return unutf8(subprocess.check_output([self.ctx.ejabberdctl_path] + args))
         except subprocess.CalledProcessError as err:
-            logging.warn('ejabberdctl %s failed with %s'
-                % (self.ctx.ejabberdctl_path + str(args), str(err)))
+            return None
+            logging.warn('ejabberdctl failed with %s'
+                % str(err))
             return None
 
     def maybe_set_fn(self, user, domain, name, cached_name = None):
