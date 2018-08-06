@@ -25,7 +25,7 @@ class connection:
     def __init__(self, args):
         logging.debug('Opening database connections')
         db_was_there = (args.db != ':memory:'
-                and os.access(args.db, os.R_OK|os.W_OK))
+                and os.path.exists(args.db))
         # PySQLite by default does a weird
         # auto-start-transaction-but-don't-stop mode,
         # causing so much pain. Reset back to
@@ -45,7 +45,7 @@ class connection:
                     detect_types=sqlite3.PARSE_DECLTYPES)
             self.cache.row_factory = sqlite3.Row
             # Create in-memory structure on every creation (db is empty)
-            self.db_create_cache(self.cache)
+            self.db_create_cache(self.cache, olddb = None, upgrade = False)
         elif args.cache_storage == 'db':
             self.cache = self.conn
         else: # 'none'
@@ -59,11 +59,11 @@ class connection:
             logging.info('Initializing %s from %s, %s, and %s'
                     % (args.db, args.domain_db,
                         args.shared_roster_db, args.cache_db))
-            self.db_create_cache(self.conn)
             self.db_upgrade_domain(args.domain_db)
+            # Always import cache into first DB (where it may be left stale)
+            self.db_create_cache(self.conn,
+                    olddb = args.cache_db, upgrade = True)
             self.db_upgrade_roster(args.shared_roster_db)
-            if self.cache == self.conn: # Persistent?
-                self.db_upgrade_cache(args.cache_db)
 
     def db_upgrade_domain(self, olddb):
         logging.debug('Upgrading domain from %s' % olddb)
@@ -104,7 +104,7 @@ class connection:
         except bsddb3.db.DBError as e:
             logging.error('Trouble converting %s: %s' % (olddb, e))
 
-    def db_create_cache(self, conn):
+    def db_create_cache(self, conn, olddb, upgrade):
         logging.debug('Creating cache table in %s' % str(conn))
         try:
             conn.execute('''CREATE TABLE authcache
@@ -117,6 +117,9 @@ class connection:
             logging.warning('Cannot create `domains` table; maybe multiple processes started in parallel? %s' % str(e))
             # Try to get out of the way of a parallel updater
             time.sleep(1)
+            return
+        if upgrade:
+            self.db_upgrade_cache(olddb)
 
     def db_upgrade_cache(self, olddb):
         logging.debug('Upgrading cache from %s' % olddb)
@@ -128,12 +131,12 @@ class connection:
             else: # dict
                 db = olddb
             for k,v in db.items():
-                k = unutf8(k, 'illegal')
+                k = unutf8(k, 'illegal').replace(':', '@')
                 v = unutf8(v, 'illegal')
                 (pwhash, ts1, tsv, tsa, rest) = v.split("\t", 4)
-                ts1 = datetime.utcfromtimestamp(ts1)
-                tsv = datetime.utcfromtimestamp(tsv)
-                tsa = datetime.utcfromtimestamp(tsa)
+                ts1 = datetime.utcfromtimestamp(int(ts1))
+                tsv = datetime.utcfromtimestamp(int(tsv))
+                tsa = datetime.utcfromtimestamp(int(tsa))
                 self.cache.execute('''INSERT INTO authcache (jid, pwhash, firstauth, remoteauth, anyauth)
                      VALUES (?, ?, ?, ?, ?)''', (k, pwhash, ts1, tsv, tsa))
             if isinstance(olddb, str):
