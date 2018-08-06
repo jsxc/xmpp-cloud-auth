@@ -7,7 +7,7 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="119.25"
+   width="131.34375"
    height="20"
    version="1.1"
    id="svg35652"
@@ -45,7 +45,7 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:zoom="7.1111111"
-     inkscape:cx="44.419521"
+     inkscape:cx="52.997646"
      inkscape:cy="-14.804586"
      inkscape:window-x="1280"
      inkscape:window-y="27"
@@ -55,7 +55,7 @@
      id="a"
      x2="0"
      y2="42.426407"
-     gradientTransform="matrix(0.74209379,0,0,0.47140452,87.765622,0)"
+     gradientTransform="matrix(0.82495784,0,0,0.47140452,96.343744,0)"
      x1="0"
      y1="0"
      gradientUnits="userSpaceOnUse">
@@ -71,7 +71,7 @@
   </linearGradient>
   <rect
      rx="1.9999998"
-     width="119.24999"
+     width="131.34375"
      height="20"
      id="rect35634"
      x="0"
@@ -79,8 +79,8 @@
      style="fill:#555555;stroke-width:0.99999988"
      ry="2" />
   <rect
-     x="87.765625"
-     width="31.484375"
+     x="96.34375"
+     width="35"
      height="20"
      id="rect35636"
      y="0"
@@ -88,35 +88,35 @@
      rx="2"
      ry="2" />
   <path
-     d="m 87.765625,0 h 4 v 20 h -4 z"
+     d="m 96.34375,0 h 4 v 20 h -4 z"
      id="path35638"
      inkscape:connector-curvature="0"
      style="fill:#44cc11" />
   <rect
-     width="31.484375"
+     width="35"
      height="20"
      id="rect35640"
-     x="87.765625"
+     x="96.34375"
      y="0"
      style="fill:url(#a);stroke-width:1" />
   <text
      style="font-size:medium;font-family:Arial;text-anchor:middle;fill:#010101;fill-opacity:0.3"
      id="text35642"
      y="15"
-     x="45.65625">code coverage</text>
+     x="48.234375">code coverage</text>
   <text
      style="font-size:medium;font-family:Arial;text-anchor:middle;fill:#ffffff"
      id="text35644"
      y="14"
-     x="45.65625">code coverage</text>
+     x="48.234375">code coverage</text>
   <text
      style="font-size:medium;font-family:Arial;text-anchor:middle;fill:#010101;fill-opacity:0.3"
      id="text35646"
      y="15"
-     x="102.65625">99%</text>
+     x="113.23438">99%</text>
   <text
      style="font-size:medium;font-family:Arial;text-anchor:middle;fill:#ffffff"
      id="text35648"
      y="14"
-     x="102.65625">99%</text>
+     x="113.23438">99%</text>
 </svg>
