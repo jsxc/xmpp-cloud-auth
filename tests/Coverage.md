@@ -3,7 +3,7 @@
 Unit tests result in a code coverage of
 [![codecov](https://codecov.io/gh/jsxc/xmpp-cloud-auth/branch/master/graph/badge.svg)](https://codecov.io/gh/jsxc/xmpp-cloud-auth).
 
-However, with system tests (which require `/etc/xcauth.accounts` based on [xcauth.accounts.sample](./xcauth.accounts.sample) and a running Nextcloud+JSXC instance), code coverage as of [`f97ec4f0f`](https://github.com/jsxc/xmpp-cloud-auth/commit/f97ec4f0f) achieves a stunning 99%.
+However, with system tests (which require `/etc/xcauth.accounts` based on [xcauth.accounts.sample](./xcauth.accounts.sample) and a running Nextcloud+JSXC instance), code coverage as of [`f97ec4f0f`](https://github.com/jsxc/xmpp-cloud-auth/commit/f97ec4f0f) achieves a stunning 99%. [!Code coverage](./codecov.svg)
 
 This is the output of `nosetests` in the top-level directory (with online tests, based on the above version).
 
