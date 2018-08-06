@@ -137,7 +137,8 @@ class connection:
                 ts1 = datetime.utcfromtimestamp(int(ts1))
                 tsv = datetime.utcfromtimestamp(int(tsv))
                 tsa = datetime.utcfromtimestamp(int(tsa))
-                self.cache.execute('''INSERT INTO authcache (jid, pwhash, firstauth, remoteauth, anyauth)
+                # First import goes into persistent database
+                self.conn.execute('''INSERT INTO authcache (jid, pwhash, firstauth, remoteauth, anyauth)
                      VALUES (?, ?, ?, ?, ?)''', (k, pwhash, ts1, tsv, tsa))
             if isinstance(olddb, str):
                 db.close()
