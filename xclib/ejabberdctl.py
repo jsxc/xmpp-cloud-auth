@@ -32,7 +32,11 @@ class ejabberdctl:
             return None
 
     def members(self, group, domain):
-        membership = self.execute(['srg_get_members', group, domain]).split('\n')
+        membership = self.execute(['srg_get_members', group, domain])
+        if membership is None:
+            membership = ()
+        else:
+            membership = membership.split('\n')
         # Delete empty values (e.g. from empty output)
         mem = []
         for m in membership:
