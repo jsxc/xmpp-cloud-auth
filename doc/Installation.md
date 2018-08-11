@@ -138,7 +138,8 @@ The protocol is described in [doc/Protocol.md](./Protocol.md#postfix).
 ## Options
 ```
 $ ./xcauth.py --help
-usage: xcauth.py [-h] [--config-file CONFIG_FILE] [--domain-db DOMAIN_DB]
+usage: xcauth.py [-h] [--config-file CONFIG_FILE] [--db DB]
+                 [--cache-storage {none,memory,db}] [--domain-db DOMAIN_DB]
                  [--auth-test USER DOMAIN PASSWORD]
                  [--isuser-test USER DOMAIN] [--roster-test USER DOMAIN]
                  [--update-roster] --url URL --secret SECRET [--log LOG]
@@ -154,18 +155,22 @@ usage: xcauth.py [-h] [--config-file CONFIG_FILE] [--domain-db DOMAIN_DB]
 
 XMPP server authentication against JSXC>=3.2.0 on Nextcloud. See
 https://jsxc.org or https://github.com/jsxc/xmpp-cloud-auth. Args that start
-with '--' (eg. --domain-db) can also be set in a config file (/etc/xcauth.conf
-or specified via --config-file). Config file syntax allows: key=value,
-flag=true, stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi).
-If an arg is specified in more than one place, then commandline values
-override config file values which override defaults.
+with '--' (eg. --db) can also be set in a config file (/etc/xcauth.conf or
+specified via --config-file). Config file syntax allows: key=value, flag=true,
+stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). If an arg is
+specified in more than one place, then commandline values override config file
+values which override defaults.
 
 optional arguments:
   -h, --help            show this help message and exit
   --config-file CONFIG_FILE, -c CONFIG_FILE
                         config file path
+  --db DB               Path to the SQLite state database
+  --cache-storage {none,memory,db}
+                        How to cache authentication information
   --domain-db DOMAIN_DB, -b DOMAIN_DB
-                        persistent domain database; manipulated with xcdbm.py
+                        persistent domain database; manipulated with xcdbm.py.
+                        DEPRECATED, will only be used for migration purposes.
   --auth-test USER DOMAIN PASSWORD, -A USER DOMAIN PASSWORD
                         single, one-shot query of the user, domain, and
                         password triple
@@ -173,8 +178,8 @@ optional arguments:
                         single, one-shot query of the user and domain tuple
   --roster-test USER DOMAIN, -R USER DOMAIN
                         single, one-shot query of the user's shared roster
-  --update-roster, -T   also try to update ejabberd shared roster; requires
-                        --ejabberdctl and --shared-roster-db
+  --update-roster, -T   DEPRECATED. Automatically activated when --ejabberdctl
+                        is set
   --url URL, -u URL     base URL
   --secret SECRET, -s SECRET
                         secure api token
@@ -187,7 +192,8 @@ optional arguments:
                         doc/Installation.md and systemd/README.md for more
                         information and overrides.
   --timeout TIMEOUT     Timeout for connection setup, request processing
-  --cache-db CACHE_DB   Database path for the user cache; enables cache if set
+  --cache-db CACHE_DB   Database path for the user cache. DEPRECATED, only for
+                        conversion purposes
   --cache-query-ttl CACHE_QUERY_TTL
                         Maximum time between queries
   --cache-verification-ttl CACHE_VERIFICATION_TTL
@@ -198,16 +204,20 @@ optional arguments:
   --cache-bcrypt-rounds CACHE_BCRYPT_ROUNDS
                         Encrypt passwords with 2^ROUNDS before storing (i.e.,
                         every increment of ROUNDS results in twice the
-                        computation time)
+                        computation time, both for us and an attacker). First
+                        value is for persistent, second value for in-memory
+                        cache, if both values are present.
   --ejabberdctl PATH    Enables shared roster updates on authentication; use
                         ejabberdctl command at PATH to modify them
   --shared-roster-db SHARED_ROSTER_DB
                         Which groups a user has been added to (to ensure
-                        proper deletion)
+                        proper deletion). DEPRECATED, only for conversion
+                        purposes.
   --version             show program's version number and exit
 
 -I, -R, and -A take precedence over -t. One of them is required. -I, -R, and
--A imply -i and -d.
+-A imply -i and -d. Signals: SIGHUP reopens the error log, SIGUSR1 dumps the
+thread list to the error log.
 ```
 
 Note that `-t generic` is identical to `-t prosody`. This is just to indicate
