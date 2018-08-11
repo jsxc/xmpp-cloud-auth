@@ -1,5 +1,4 @@
-/var/log/xcauth/xcauth.log
-/var/log/xcauth/xcauth.err {
+/var/log/xcauth/xcauth.log {
         daily
         missingok
         rotate 14
@@ -8,7 +7,21 @@
         notifempty
         create 660 xcauth xcauth
         sharedscripts
+	# Will detect log file changes
+}
+
+/var/log/xcauth/xcauth.err {
+        weekly
+	minsize 100k
+        missingok
+        rotate 7
+        compress
+        delaycompress
+        notifempty
+        create 660 xcauth xcauth
+        sharedscripts
+	# No automatic detection of stderr redirection change
         postrotate
-                killall xcauth.py
+                killall -HUP xcauth.py
         endscript
 }
