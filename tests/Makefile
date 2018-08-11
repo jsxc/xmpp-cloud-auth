@@ -1,6 +1,6 @@
 all:	nosetests perltests loggingtests
 more:	really-all
-really-all:	nosetests perltests-all
+really-all:	nosetests perltests-all signaltests
 
 nosetests:
 	(cd .. && nosetests3)
@@ -23,3 +23,6 @@ loggingtests:
 	echo isuser:john.doe:example.org | ../xcauth.py -t generic -l /etc
 # No such file or directory
 	echo isuser:john.doe:example.org | ../xcauth.py -t generic -l /no/such/file/or/directory
+
+signaltests:
+	cd .. && tests/run-signal-tests.sh

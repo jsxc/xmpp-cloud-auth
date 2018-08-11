@@ -36,6 +36,7 @@ class TestOnline(unittest.TestCase, iostub):
     @unittest.skipUnless(os.path.isfile("/etc/xcauth.accounts"), "/etc/xcauth.accounts missing")
     @unittest.skipUnless(is_online(), "Not online")
     def test_online(self):
+        self.maxDiff = None
         has_run = []
         try:
             file = open('/etc/xcauth.accounts', 'r');

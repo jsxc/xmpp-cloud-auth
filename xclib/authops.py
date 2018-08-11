@@ -6,25 +6,40 @@ import select
 import threading
 import socket
 import io
+import signal
 from xclib import xcauth
 from xclib.sigcloud import sigcloud
 from xclib.version import VERSION
 from xclib.sockact import listen_fds_with_names
 
+def rebind_stderr(signum, stackframe):
+    try:
+        # redirect stderr; line buffering
+        sys.stderr = open(errfile, 'a+', buffering=1)
+    except OSError as e:
+        logging.warning('Cannot redirect stderr to %s: %s' % (errfile, str(e)))
+
+def log_info(signum, stackframe):
+    sys.stderr.write('Current thread list:\n')
+    for t in threading.enumerate():
+        sys.stderr.write(str(t)+'\n')
+    sys.stderr.write('(Ends)\n')
+
 def perform(args):
-    # Read configuration
+    global errfile
+
+    # Set up logging
     logfile = args.log + '/xcauth.log'
+    signal.signal(signal.SIGUSR1, log_info)
     if (args.interactive or args.auth_test or args.isuser_test or args.roster_test):
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)
         logging.basicConfig(stream=sys.stderr,
             level=logging.DEBUG,
             format='%(asctime)s %(levelname)s: %(message)s')
     else:
         errfile = args.log + '/xcauth.err'
-        try:
-            # redirect stderr
-            sys.stderr = open(errfile, 'a+')
-        except OSError as e:
-            logging.warning('Cannot redirect stderr to %s: %s' % (errfile, str(e)))
+        rebind_stderr(0, None)
+        signal.signal(signal.SIGHUP, rebind_stderr)
         try:
             logging.basicConfig(filename=logfile,
                 level=logging.DEBUG if args.debug else logging.INFO,
