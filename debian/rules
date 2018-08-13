@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+DISTRIBUTION = $(shell lsb_release -sr)
+VERSION = $(shell git describe | sed 's/^v//')
+PACKAGEVERSION = $(VERSION)-0~$(DISTRIBUTION)0
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+override_dh_auto_test:
+override_dh_auto_build:
+override_dh_auto_install:
+	make install DESTDIR=debian/xcauth
+
+override_dh_gencontrol:
+	dh_gencontrol -- -v$(PACKAGEVERSION)
+
+# "Fixes" things it is not supposed to fix
+override_dh_fixperms:
+	dh_fixperms
+	chown xcauth:xcauth debian/xcauth/var/*/xcauth

@@ -10,6 +10,10 @@ LOGDIR		= ${DATAPREFIX}/log/${MODULE}
 DBDIR		= ${DATAPREFIX}/lib/${MODULE}
 ETCDIR		= /etc
 LRTDIR		= ${ETCDIR}/logrotate.d
+DESTDIR		=
+
+# Automatic
+VERSION		= $(shell git describe | sed 's/^v//')
 
 ########################################################
 # Compiling
@@ -90,26 +94,40 @@ install:	.install_users install_dirs install_files
 # the `install_users` rule will not be run. In effect, users will be created
 # only once, but then first.
 install_dirs:	| .install_users
-		mkdir -p ${BINDIR} ${LIBDIR} ${LOGDIR} ${DBDIR}
-		chmod 770 ${LOGDIR} ${DBDIR}
-		chown ${USER}:${USER} ${LOGDIR} ${DBDIR}
+		mkdir -p ${DESTDIR}${BINDIR} ${DESTDIR}${LIBDIR}
+		mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
+		mkdir -p ${DESTDIR}${DOCDIR}
+		mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+		chmod 770 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+		chown ${USER}:${USER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 
 install_files:	| .install_users
-		install -C -m 755 -T xcauth.py ${BINDIR}/${MODULE}
-		install -C -m 755 -T tools/xcrestart.sh ${BINDIR}/xcrestart
-		install -C -m 644 -T tools/xcauth.logrotate ${LRTDIR}/${MODULE}
-		install -C -m 644 -t ${LIBDIR} xclib/*.py
-		install -C -m 644 -t ${DOCDIR} *.md LICENSE
-		install -C -m 644 -t ${DOCDIR} doc/*.md doc/SystemDiagram.svg
-		install -C -m 640 -T -o ${USER} -g ${USER} xcauth.conf ${ETCDIR}
+		install -C -m 755 -T xcauth.py ${DESTDIR}${BINDIR}/${MODULE}
+		install -C -m 755 -T tools/xcrestart.sh ${DESTDIR}${BINDIR}/xcrestart
+		install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
+		install -C -m 644 -t ${DESTDIR}${LIBDIR} xclib/*.py
+		install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
+		install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
+		install -C -m 640 -o ${USER} -g ${USER} xcauth.conf ${DESTDIR}${ETCDIR}
+
+########################################################
+# Packaging
+########################################################
+package:	deb
+deb:
+		(echo "xcauth (${VERSION}) UNRELEASED; urgency=medium"; tail +2 debian/changelog) \
+			> debian/changelog+ \
+			&& mv debian/changelog+ debian/changelog
+		dpkg-buildpackage -us -uc -b
 
 ########################################################
 # Cleanup
 ########################################################
 clean:
 		${RM} .install_users
+		${RM} -r debian/xcauth
 
-.PHONY: all install test testing clean
+.PHONY: all install test testing clean package
 .PHONY: tests moretests nosetests perltests perltests-all perltests-direct
 .PHONY:	perltests-subprocess perltests-socket1366x perltests-socket2366x
 .PHONY:	loggingtests huptests install_dirs install_files install_users

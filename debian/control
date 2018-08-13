@@ -1,0 +1,6 @@
+Source: xcauth
+Maintainer: Marcel Waldvogel <marcel@jsxc.ch>
+
+Package: xcauth
+Architecture: all
+Description: Nextcloud+JSXC authentication hub for XMPP, ejabberd, Prosody, saslauthd, and postfix
