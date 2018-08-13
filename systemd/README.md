@@ -9,9 +9,9 @@
 The following ports are used by default:
 - TCP port 23662: *ejabberd* protocol support
 - TCP port 23663: *prosody* protocol support
-- TCP port 23664: *prosody* or *ejabberd* protocol support, depending on configuration in `/etc/xcauth.conf` (DEPRECATED)
 - TCP port 23665: *postfix* protocol support
-- `/var/run/saslauthd/mux` (stream-based Unix domain socket): *saslauthd* protocol support
+- TCP port 23666 and, optionally, `/var/run/saslauthd/mux` (stream-based Unix domain socket): *saslauthd* protocol support  
+  `/var/run/saslauthd/mux` is not activated by default, as it would conflict with a running `/usr/sbin/saslauthd` from *sasl2-bin*. You need to manually enable it in `/etc/systemd/system/xcsaslauth.socket` and then reload the configuration.
 
 ## XMPP authentication over *systemd* socket
 

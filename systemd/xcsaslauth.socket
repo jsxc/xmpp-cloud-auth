@@ -2,11 +2,17 @@
 Description=SASL to Nextcloud+JSXC authentication bridge
 
 [Socket]
-ListenStream=/var/run/saslauthd/mux
-SocketUser=root
-SocketGroup=sasl
-SocketMode=660
-DirectoryMode=710
+ListenStream=[::1]:23665
+ListenStream=127.0.0.1:23665
+
+## Only enable the following block if you are not running
+## `/usr/sbin/saslauthd` from *sasl2-bin*
+#ListenStream=/var/run/saslauthd/mux
+#SocketUser=root
+#SocketGroup=sasl
+#SocketMode=660
+#DirectoryMode=710
+
 # Does not work for me yet, despite the documentation in
 # https://www.freedesktop.org/software/systemd/man/systemd.socket.html#ExecStartPre=
 #ExecStartPost=/bin/chgrp sasl /var/run/saslauthd/
