@@ -20,8 +20,7 @@ For some environments, it might be advantageous to use *xcauth* over a network s
 ### Installation (as root)
 
 1. Perform the *xcauth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xcauth/wiki). Especially install source into `/opt/xcauth` and put the configuration in `/etc/xcauth.conf`.
-1. Create the user `xcauth` and the directories: `sudo ../install.sh`
-1. Copy `xc*` to `/etc/systemd/system` (if no modifications to these files are needed, you may also symlink them manually or using `systemctl link`; beware that some versions of *systemd* have problems with symlinks ([systemd#3010](https://github.com/systemd/systemd/issues/3010))
+1. `make install`
 1. Activate the service:
 ```sh
 systemctl enable xcauth.service
@@ -31,7 +30,9 @@ done
 systemctl start xcauth.service
 ```
 
-:warning: If you do not want to replace an existing *saslauthd* on your system, do not copy or start `xcsaslauth.socket`.
+:warning: If you do not want to replace an existing *saslauthd* on your system,
+do remove `/etc/systemd/system/xcsaslauthd.socket` after the installation
+or do not start `xcsaslauth.socket`.
 
 ### Testing
 

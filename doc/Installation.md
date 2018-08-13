@@ -14,15 +14,15 @@ cd /opt
 sudo git clone https://github.com/jsxc/xmpp-cloud-auth
 ```
 
-Create the `xcauth` user and directories:
-```
-sudo ./install.sh
-```
-
 Install Python3 and all required libraries. On Ubuntu 18.04, this is:
 ```
 sudo apt install python3 python3-requests python3-configargparse python3-bcrypt python3-bsddb3
 sudo apt install socket
+```
+
+Create the `xcauth` user and directories, install programs:
+```
+make install
 ```
 
 ## Developers

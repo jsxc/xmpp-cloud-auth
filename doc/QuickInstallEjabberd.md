@@ -26,7 +26,7 @@ tar xvfz v1.2.0.tar.gz
 Create the `xcauth` user and directories:
 ```sh
 cd xmpp-cloud-auth
-./install.sh
+make install
 ```
 
 Install Python3 and all required libraries. On Ubuntu 18.04, this is:
