@@ -70,13 +70,24 @@ signaltests:
 ########################################################
 # Installation
 ########################################################
-install:
+install:	.install_users install_dirs install_files
+
+.install_users install_users:
 		adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${USER}
 		groups prosody > /dev/null 2>&1 && adduser prosody xcauth
 		groups ejabberd > /dev/null 2>&1 && adduser ejabberd xcauth
+
+# These are *order-only-prerequisites*, as described in
+# https://www.gnu.org/software/make/manual/html_node/Prerequisite-Types.html
+# i.e., if `.install_users` exists, independent of timestamp,
+# the `install_users` rule will not be run. In effect, users will be created
+# only once, but then first.
+install_dirs:	| .install_users
 		mkdir -p ${BINDIR} ${LIBDIR} ${LOGDIR} ${DBDIR}
 		chmod 770 ${LOGDIR} ${DBDIR}
 		chmod ${USER}:${USER} ${LOGDIR} ${DBDIR}
+
+install_files:	| .install_users
 		install -C -m 755 -T xcauth.py ${BINDIR}/${MODULE}
 		install -C -m 755 -T tools/xcrestart.sh ${BINDIR}/xcrestart
 		install -C -m 644 -T tools/xcauth.logrotate ${LRTDIR}/${MODULE}
@@ -85,8 +96,13 @@ install:
 		install -C -m 644 -t ${DOCDIR} doc/*.md doc/SystemDiagram.svg
 		install -C -m 640 -T -o ${USER} -g ${USER} xcauth.conf ${ETCDIR}
 
+########################################################
+# Cleanup
+########################################################
+clean:
+		${RM} .install_users
 
-.PHONY: all install test testing
+.PHONY: all install test testing clean
 .PHONY: tests moretests nosetests perltests perltests-all perltests-direct
 .PHONY:	perltests-subprocess perltests-socket1366x perltests-socket2366x
-.PHONY:	loggingtests huptests
+.PHONY:	loggingtests huptests install_dirs install_files install_users
