@@ -2,7 +2,7 @@ MODULE		= xcauth
 LIBNAME		= xclib
 USER		= ${MODULE}
 PREFIX		= /usr
-BINDIR		= ${PREFIX}/bin
+SBINDIR		= ${PREFIX}/sbin
 LIBDIR		= ${PREFIX}/lib/python3/dist-packages/${LIBNAME}
 DOCDIR		= ${PREFIX}/share/doc/${MODULE}
 DATAPREFIX	= /var
@@ -94,7 +94,7 @@ install:	.install_users install_dirs install_files
 # the `install_users` rule will not be run. In effect, users will be created
 # only once, but then first.
 install_dirs:	| .install_users
-	mkdir -p ${DESTDIR}${BINDIR} ${DESTDIR}${LIBDIR}
+	mkdir -p ${DESTDIR}${SBINDIR} ${DESTDIR}${LIBDIR}
 	mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
 	mkdir -p ${DESTDIR}${DOCDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
@@ -102,8 +102,8 @@ install_dirs:	| .install_users
 	chown ${USER}:${USER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 
 install_files:	| .install_users
-	install -C -m 755 -T xcauth.py ${DESTDIR}${BINDIR}/${MODULE}
-	install -C -m 755 -T tools/xcrestart.sh ${DESTDIR}${BINDIR}/xcrestart
+	install -C -m 755 -T xcauth.py ${DESTDIR}${SBINDIR}/${MODULE}
+	install -C -m 755 -T tools/xcrestart.sh ${DESTDIR}${SBINDIR}/xcrestart
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
 	install -C -m 644 -t ${DESTDIR}${LIBDIR} xclib/*.py
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE

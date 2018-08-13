@@ -19,7 +19,7 @@ For some environments, it might be advantageous to use *xcauth* over a network s
 
 ### Installation (as root)
 
-1. Perform the *xcauth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xcauth/wiki). Especially install source into `/opt/xcauth` and put the configuration in `/etc/xcauth.conf`.
+1. Perform the *xcauth* installation as explained in the [parent README](../README.md) or the [installation wiki](https://github.com/jsxc/xcauth/wiki). Especially copy `./xcauth.py` as `/usr/sbin/xcauth` and put the configuration in `/etc/xcauth.conf`.
 1. `make install`
 1. Activate the service:
 ```sh

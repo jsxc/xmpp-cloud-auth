@@ -2,7 +2,7 @@
 Description=XMPP to Nextcloud+JSXC authentication bridge
 
 [Service]
-ExecStart=/opt/xmpp-cloud-auth/xcauth.py
+ExecStart=/usr/sbin/xcauth
 User=xcauth
 Sockets=xcauth.socket xcejabberd.socket xcpostfix.socket xcprosody.socket xcsaslauth.socket
 # Should be doable in `xcsaslauth.socket` according to
