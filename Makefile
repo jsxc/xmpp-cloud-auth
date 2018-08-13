@@ -73,9 +73,16 @@ signaltests:
 install:	.install_users install_dirs install_files
 
 .install_users install_users:
-		adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${USER}
-		groups prosody > /dev/null 2>&1 && adduser prosody xcauth
-		groups ejabberd > /dev/null 2>&1 && adduser ejabberd xcauth
+	if ! groups xcauth > /dev/null 2>&1; then \
+		adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${USER}; \
+	fi
+	# User exists, but not group of xcauth -> add group
+	if [ `groups prosody 2> /dev/null | grep -v xcauth | wc -l` -gt 0 ]; then \
+		adduser prosody xcauth; \
+	fi
+	if [ `groups ejabberd 2> /dev/null | grep -v xcauth | wc -l` -gt 0 ]; then \
+		adduser ejabberd xcauth; \
+	fi
 
 # These are *order-only-prerequisites*, as described in
 # https://www.gnu.org/software/make/manual/html_node/Prerequisite-Types.html
