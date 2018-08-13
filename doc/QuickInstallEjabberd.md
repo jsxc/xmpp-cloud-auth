@@ -13,26 +13,8 @@ or run into trouble with this setup, read the
 
 ## Software installation
 
-Download [the latest release](https://github.com/jsxc/xmpp-cloud-auth/releases)
-and put it to your desired location (the documentation and several tools assume
-`/opt/xmpp-cloud-auth` throughout). Replace `v1.2.0` with the desired version.
-```sh
-sudo -s
-cd /opt
-wget https://github.com/jsxc/xmpp-cloud-auth/archive/v1.2.0.tar.gz
-tar xvfz v1.2.0.tar.gz
-```
-
-Create the `xcauth` user and directories:
-```sh
-cd xmpp-cloud-auth
-make install
-```
-
-Install Python3 and all required libraries. On Ubuntu 18.04, this is:
-```sh
-apt install python3 python3-requests python3-configargparse python3-bcrypt python3-bsddb3
-```
+Download [the latest `xcauth*.deb` package](https://github.com/jsxc/xmpp-cloud-auth/releases)
+and install it.
 
 ## `xcauth` configuration
 

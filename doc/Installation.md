@@ -5,6 +5,10 @@ Alternative installation instructions:
 * [Quick setup for an existing *Prosody* installation](./QuickInstallProsody.md)
 
 ## Download software
+### Option 1, simple: Use the Debian package
+Download `xcauth*.deb` from a repository yet to be determined and install it.
+
+### Option 2, manual: Use the source, Luke!
 Download [the latest release](https://github.com/jsxc/xmpp-cloud-auth/releases)
 and put it to your desired location (e.g. `/opt/xmpp-cloud-auth`) or clone this
 repository to remain on the leading edge:
@@ -25,7 +29,7 @@ Create the `xcauth` user and directories, install programs:
 make install
 ```
 
-## Developers
+### Developers (in addition to Option 2)
 …might want to additionally install
 ```
 sudo apt install python3-nose python3-rednose python3-nose-cov socket
