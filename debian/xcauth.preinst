@@ -4,7 +4,7 @@ set -e
 # Create users, groups if needed
 if ! groups xcauth > /dev/null 2>&1
 then
-  adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${USER}
+  adduser --system --disabled-password --disabled-login --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${USER}
 fi
 
 # User exists, but not group of xcauth -> add group
