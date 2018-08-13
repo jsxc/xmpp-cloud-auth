@@ -1,6 +1,16 @@
 Source: xcauth
 Maintainer: Marcel Waldvogel <marcel@jsxc.ch>
+Build-Depends: debhelper (>= 9), lsb-release, git, socket,
+	python3-nosetests, python3-rednose, python3-nose-cov
 
 Package: xcauth
 Architecture: all
 Description: Nextcloud+JSXC authentication hub for XMPP, ejabberd, Prosody, saslauthd, and postfix
+Depends: ${misc:Depends}, ${shlibs:Depends},
+	python3, python3-requests, python3-configargparse, python3-bcrypt,
+	python3-bsddb3
+Suggests: socket
+Recommends: ejabberd (>= 18.06.0), prosody, lua-lpty, postfix
+Enhances: ejabberd, prosody, postfix
+# Should "Break: sasl2-bin", as it cannot work together with saslauthd.
+# However, this will also disable other SASL-related tools.
