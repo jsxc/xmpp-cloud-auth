@@ -3,6 +3,9 @@ DISTRIBUTION = $(shell lsb_release -sr)
 VERSION = $(shell git describe | sed 's/^v//')
 PACKAGEVERSION = $(VERSION)-0~$(DISTRIBUTION)0
 
+# Do not use --with systemd, as this only works with
+# a single socket or service. Using it in a mixed setup
+# would complicate the install process.
 %:
 	dh $@
 

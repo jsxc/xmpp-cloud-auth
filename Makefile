@@ -10,6 +10,7 @@ LOGDIR		= ${DATAPREFIX}/log/${MODULE}
 DBDIR		= ${DATAPREFIX}/lib/${MODULE}
 ETCDIR		= /etc
 LRTDIR		= ${ETCDIR}/logrotate.d
+SDSDIR		= ${ETCDIR}/systemd/system
 DESTDIR		=
 
 # Automatic
@@ -96,7 +97,7 @@ install:	.install_users install_dirs install_files
 install_dirs:	| .install_users
 	mkdir -p ${DESTDIR}${SBINDIR} ${DESTDIR}${LIBDIR}
 	mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
-	mkdir -p ${DESTDIR}${DOCDIR}
+	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	chmod 770 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	chown ${USER}:${USER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
@@ -109,6 +110,7 @@ install_files:	| .install_users
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
 	install -C -m 640 -o ${USER} -g ${USER} xcauth.conf ${DESTDIR}${ETCDIR}
+	install -C -m 644 -t ${DESTDIR}${SDSDIR} systemd/*.service systemd/*.socket
 
 ########################################################
 # Packaging

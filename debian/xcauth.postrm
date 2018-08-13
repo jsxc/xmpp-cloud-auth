@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+
+# Copy of default debhelper code (see debian/rules)
+if [ "$1" = "purge" ] ; then
+	update-rc.d xcauth remove >/dev/null
+fi
+
+# Copy of default debhelper code (see debian/rules)
+if [ -d /run/systemd/system ]; then
+	systemctl --system daemon-reload >/dev/null || true
+fi
+
+# Copy of default debhelper code (see debian/rules)
+if [ "$1" = "remove" ]; then
+	if [ -x "/usr/bin/deb-systemd-helper" ]; then
+		deb-systemd-helper mask 'xcauth.service' >/dev/null || true
+	fi
+fi
+
+# Copy of default debhelper code (see debian/rules)
+if [ "$1" = "purge" ]; then
+	if [ -x "/usr/bin/deb-systemd-helper" ]; then
+		deb-systemd-helper purge 'xcauth.service' >/dev/null || true
+		deb-systemd-helper unmask 'xcauth.service' >/dev/null || true
+	fi
+fi

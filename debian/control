@@ -1,7 +1,7 @@
 Source: xcauth
 Maintainer: Marcel Waldvogel <marcel@jsxc.ch>
-Build-Depends: debhelper (>= 9), lsb-release, git, socket,
-	python3-nosetests, python3-rednose, python3-nose-cov
+Build-Depends: debhelper (>= 10), lsb-release, git, socket,
+	python3-nose, python3-rednose, python3-nose-cov
 
 Package: xcauth
 Architecture: all
