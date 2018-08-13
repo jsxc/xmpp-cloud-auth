@@ -28,7 +28,7 @@ make install
 ## Developers
 …might want to additionally install
 ```
-sudo apt install python3-nosetests python3-rednose python3-nose-cov socket
+sudo apt install python3-nose python3-rednose python3-nose-cov socket
 ```
 They are required to run the tests.
 
