@@ -85,7 +85,7 @@ install:	.install_users install_dirs install_files
 install_dirs:	| .install_users
 		mkdir -p ${BINDIR} ${LIBDIR} ${LOGDIR} ${DBDIR}
 		chmod 770 ${LOGDIR} ${DBDIR}
-		chmod ${USER}:${USER} ${LOGDIR} ${DBDIR}
+		chown ${USER}:${USER} ${LOGDIR} ${DBDIR}
 
 install_files:	| .install_users
 		install -C -m 755 -T xcauth.py ${BINDIR}/${MODULE}
