@@ -1,11 +1,19 @@
 Source: xcauth
+Section: utils
+Priority: optional
 Maintainer: Marcel Waldvogel <marcel@jsxc.ch>
 Build-Depends: debhelper (>= 10), lsb-release, git, socket,
 	python3-nose, python3-rednose, python3-nose-cov
+Standards-Version: 3.9.7
+Homepage: https://www.jsxc.org
+Vcs-Browser: https://github.com/jsxc/xmpp-cloud-auth/
+Vcs-Git: https://github.com/jsxc/xmpp-cloud-auth.git
 
 Package: xcauth
 Architecture: all
-Description: Nextcloud+JSXC authentication hub for XMPP, ejabberd, Prosody, saslauthd, and postfix
+Description: Nextcloud+JSXC authentication hub for XMPP
+ Pass on Nextcloud credentials, groups, application-specific passwords,
+ and time-limited tokens to ejabberd, Prosody, saslauthd, and postfix.
 Depends: ${misc:Depends}, ${shlibs:Depends},
 	python3, python3-requests, python3-configargparse, python3-bcrypt,
 	python3-bsddb3, adduser
