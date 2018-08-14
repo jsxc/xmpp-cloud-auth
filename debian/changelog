@@ -1,6 +1,6 @@
-xcauth (1.0.0-161-g0104bba-1) UNRELEASED; urgency=medium
+xcauth (1.0.0-165-gab6686c-2) bionic; urgency=medium
 
-  * Created packaging
+  * Direct packaging
 
  -- Marcel Waldvogel <marcel@jsxc.ch>  Mon, 13 Aug 2018 10:54:00 +0200
 

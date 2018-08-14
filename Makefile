@@ -115,7 +115,7 @@ install_files:	| .install_users
 ########################################################
 # Packaging
 ########################################################
-package:	deb tar
+package:	deb tar sdeb
 deb:
 	(echo "xcauth (${VERSION}) UNRELEASED; urgency=medium"; tail +2 debian/changelog) \
 	  > debian/changelog+ \
@@ -123,13 +123,13 @@ deb:
 	dpkg-buildpackage -us -uc -b
 
 tar:
-	if [ "`git rev-parse --abbrev-ref HEAD`" = debian ]; then \
-	  echo "Cannot archive from debian branch"; exit 1; \
-	fi
 	tar cfa ../xcauth_${VERSION}.orig.tar.gz \
 	  --owner=${USER} --group=${USER} --mode=ugo+rX,u+w,go-w \
 	  --exclude-backups --exclude-vcs --exclude-vcs-ignores \
 	  --transform='s,^[.],xcauth_${VERSION}.orig,' --sort=name .
+
+sdeb:	tar
+	debuild -S -i'(^[.]git|^[.]|/[.]|/__pycache__)' -rsudo
 
 ########################################################
 # Cleanup
