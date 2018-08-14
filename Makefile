@@ -1,6 +1,6 @@
 MODULE		= xcauth
 LIBNAME		= xclib
-USER		= ${MODULE}
+CUSER		= ${MODULE}
 PREFIX		= /usr
 SBINDIR		= ${PREFIX}/sbin
 LIBDIR		= ${PREFIX}/lib/python3/dist-packages/${LIBNAME}
@@ -79,7 +79,7 @@ install:	.install_users install_dirs install_files
 
 .install_users install_users:
 	if ! groups xcauth > /dev/null 2>&1; then \
-	  adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${USER}; \
+	  adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${CUSER}; \
 	fi
 	# User exists, but not group of xcauth -> add group
 	if [ `groups prosody 2> /dev/null | grep -v xcauth | wc -l` -gt 0 ]; then \
@@ -100,7 +100,7 @@ install_dirs:	| .install_users
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	chmod 770 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
-	chown ${USER}:${USER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+	chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 
 install_files:	| .install_users
 	install -C -m 755 -T xcauth.py ${DESTDIR}${SBINDIR}/${MODULE}
@@ -109,25 +109,36 @@ install_files:	| .install_users
 	install -C -m 644 -t ${DESTDIR}${LIBDIR} xclib/*.py
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
-	install -C -m 640 -o ${USER} -g ${USER} xcauth.conf ${DESTDIR}${ETCDIR}
+	install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}
 	install -C -m 644 -t ${DESTDIR}${SDSDIR} systemd/*.service systemd/*.socket
 
 ########################################################
 # Packaging
 ########################################################
-package:	deb
+package:	deb tar
 deb:
 	(echo "xcauth (${VERSION}) UNRELEASED; urgency=medium"; tail +2 debian/changelog) \
 	  > debian/changelog+ \
 	  && mv debian/changelog+ debian/changelog
 	dpkg-buildpackage -us -uc -b
 
+tar:
+	if [ "`git rev-parse --abbrev-ref HEAD`" = debian ]; then \
+	  echo "Cannot archive from debian branch"; exit 1; \
+	fi
+	tar cfa ../xcauth_${VERSION}.orig.tar.gz \
+	  --owner=${USER} --group=${USER} --mode=ugo+rX,u+w,go-w \
+	  --exclude-backups --exclude-vcs --exclude-vcs-ignores \
+	  --transform='s,^[.],xcauth_${VERSION}.orig,' --sort=name .
+
 ########################################################
 # Cleanup
 ########################################################
 clean:
-	${RM} .install_users
+	${RM} xcauth_*.tar.gz
+	${RM} -r xclib/__pycache__ xclib/tests/__pycache__
 	${RM} -r debian/xcauth
+	${RM} -r debian/.debhelper
 
 .PHONY: all install test testing clean package
 .PHONY: tests moretests nosetests perltests perltests-all perltests-direct
