@@ -1,4 +1,4 @@
-.install_users
 .coverage
 coverage.xml
+xcauth_*.tar.gz
 *~
