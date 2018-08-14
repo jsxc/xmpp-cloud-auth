@@ -25,3 +25,5 @@ if [ "$1" = "purge" ]; then
 		deb-systemd-helper unmask 'xcauth.service' >/dev/null || true
 	fi
 fi
+
+#DEBHELPER#

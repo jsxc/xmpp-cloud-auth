@@ -17,3 +17,5 @@ if [ `groups ejabberd 2> /dev/null | grep -v xcauth | wc -l` -gt 0 ]
 then
   adduser ejabberd xcauth
 fi
+
+#DEBHELPER#

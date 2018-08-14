@@ -15,3 +15,5 @@ fi
 if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
 	deb-systemd-invoke stop 'xcauth.service' >/dev/null || true
 fi
+
+#DEBHELPER#
