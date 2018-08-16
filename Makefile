@@ -129,7 +129,7 @@ tar:
 	  --transform='s,^[.],xcauth_${VERSION}.orig,' --sort=name .
 
 sdeb:	tar
-	debuild -S -i'(^[.]git|^[.]|/[.]|/__pycache__)' -rsudo
+	debuild -S -i'(^[.]git|^[.]|/[.]|/__pycache__)'
 
 ########################################################
 # Cleanup
