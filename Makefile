@@ -109,6 +109,7 @@ install_files:	| .install_users
 	install -C -m 644 -t ${DESTDIR}${LIBDIR} xclib/*.py
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
+	install -C -m 644 -t ${DESTDIR}${DOCDIR} prosody-modules/*
 	install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}
 	install -C -m 644 -t ${DESTDIR}${SDSDIR} systemd/*.service systemd/*.socket
 
