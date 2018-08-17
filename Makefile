@@ -75,7 +75,8 @@ signaltests:
 ########################################################
 # Installation
 ########################################################
-install:	.install_users install_dirs install_files
+install:	.install_users install_dirs install_files compile_python
+debinstall:	.install_users install_dirs install_files
 
 .install_users install_users:
 	if ! groups xcauth > /dev/null 2>&1; then \
@@ -112,6 +113,9 @@ install_files:	| .install_users
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} prosody-modules/*
 	install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}
 	install -C -m 644 -t ${DESTDIR}${SDSDIR} systemd/*.service systemd/*.socket
+
+compile_python:	| install_files
+	python3 -m compileall ${DESTDIR}${LIBDIR}
 
 ########################################################
 # Packaging

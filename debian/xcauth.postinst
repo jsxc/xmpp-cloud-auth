@@ -44,4 +44,7 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
 	fi
 fi
 
+# Compile Python package
+python3 -m compileall /usr/lib/python3/dist-packages/xclib
+
 #DEBHELPER#

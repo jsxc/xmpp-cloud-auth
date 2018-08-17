@@ -16,4 +16,7 @@ if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
 	deb-systemd-invoke stop 'xcauth.service' >/dev/null || true
 fi
 
+# Remove compilation results
+rm -rf /usr/lib/python3/dist-packages/xclib/__python__
+
 #DEBHELPER#
