@@ -75,7 +75,9 @@ signaltests:
 ########################################################
 # Installation
 ########################################################
-install:	install_users install_dirs install_files compile_python
+install:	install_users
+	${MAKE} install_dirs install_files compile_python
+
 debinstall:	install_dirs install_files
 
 install_users:
