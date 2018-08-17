@@ -1,4 +1,4 @@
-RELEASE		= bionic
+RELEASE		= nightly
 MINOR		= 1
 MODULE		= xcauth
 LIBNAME		= xclib
@@ -133,7 +133,7 @@ update_version:
 deb:	update_version
 	dpkg-buildpackage -us -uc -b
 nightly:deb
-	reprepro -b ../dl.jsxc.org includedeb bionic-nightly ../xcauth_${VERSION}-0~18.040_all.deb
+	reprepro -b ../dl.jsxc.org includedeb nightly ../xcauth_${VERSION}-0~18.040_all.deb
 
 tar:
 	tar cfa ../xcauth_${VERSION}.orig.tar.gz \
