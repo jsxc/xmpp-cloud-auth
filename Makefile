@@ -1,4 +1,5 @@
 RELEASE		= bionic
+MINOR		= 1
 MODULE		= xcauth
 LIBNAME		= xclib
 CUSER		= ${MODULE}
@@ -126,7 +127,7 @@ compile_python:	install_files
 ########################################################
 package:	deb tar sdeb
 update_version:
-	(echo "xcauth (${VERSION}-1) ${RELEASE}; urgency=medium"; tail +2 debian/changelog) \
+	(echo "xcauth (${VERSION}-${MINOR}) ${RELEASE}; urgency=medium"; tail +2 debian/changelog) \
 	  > debian/changelog+ \
 	  && mv debian/changelog+ debian/changelog
 deb:	update_version
