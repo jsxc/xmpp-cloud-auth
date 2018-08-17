@@ -75,10 +75,10 @@ signaltests:
 ########################################################
 # Installation
 ########################################################
-install:	.install_users install_dirs install_files compile_python
-debinstall:	.install_users install_dirs install_files
+install:	install_users install_dirs install_files compile_python
+debinstall:	install_dirs install_files
 
-.install_users install_users:
+install_users:
 	if ! groups xcauth > /dev/null 2>&1; then \
 	  adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${CUSER}; \
 	fi
@@ -95,15 +95,17 @@ debinstall:	.install_users install_dirs install_files
 # i.e., if `.install_users` exists, independent of timestamp,
 # the `install_users` rule will not be run. In effect, users will be created
 # only once, but then first.
-install_dirs:	| .install_users
+install_dirs:	| install_users
 	mkdir -p ${DESTDIR}${SBINDIR} ${DESTDIR}${LIBDIR}
 	mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	chmod 770 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
-	chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+	if group ${CUSER} > /dev/null 2>&1; then
+	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+	fi
 
-install_files:	| .install_users
+install_files:	| install_users
 	install -C -m 755 -T xcauth.py ${DESTDIR}${SBINDIR}/${MODULE}
 	install -C -m 755 -T tools/xcrestart.sh ${DESTDIR}${SBINDIR}/xcrestart
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
@@ -111,7 +113,11 @@ install_files:	| .install_users
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} prosody-modules/*
-	install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}
+	if group ${CUSER} > /dev/null 2>&1; then
+	  install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}
+	else
+	  install -C -m 640 xcauth.conf ${DESTDIR}${ETCDIR}
+	fi
 	install -C -m 644 -t ${DESTDIR}${SDSDIR} systemd/*.service systemd/*.socket
 
 compile_python:	| install_files
@@ -145,7 +151,8 @@ clean:
 	${RM} -r debian/xcauth
 	${RM} -r debian/.debhelper
 
-.PHONY: all install test testing clean package
+.PHONY: all install test testing clean package tar deb sdeb
 .PHONY: tests moretests nosetests perltests perltests-all perltests-direct
 .PHONY:	perltests-subprocess perltests-socket1366x perltests-socket2366x
 .PHONY:	loggingtests huptests install_dirs install_files install_users
+.PHONY: compile_python

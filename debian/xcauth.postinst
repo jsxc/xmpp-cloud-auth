@@ -44,6 +44,9 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
 	fi
 fi
 
+# Fix permissions which were not possible in fakeroot
+chown xcauth:xcauth /var/log/xcauth /var/lib/xcauth /etc/xcauth.conf
+
 # Compile Python package
 python3 -m compileall /usr/lib/python3/dist-packages/xclib
 
