@@ -13,3 +13,11 @@ For installation and configuration instructions, see [doc/Installation.md](doc/I
 * Build status: [![Build Status](https://travis-ci.org/jsxc/xmpp-cloud-auth.svg?branch=master)](https://travis-ci.org/jsxc/xmpp-cloud-auth)
 * Code coverage (offline-only): [![codecov](https://codecov.io/gh/jsxc/xmpp-cloud-auth/branch/master/graph/badge.svg)](https://codecov.io/gh/jsxc/xmpp-cloud-auth) (codecov.io unfortunately can't do online tests)
 * Code coverage (offline and online tests): [![99%](./doc/codecov.svg)](tests/Coverage.md) (manually updated every few commits)
+
+# Binary repository
+
+To use our binary `deb` repository, create `/etc/apt/sources.list.d/jsxc.list` with the following contents:
+
+```deb
+deb https://dl.jsxc.ch/ nightly main
+```

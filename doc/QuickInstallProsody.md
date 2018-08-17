@@ -13,8 +13,13 @@ or run into trouble with this setup, read the
 
 ## Software installation
 
-Download [the latest `xcauth*.deb` package](https://github.com/jsxc/xmpp-cloud-auth/releases)
-and install it.
+Currently, only nightlies are supported, which you get by
+```
+sudo -s
+echo deb https://dl.jsxc.ch nightly main > /etc/apt/sources.list.d/jsxc.list
+apt update
+apt install xcauth
+```
 
 ## `xcauth` configuration
 

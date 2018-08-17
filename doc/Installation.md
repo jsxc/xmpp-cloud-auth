@@ -6,7 +6,14 @@ Alternative installation instructions:
 
 ## Download software
 ### Option 1, simple: Use the Debian package
-Download `xcauth*.deb` from a repository yet to be determined and install it.
+
+Currently, only nightlies are supported, which you get by
+```
+sudo -s
+echo deb https://dl.jsxc.ch nightly main > /etc/apt/sources.list.d/jsxc.list
+apt update
+apt install xcauth
+```
 
 ### Option 2, manual: Use the source, Luke!
 Download [the latest release](https://github.com/jsxc/xmpp-cloud-auth/releases)
