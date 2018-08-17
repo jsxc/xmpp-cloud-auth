@@ -132,6 +132,8 @@ update_version:
 	  && mv debian/changelog+ debian/changelog
 deb:	update_version
 	dpkg-buildpackage -us -uc -b
+nightly:deb
+	reprepro -b ../dl.jsxc.org includedeb bionic-nightly ../xcauth_${VERSION}~18.040_all.deb
 
 tar:
 	tar cfa ../xcauth_${VERSION}.orig.tar.gz \
