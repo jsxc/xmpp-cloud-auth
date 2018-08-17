@@ -90,12 +90,7 @@ install_users:
 	  adduser ejabberd xcauth; \
 	fi
 
-# These are *order-only-prerequisites*, as described in
-# https://www.gnu.org/software/make/manual/html_node/Prerequisite-Types.html
-# i.e., if `.install_users` exists, independent of timestamp,
-# the `install_users` rule will not be run. In effect, users will be created
-# only once, but then first.
-install_dirs:	| install_users
+install_dirs:
 	mkdir -p ${DESTDIR}${SBINDIR} ${DESTDIR}${LIBDIR}
 	mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
@@ -105,7 +100,7 @@ install_dirs:	| install_users
 	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	fi
 
-install_files:	| install_users
+install_files:	install_dirs
 	install -C -m 755 -T xcauth.py ${DESTDIR}${SBINDIR}/${MODULE}
 	install -C -m 755 -T tools/xcrestart.sh ${DESTDIR}${SBINDIR}/xcrestart
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
@@ -120,7 +115,7 @@ install_files:	| install_users
 	fi
 	install -C -m 644 -t ${DESTDIR}${SDSDIR} systemd/*.service systemd/*.socket
 
-compile_python:	| install_files
+compile_python:	install_files
 	python3 -m compileall ${DESTDIR}${LIBDIR}
 
 ########################################################
