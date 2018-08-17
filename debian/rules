@@ -17,8 +17,3 @@ override_dh_auto_install:
 
 override_dh_gencontrol:
 	dh_gencontrol -- -v$(PACKAGEVERSION)
-
-# "Fixes" things it is not supposed to fix
-override_dh_fixperms:
-	dh_fixperms
-	chown xcauth:xcauth debian/xcauth/var/*/xcauth
