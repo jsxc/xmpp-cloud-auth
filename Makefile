@@ -1,3 +1,4 @@
+RELEASE		= bionic
 MODULE		= xcauth
 LIBNAME		= xclib
 CUSER		= ${MODULE}
@@ -98,8 +99,8 @@ install_dirs:
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	chmod 770 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
-	if group ${CUSER} > /dev/null 2>&1; then
-	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+	if group ${CUSER} > /dev/null 2>&1; then \
+	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}; \
 	fi
 
 install_files:	install_dirs
@@ -110,10 +111,10 @@ install_files:	install_dirs
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} prosody-modules/*
-	if group ${CUSER} > /dev/null 2>&1; then
-	  install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}
-	else
-	  install -C -m 640 xcauth.conf ${DESTDIR}${ETCDIR}
+	if group ${CUSER} > /dev/null 2>&1; then \
+	  install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}; \
+	else \
+	  install -C -m 640 xcauth.conf ${DESTDIR}${ETCDIR}; \
 	fi
 	install -C -m 644 -t ${DESTDIR}${SDSDIR} systemd/*.service systemd/*.socket
 
@@ -124,10 +125,11 @@ compile_python:	install_files
 # Packaging
 ########################################################
 package:	deb tar sdeb
-deb:
-	(echo "xcauth (${VERSION}) UNRELEASED; urgency=medium"; tail +2 debian/changelog) \
+update_version:
+	(echo "xcauth (${VERSION}-1) ${RELEASE}; urgency=medium"; tail +2 debian/changelog) \
 	  > debian/changelog+ \
 	  && mv debian/changelog+ debian/changelog
+deb:	update_version
 	dpkg-buildpackage -us -uc -b
 
 tar:
@@ -136,7 +138,7 @@ tar:
 	  --exclude-backups --exclude-vcs --exclude-vcs-ignores \
 	  --transform='s,^[.],xcauth_${VERSION}.orig,' --sort=name .
 
-sdeb:	tar
+sdeb:	tar update_version
 	debuild -S -i'(^[.]git|^[.]|/[.]|/__pycache__)'
 
 ########################################################
