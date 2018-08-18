@@ -17,6 +17,7 @@ Currently, only nightlies are supported, which you get by
 ```
 sudo -s
 echo deb https://dl.jsxc.org nightly main > /etc/apt/sources.list.d/jsxc.list
+wget -qO - http://dl.jsxc.org/archive.key | sudo apt-key add -
 apt update
 apt install xcauth
 ```
