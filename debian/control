@@ -16,9 +16,9 @@ Description: Nextcloud+JSXC authentication hub for XMPP
  and time-limited tokens to ejabberd, Prosody, saslauthd, and postfix.
 Depends: ${misc:Depends}, ${shlibs:Depends},
 	python3, python3-requests, python3-configargparse, python3-bcrypt,
-	python3-bsddb3, adduser
-Suggests: socket
-Recommends: ejabberd (>= 18.06.0), prosody, lua-lpty, postfix
+	adduser
+Suggests: ejabberd (>= 18.06.0), prosody, lua-lpty, postfix, python3-bsddb3
+Recommends: socket
 Enhances: ejabberd, prosody, postfix
 # Should "Break: sasl2-bin", as it cannot work together with saslauthd.
 # However, this will also disable other SASL-related tools.
