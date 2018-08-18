@@ -12,7 +12,9 @@ Sockets=xcauth.socket xcejabberd.socket xcpostfix.socket xcprosody.socket xcsasl
 # The downside of this setup: salsauth connection may not occur before
 # manual `systemctl start xcauth.service` or connection to one of the
 # other sockets.
-ExecStartPre=+/bin/chgrp sasl /var/run/saslauthd/
+#
+# Do not fail if /var/run/saslauthd does not exist
+ExecStartPre=-+/bin/chgrp sasl /var/run/saslauthd/
 
 [Install]
 WantedBy=multi-user.target
