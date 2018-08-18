@@ -7,3 +7,6 @@ ListenStream=127.0.0.1:23665
 Accept=false
 FileDescriptorName=postfix
 Service=xcauth.service
+
+[Install]
+WantedBy=xcauth.service

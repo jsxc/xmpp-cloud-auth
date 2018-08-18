@@ -7,3 +7,6 @@ ListenStream=127.0.0.1:23662
 Accept=false
 FileDescriptorName=ejabberd
 Service=xcauth.service
+
+[Install]
+WantedBy=xcauth.service

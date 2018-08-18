@@ -7,3 +7,6 @@ ListenStream=127.0.0.1:23663
 Accept=false
 FileDescriptorName=prosody
 Service=xcauth.service
+
+[Install]
+WantedBy=xcauth.service
