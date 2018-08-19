@@ -82,7 +82,7 @@ and thus needs to be deactivated with `auth_use_cache: false`.
 ```yaml
 extauth_program: "/usr/bin/socket 127.0.0.1 23662"
 ```
-and using the [*systemd* socket activation mode](../systemd/README.md)
+and using the [*systemd* socket activation mode](../doc/Systemd.md)
 will conserve significant amounts of memory. (In the first case, *ejabberd*
 starts one large *Python* process per virtual host, while in the second
 case, there will only be one (slightly larger) *Python* process and many
@@ -130,7 +130,7 @@ In an attempt to move toward Nextcloud as the main authentication source,
 which can authenticate against Cyrus *saslauthd* to authenticate against
 JSXC and Nextcloud. It has been successfully tested against *Postfix*
 and *Cyrus IMAP*. More information can be found in
-[systemd/README.md (*saslauthd* mode)](../systemd/README.md#saslauthd-mode-authentication).
+[doc/Systemd.md (*saslauthd* mode)](../doc/Systemd.md#saslauthd-mode-authentication).
 The protocol is described in [doc/Protocol.md](./Protocol.md#saslauthd).
 
 ### *postfix* existence tests
@@ -141,7 +141,7 @@ of that mailbox. A *Postfix* `tcp_table` compatible interface has been
 implemented using the `-t postfix` mode, so an `xcauth` instance
 started e.g. by *systemd* can be used to provide the mailbox existence
 information, as explained in
-[systemd/README.md (*postfix* mode)](../systemd/README.md#postfix-mode-existence-check).
+[doc/Systemd.md (*postfix* mode)](../doc/Systemd.md#postfix-mode-existence-check).
 Please note, that aliases or virtual users still need to be configured
 using the standard *postfix* mechanisms.
 
@@ -201,7 +201,7 @@ optional arguments:
   --type {generic,prosody,ejabberd,saslauthd,postfix}, -t {generic,prosody,ejabberd,saslauthd,postfix}
                         XMPP server/query protocol type (prosody≘generic);
                         implies reading requests from stdin. See
-                        doc/Installation.md and systemd/README.md for more
+                        doc/Installation.md and doc/Systemd.md for more
                         information and overrides.
   --timeout TIMEOUT     Timeout for connection setup, request processing
   --cache-db CACHE_DB   Database path for the user cache. DEPRECATED, only for
@@ -266,7 +266,7 @@ Current workaround: Delete the account in Conversations and then add it again.
 If you see unreliable behavior with *Prosody*, you might want to try the experimental socket interface.
 When using the `mod_auth_external.lua` bundled here (together with `pseudolpty.lua`), you can use
 the `external_auth_command = "@localhost:23664";` option to talk over a socket to a process not spawned
-by *Prosody* on port 23664. [systemd/README.md](../systemd/README.md) explains how to automatically start
+by *Prosody* on port 23664. [doc/Systemd.md](../doc/Systemd.md) explains how to automatically start
 such a process using *systemd*.
 
 ### *ejabberd* shared roster support

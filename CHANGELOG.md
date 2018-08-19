@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Support *systemd* socket activation
-- Now supports [*Postfix* Virtual Mailbox mode](systemd/README.md)
+- Now supports [*Postfix* Virtual Mailbox mode](doc/Systemd.md)
 
 ### Fixed
 - Incorporated *Prosody* upstream mod_auth_external.lua fixes
