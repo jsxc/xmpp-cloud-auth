@@ -134,6 +134,8 @@ deb:	update_version
 	dpkg-buildpackage -us -uc -b
 nightly:deb
 	reprepro -b ../dl.jsxc.org includedeb nightly ../xcauth_${VERSION}-0~18.040_all.deb
+nightly-push: nightly
+	(cd ../dl.jsxc.org && git add pool/*/*/*/* && git commit -a -m "Nightly" && git push)
 
 tar:
 	tar cfa ../xcauth_${VERSION}.orig.tar.gz \
