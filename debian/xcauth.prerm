@@ -3,7 +3,7 @@ set -e
 
 # Multi-socket generalization of what debhelper would add
 if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
-	deb-systemd-invoke stop 'xcauth.service' xcauth.socket xcejabberd.socket xcpostfix.socket xcprosody.socket xcsaslauth.socket >/dev/null || true
+	deb-systemd-invoke stop xcauth.service xcejabberd.socket xcpostfix.socket xcprosody.socket xcsaslauth.socket >/dev/null || true
 fi
 
 # Copy of default debhelper code (see debian/rules)
@@ -13,7 +13,7 @@ fi
 
 # Copy of default debhelper code (see debian/rules)
 if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
-	deb-systemd-invoke stop 'xcauth.service' >/dev/null || true
+	deb-systemd-invoke stop xcauth.service >/dev/null || true
 fi
 
 # Remove compilation results
