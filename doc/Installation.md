@@ -10,7 +10,7 @@ Alternative installation instructions:
 Currently, only nightlies are supported, which you get by
 ```
 sudo -s
-echo deb https://dl.jsxc.org nightly main > /etc/apt/sources.list.d/jsxc.list
+echo deb https://dl.jsxc.org stable main > /etc/apt/sources.list.d/jsxc.list
 wget -qO - https://dl.jsxc.org/archive.key | apt-key add -
 apt update
 apt install xcauth

@@ -19,5 +19,5 @@ For installation and configuration instructions, see [doc/Installation.md](doc/I
 To use our binary `deb` repository, create `/etc/apt/sources.list.d/jsxc.list` with the following contents:
 
 ```deb
-deb https://dl.jsxc.org nightly main
+deb https://dl.jsxc.org stable main
 ```

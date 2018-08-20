@@ -136,6 +136,10 @@ nightly:deb
 	reprepro -b ../dl.jsxc.org includedeb nightly ../xcauth_${VERSION}-0~18.040_all.deb
 nightly-push: nightly
 	(cd ../dl.jsxc.org && git add pool/*/*/*/* && git commit -a -m "Nightly" && git push)
+stable:deb
+	reprepro -b ../dl.jsxc.org includedeb stable ../xcauth_${VERSION}-0~18.040_all.deb
+stable-push: stable
+	(cd ../dl.jsxc.org && git add pool/*/*/*/* && git commit -a -m "Stable" && git push)
 
 tar:
 	tar cfa ../xcauth_${VERSION}.orig.tar.gz \
