@@ -2,8 +2,8 @@
 Description=SASL to Nextcloud+JSXC authentication bridge
 
 [Socket]
-ListenStream=[::1]:23665
-ListenStream=127.0.0.1:23665
+ListenStream=[::1]:23666
+ListenStream=127.0.0.1:23666
 
 ## Only enable the following block if you are not running
 ## `/usr/sbin/saslauthd` from *sasl2-bin*
