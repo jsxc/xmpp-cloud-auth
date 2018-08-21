@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed away from multiple `dbm` storages, due to corruption/locking
   problems and the growing number of partially-related databases. The
   database is now `sqlite`.
-- **DEPRECATED** the following. As these options will be removed in 1.3,
+- **DEPRECATED** the following. As these options will be removed in 2.1,
   **please remove** these options from your configuration after
   converting to the `sqlite`, which happens when launching this version
   for the first time.
@@ -45,8 +45,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
       significantly, based on your threat/risk analysis.
     - The use of the shared roster is enabled when `--ejabberdctl` is set.
   - There is a new option `--db`, defaulting to `/var/lib/xcauth/xcauth.sqlite`.
-- As a result, upgrades from <1.2 to >=1.3 will need to go over an
-  intermediate step of 1.2.x for the automatic database conversion process
+- As a result, upgrades from <2.0 to >=2.1 will need to go over an
+  intermediate step of 2.0.x for the automatic database conversion process
   to kick in.
 - Explain `socket` setup for more efficient multi-domain hosting
 - Retired `xcauth.sh` (*ejabberd* versions requiring this
