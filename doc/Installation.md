@@ -1,8 +1,16 @@
 # Installation instructions
-Alternative installation instructions:
-* [Step-by-step setup of a new server](https://github.com/jsxc/xmpp-cloud-auth/wiki/raspberry-pi-en)
-* [Quick setup for an existing *ejabberd* installation](./QuickInstallEjabberd.md)
-* [Quick setup for an existing *Prosody* installation](./QuickInstallProsody.md)
+
+## Adding `xcauth` to an existing Nextcloud and an existing XMPP server
+This document gives a step-by-step setup if you already have Nextcloud and an XMPP server set up and just want to add *XMPP Cloud Authentication*.
+
+If you are in a hurry, you might use the follow simpler documents instead. If they do not answer all your questions, just come back to this document:
+-* [Quick setup for an existing *ejabberd* installation](./QuickInstallEjabberd.md)
+-* [Quick setup for an existing *Prosody* installation](./QuickInstallProsody.md)
+
+## Setting things up from the beginning
+If, instead, you would like to set up a federated cloud server for storage and communication more or less from scratch, there are more detailed setups in our wiki. We especially recommend:
+* [Step-by-step tutorial-style setup of a new server](https://github.com/jsxc/xmpp-cloud-auth/wiki/raspberry-pi-en) (using *ejabberd*; achieves 100% score on [Conversations XMPP Compliance test](https://compliance.conversations.im))
+* [Setup of a new server for the experienced admin or separate servers](https://github.com/jsxc/xmpp-cloud-auth/wiki) (the description for *ejabberd* achieves the same 100%)
 
 ## Download software
 ### Option 1, simple: Use the Debian package

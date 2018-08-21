@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.0.1 - 2018-08-21
 ### Added
+- Added
+  [documentation in the wiki](https://github.com/jsxc/xmpp-cloud-auth/wiki)
+  how to achieve
+  [100% Compliance on the Conversations XMPP tests](https://compliance.conversations.im)
 
 ### Fixed
 - Deprecation version numbers in the 2.0.0 changelog entry have been fixed.
