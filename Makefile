@@ -99,7 +99,7 @@ install_dirs:
 	mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
-	chmod 770 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+	chmod 750 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	if group ${CUSER} > /dev/null 2>&1; then \
 	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}; \
 	fi
