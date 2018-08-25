@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.0.1+ - [Unreleased]
 ### Added
+- Have a valid default `type=` in `/etc/xcauth.conf` to reduce configuration steps
 
 ### Fixed
+- Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)
+- Add dependency on `python3-bsddb3`
 
 ### Changed
 
