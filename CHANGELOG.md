@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `xcrestart` stops `xcauth.service` as well before restarting the sockets
 - `xcrestart` tries to fix permission problems
 - `xcrestart` is more verbose on what it does, as a weak replacement for a man page
+- Support for running `ejabberdctl` through `sudo`
+  (to allow user `xcauth` to modify the shared roster)
 
 ### Fixed
 - Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)

@@ -13,6 +13,7 @@ DBDIR		= ${DATAPREFIX}/lib/${MODULE}
 ETCDIR		= /etc
 LRTDIR		= ${ETCDIR}/logrotate.d
 SDSDIR		= ${ETCDIR}/systemd/system
+SU_DIR		= ${ETCDIR}/sudoers.d
 DESTDIR		=
 
 # Automatic
@@ -99,6 +100,7 @@ install_dirs:
 	mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
+	mkdir -p ${DESTDIR}${SU_DIR}
 	chmod 750 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	if group ${CUSER} > /dev/null 2>&1; then \
 	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}; \
@@ -107,6 +109,8 @@ install_dirs:
 install_files:	install_dirs
 	install -C -m 755 -T xcauth.py ${DESTDIR}${SBINDIR}/${MODULE}
 	install -C -m 755 -T tools/xcrestart.sh ${DESTDIR}${SBINDIR}/xcrestart
+	install -C -m 755 -T tools/xcejabberdctl.sh ${DESTDIR}${SBINDIR}/xcejabberdctl
+	install -C -m 440 -T tools/xcauth.sudo ${DESTDIR}${SU_DIR}/xcauth
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
 	install -C -m 644 -t ${DESTDIR}${LIBDIR} xclib/*.py
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE

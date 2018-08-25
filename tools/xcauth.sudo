@@ -1,0 +1,8 @@
+# Allow user xcauth to run ejabberdctl for shared roster maintenance
+# ejabberdctl is typically installed in /usr/sbin (Debian default)
+# or /opt/ejabberd*/bin (Process One default). The latter is assumed
+# to be symlinked from /opt/ejabberd/bin (requiring adaptation to
+# xcejabberdctl) or symlinked from /usr/sbin/ejabberdctl (works out
+# of the box with xcauth).
+
+xcauth ALL=(ejabberd) /usr/sbin/ejabberdctl, /opt/ejabberd/bin/ejabberdctl
