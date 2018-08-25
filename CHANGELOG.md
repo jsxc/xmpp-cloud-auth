@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)
-- Add dependency on `python3-bsddb3`
+- Add dependency on `python3-bsddb3` and `pyton3-systemd`
 
 ### Changed
 
