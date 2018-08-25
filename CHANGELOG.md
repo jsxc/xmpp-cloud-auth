@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Have a valid default `type=` in `/etc/xcauth.conf` to reduce configuration steps
 - `xcrestart` stops `xcauth.service` as well before restarting the sockets
-  (and is more verbose on what it does, as a weak replacement for a man page)
+- `xcrestart` tries to fix permission problems
+- `xcrestart` is more verbose on what it does, as a weak replacement for a man page
 
 ### Fixed
 - Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)
