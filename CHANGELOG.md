@@ -7,12 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 2.0.1+ - [Unreleased]
 ### Added
 - Have a valid default `type=` in `/etc/xcauth.conf` to reduce configuration steps
+- `xcrestart` stops `xcauth.service` as well before restarting the sockets
+  (and is more verbose on what it does, as a weak replacement for a man page)
 
 ### Fixed
 - Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)
 - Add dependency on `python3-bsddb3` and `pyton3-systemd`
 
 ### Changed
+
 
 ## 2.0.1 - 2018-08-21
 ### Added
