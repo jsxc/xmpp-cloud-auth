@@ -6,10 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.0.1+ - [Unreleased]
 ### Added
-- Have a valid default `type=` in `/etc/xcauth.conf` to reduce configuration steps
+- Have a valid default `type=` in `/etc/xcauth.conf` to reduce required
+  configuration steps
 - `xcrestart` stops `xcauth.service` as well before restarting the sockets
 - `xcrestart` tries to fix permission problems
-- `xcrestart` is more verbose on what it does, as a weak replacement for a man page
+  (`xcauth` is sometimes manually before it as a test, creating DB and log
+  with the wrong user ID)
+- `xcrestart` is more verbose on what it does,
+  as a weak replacement for a man page
 - Support for running `ejabberdctl` through `sudo`
   (to allow user `xcauth` to modify the shared roster)
 
