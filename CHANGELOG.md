@@ -15,13 +15,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `xcrestart` is more verbose on what it does,
   as a weak replacement for a man page
 - Support for running `ejabberdctl` through `sudo`
-  (to allow user `xcauth` to modify the shared roster)
+  (to allow user `xcauth` to modify the shared roster related stuff)
 
 ### Fixed
 - Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)
 - Add dependency on `python3-bsddb3` and `pyton3-systemd`
 
 ### Changed
+- Obsoleted `install.sh`
 
 
 ## 2.0.1 - 2018-08-21
