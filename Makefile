@@ -7,6 +7,7 @@ PREFIX		= /usr
 SBINDIR		= ${PREFIX}/sbin
 LIBDIR		= ${PREFIX}/lib/python3/dist-packages/${LIBNAME}
 DOCDIR		= ${PREFIX}/share/doc/${MODULE}
+MODDIR		= ${PREFIX}/lib/prosody/modules/${MODULE}
 DATAPREFIX	= /var
 LOGDIR		= ${DATAPREFIX}/log/${MODULE}
 DBDIR		= ${DATAPREFIX}/lib/${MODULE}
@@ -102,7 +103,7 @@ install_dirs:
 	mkdir -p ${DESTDIR}${ETCDIR} ${DESTDIR}${LRTDIR}
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
-	mkdir -p ${DESTDIR}${SU_DIR}
+	mkdir -p ${DESTDIR}${SU_DIR} ${DESTDIR}${MODDIR}
 	chmod 750 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	if group ${CUSER} > /dev/null 2>&1; then \
 	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}; \
@@ -114,10 +115,11 @@ install_files:	install_dirs
 	install -C -m 755 -T tools/xcejabberdctl.sh ${DESTDIR}${SBINDIR}/xcejabberdctl
 	install -C -m 440 -T tools/xcauth.sudo ${DESTDIR}${SU_DIR}/xcauth
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
+	install -C -m 644 -T prosody-modules/mod_auth_external.lua ${DESTDIR}${LRTDIR}/${MODULE}/mod_auth_external.lua-xcauth-version
+	install -C -m 644 -T prosody-modules/pseudolpty.lua ${DESTDIR}${LRTDIR}/${MODULE}/pseudolpty.lua
 	install -C -m 644 -t ${DESTDIR}${LIBDIR} xclib/*.py
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
-	install -C -m 644 -t ${DESTDIR}${DOCDIR} prosody-modules/*
 	if group ${CUSER} > /dev/null 2>&1; then \
 	  install -C -m 640 -o ${CUSER} -g ${CUSER} xcauth.conf ${DESTDIR}${ETCDIR}; \
 	else \

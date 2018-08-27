@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   as a weak replacement for a man page
 - Support for running `ejabberdctl` through `sudo`
   (to allow user `xcauth` to modify the shared roster related stuff)
+- *Prosody* modules are installed "almost ready" in `/usr/lib/prosody/modules`
+  (`pseudolpty.lua` ready for action, our `mod_auth_external.lua` as
+  `*-xcauth-example` as not to interfere with *Prosody*'s version.
+  To activate it, the admin needs to rename it.
 
 ### Fixed
 - Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)
