@@ -1,0 +1,291 @@
+# This is an example configuration file for ejabberd taken from
+# the setup explanations in our Debian and/or Raspberry Pi setup:
+#
+# - English: https://github.com/jsxc/xmpp-cloud-auth/wiki/raspberry-pi-en
+# - German:  https://github.com/jsxc/xmpp-cloud-auth/wiki/raspberry-pi
+#
+# Read those setup manuals for more information, but especially replace all
+# occurences of "SERVERNAME" below with your fully-qualified domain name.
+
+define_macro:
+  'CIPHERS': "ECDH:DH:!3DES:!aNULL:!eNULL:!MEDIUM@STRENGTH:!AES128"
+  'TLSOPTS':
+    - "no_sslv3"
+  # generated with: openssl dhparam -out dhparams.pem 2048
+  'DHFILE': "/etc/ejabberd/dhparams.pem" 
+
+certfiles:
+  - "/etc/letsencrypt/live/*/fullchain.pem"
+  - "/etc/letsencrypt/live/*/privkey.pem"
+s2s_use_starttls: required
+s2s_protocol_options: 'TLSOPTS'
+s2s_ciphers: 'CIPHERS'
+s2s_dhfile: 'DHFILE'
+c2s_dhfile: 'DHFILE'
+
+hosts:
+  - "SERVERNAME"
+
+loglevel: 4
+log_rotate_size: 10485760
+log_rotate_date: ""
+log_rotate_count: 1
+log_rate_limit: 100
+trusted_proxies:
+  - "127.0.0.1"
+  - "::1"
+  - "localhost"
+  - "::FFFF:127.0.0.1" # This is the one which works here, but others might catch in other environments
+auth_method: external
+extauth_program: "/usr/bin/socket localhost 23662"
+auth_use_cache: false
+
+shaper:
+  normal: 1000
+  fast: 50000
+  proxy: 1000000
+max_fsm_queue: 1000
+acl:
+  admin:
+    user:
+# Replace with the server admins you want
+#      - "admin1@SERVERNAME"
+#      - "admin2@SERVERNAME"
+  local:
+    user_regexp: ""
+  loopback:
+    ip:
+      - "127.0.0.0/8"
+  proxy65_access:
+    local: allow
+    all: deny
+  proxy65_shaper:
+    admin: none
+    proxy_users: proxyrate
+
+shaper_rules:
+  ## Maximum number of simultaneous sessions allowed for a single user:
+  max_user_sessions: 10
+  ## Maximum number of offline messages that users can have:
+  max_user_offline_messages:
+    - 5000: admin
+    - 500
+  ## For C2S connections, all users except admins use the "normal" shaper
+  c2s_shaper:
+    - none: admin
+    - normal
+  ## All S2S connections use the "fast" shaper
+  s2s_shaper: fast
+access_rules:
+  ## This rule allows access only for local users:
+  local:
+    - allow: local
+  ## Only non-blocked users can use c2s connections:
+  c2s:
+    - deny: blocked
+    - allow
+  ## Only admins can send announcement messages:
+  announce:
+    - allow: admin
+  ## Only admins can use the configuration interface:
+  configure:
+    - allow: admin
+  ## Only accounts of the local ejabberd server can create rooms:
+  muc_create:
+    - allow: local
+  ## Only accounts on the local ejabberd server can create Pubsub nodes:
+  pubsub_createnode:
+    - allow: local
+  ## In-band registration allows registration of any possible username.
+  ## To disable in-band registration, replace 'allow' with 'deny'.
+  register:
+    - deny
+  ## Only allow to register from localhost
+  trusted_network:
+    - allow: loopback
+api_permissions:
+  "console commands":
+    from:
+      - ejabberd_ctl
+    who: all
+    what: "*"
+  "admin access":
+    who:
+      - access:
+          - allow:
+            - ip: "127.0.0.1/8"
+            - acl: admin
+      - oauth:
+        - scope: "ejabberd:admin"
+        - access:
+          - allow:
+              - ip: "127.0.0.1/8"
+              - acl: admin
+    what:
+      - "*"
+      - "!stop"
+      - "!start"
+  "public commands":
+    who:
+      - ip: "127.0.0.1/8"
+    what:
+      - "status"
+      - "connected_users_number"
+language: "en"
+
+modules: # See manual
+  # Ad-Hoc Commands (XEP-0050)
+  mod_adhoc: {}
+  # Additional ejabberdctl commands
+  mod_admin_extra: {}
+  # Send global announcements
+  mod_announce: # recommends mod_adhoc
+    access: announce
+  # Transparently convert between vcard and pubsub avatars
+  mod_avatar: {} # Requires ejabberd >= 17.09, mod_vcard, mod_vcard_xupdate, mod_pusub
+  # Simple Communications Blocking (XEP-0191)
+  mod_blocking: {} # requires mod_privacy
+  # Exchange entity (client) capabilities, e.g. Jingle (XEP-0115)
+  mod_caps: {}
+  # Send messages to all clients of a user (XEP-0280)
+  mod_carboncopy: {}
+  # Queue and filter stanzas for inactive clients (improves mobile client battery life, XEP-0352)
+  mod_client_state: {}
+  # Server configuration with Ad-Hoc commands
+  mod_configure: {} # requires mod_adhoc
+  # Service discovery, e.g. for MUC, Pub/Sub, HTTP Upload (XEP-0030)
+  # (and, announcing an abuse contact)
+  mod_disco:
+    server_info:
+    -
+      modules: all
+      name: "abuse-address"
+      urls: ["mailto:abuse@SERVERNAME"]
+  # (XMPP over) BOSH: HTTP tunneling for web clients such as JSXC (XEP-0124, XEP-0206)
+  mod_bosh: {}
+  # Last activity (XEP-0012)
+  mod_last: {}
+  # Message Archive Management (XEP-0313): Allows clients to catch up
+  mod_mam:
+    default: roster
+  # Queue messages for offline users (XEP-0160)
+  mod_offline:
+    access_max_user_messages: max_user_offline_messages
+  # XMPP Ping and periodic keepalives (XEP-0199)
+  mod_ping: {}
+  # Limit status spam (a full presence authorization requires 4 messages)
+  # See also Anti-Spam Workshop
+  mod_pres_counter:
+    count: 50
+    interval: 600
+  # Block some senders (XEP-0016)
+  mod_privacy: {}
+  # Private XML storage (XEP-0049)
+  mod_private: {}
+  # Allow direct file transfer (obsoleted by HTTP upload, but required by the XMPP Compliance Suite)
+  # Needs restart, not just reload when changing ip/port
+  mod_proxy65:
+    host: "proxy.@HOST@"
+    name: "File Transfer Proxy"
+    ip: "::"
+    port: 7777
+    max_connections: 10
+    auth_type: plain
+    access: local
+    shaper: proxy65_shaper
+  # Allows clients to request push notifications
+  mod_push: {} # Requires ejabberd >= 17.08
+  # The roster. You want this. With versioning.
+  mod_roster:
+    versioning: true
+    store_current_id: true
+  # If you want to pre-configure rosters for workgroups
+  mod_shared_roster: {}
+  # Allow users to create a vcard, visible to authorized peers (XEP-0054)
+  mod_vcard:
+    search: false # Privacy
+  # vcard-based Avatars (XEP-0153)
+  mod_vcard_xupdate: {}
+  # Return version information
+  mod_version: {}
+  # Stream management (XEP-0198): Continuity after network interruptions
+  mod_stream_mgmt: {}
+  # Ask for a dialback, if the certificate does not match (XEP-0220)
+  mod_s2s_dialback: {}
+
+  # Additional services
+
+  # Publish/subscribe, e.g. for Movim
+  mod_pubsub:
+    host: "pubsub.@HOST@" # "hosts:" for multiple pubsub services
+    access_createnode: local
+    ignore_pep_from_offline: false
+    last_item_cache: false
+    max_items_node: 1000
+    default_node_config:
+      max_items: 1000
+    plugins:
+      - "flat"
+      - "pep" # Requires mod_caps.
+  # Multi-User (group) Chat
+  mod_muc:
+    host: "conference.@HOST@"
+    access:
+      - allow
+    access_admin:
+      - allow: admin
+    access_create: muc_create
+    access_persistent: muc_create
+  # File transfer via HTTP Upload
+  mod_http_upload:
+    host: "userdata.@HOST@"
+    docroot: "/var/www/userdata/" # Or wherever you would like to have them stored
+    put_url: "https://userdata.@HOST@/ud"
+    custom_headers:
+      "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT"
+      "Access-Control-Allow-Headers": "Content-Type"
+  # Expire files on server after specified period
+  mod_http_upload_quota:
+    max_days: 30
+
+listen:
+  -
+    port: 5222
+    ip: "::"
+    module: ejabberd_c2s
+    starttls_required: true
+    protocol_options: 'TLSOPTS'
+    dhfile: 'DHFILE'
+    ciphers: 'CIPHERS'
+    max_stanza_size: 65536
+    shaper: c2s_shaper
+    access: c2s
+  -
+    port: 5223
+    ip: "::"
+    module: ejabberd_c2s
+    tls: true
+    protocol_options: 'TLSOPTS'
+    dhfile: 'DHFILE'
+    ciphers: 'CIPHERS'
+    max_stanza_size: 65536
+    shaper: c2s_shaper
+    access: c2s
+  - 
+    port: 5269
+    ip: "::"
+    module: ejabberd_s2s_in
+    max_stanza_size: 131072
+    shaper: s2s_shaper
+  -
+    port: 5280
+    ip: "::"
+    module: ejabberd_http
+    http_bind: true # Will map to "/http-bind"
+  -
+    port: 5288
+    ip: "::"
+    module: ejabberd_http
+    request_handlers:
+      "": mod_http_upload

@@ -18,8 +18,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   (to allow user `xcauth` to modify the shared roster related stuff)
 - *Prosody* modules are installed "almost ready" in `/usr/lib/prosody/modules`
   (`pseudolpty.lua` ready for action, our `mod_auth_external.lua` as
-  `*-xcauth-example` as not to interfere with *Prosody*'s version.
+  `*-xcauth-version` as not to interfere with *Prosody*'s version.
   To activate it, the admin needs to rename it.
+- *ejabberd* example configuration files from our
+  [Debian setup, not only for the Raspberry Pi](https://github.com/jsxc/xmpp-cloud-auth/wiki/raspberry-pi-en)
+  are now installed as `/etc/ejabberd/*-xcauth-example` to simplify
+  the installation.
 
 ### Fixed
 - Changed permissions for `/var/log/xcauth` (`logrotate` would refuse to work on it)

@@ -15,6 +15,7 @@ ETCDIR		= /etc
 LRTDIR		= ${ETCDIR}/logrotate.d
 SDSDIR		= ${ETCDIR}/systemd/system
 SU_DIR		= ${ETCDIR}/sudoers.d
+JABDIR		= ${ETCDIR}/ejabberd
 DESTDIR		=
 
 # Automatic
@@ -104,6 +105,7 @@ install_dirs:
 	mkdir -p ${DESTDIR}${DOCDIR} ${DESTDIR}${SDSDIR}
 	mkdir -p ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	mkdir -p ${DESTDIR}${SU_DIR} ${DESTDIR}${MODDIR}
+	mkdir -p ${DESTDIR}${JABDIR}
 	chmod 750 ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}
 	if group ${CUSER} > /dev/null 2>&1; then \
 	  chown ${CUSER}:${CUSER} ${DESTDIR}${LOGDIR} ${DESTDIR}${DBDIR}; \
@@ -117,6 +119,8 @@ install_files:	install_dirs
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
 	install -C -m 644 -T prosody-modules/mod_auth_external.lua ${DESTDIR}${LRTDIR}/${MODULE}/mod_auth_external.lua-xcauth-version
 	install -C -m 644 -T prosody-modules/pseudolpty.lua ${DESTDIR}${LRTDIR}/${MODULE}/pseudolpty.lua
+	install -C -m 644 -T tools/ejabberd.yml ${DESTDIR}${JABDIR}/ejabberd.yml-xcauth-example
+	install -C -m 644 -T tools/dhparams.pem ${DESTDIR}${JABDIR}/dhparams.pem-xcauth-example
 	install -C -m 644 -t ${DESTDIR}${LIBDIR} xclib/*.py
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} *.md LICENSE
 	install -C -m 644 -t ${DESTDIR}${DOCDIR} doc/*.md doc/SystemDiagram.svg
