@@ -15,6 +15,8 @@ If you want to enable shared roster groups support for *ejabberd*.
 - Copy `xcejabberd.sh` as `/usr/sbin/xcejabberdctl`
 - Remove the `#` in the `ejabberdctl=/usr/sbin/xcejabberdctl` line
   of `/etc/xcauth.conf`
+- If your `ejabberdctl` does not live in `/usr/sbin`, please create
+  a symlink from `/usr/sbin/ejabberdctl`.
 
 `make install` already does *the first two steps* for you.
 
