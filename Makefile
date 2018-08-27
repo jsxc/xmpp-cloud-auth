@@ -87,6 +87,8 @@ install_users:
 	if ! groups xcauth > /dev/null 2>&1; then \
 	  adduser --system --group --home ${DBDIR} --gecos "XMPP Cloud Authentication" ${CUSER}; \
 	fi
+	# These group additions are no longer necessary for systemd mode,
+	# but still if someone wants to run xcauth the old (subprocess) mode.
 	# User exists, but not group of xcauth -> add group
 	if [ `groups prosody 2> /dev/null | grep -v xcauth | wc -l` -gt 0 ]; then \
 	  adduser prosody xcauth; \
