@@ -120,7 +120,7 @@ def perform_from_listeners(listeners, xc, proto):
         inputs = listeners.keys()
         r, w, x = select.select(inputs, (), inputs)
         for sfd in r:
-            logging.debug('Read %r, sockets=%r' % (r, sockets))
+            #logging.debug('Read %r, sockets=%r' % (r, sockets))
             if sfd not in sockets:
                 s = socket.socket(fileno=sfd)
                 sockets[sfd] = s
