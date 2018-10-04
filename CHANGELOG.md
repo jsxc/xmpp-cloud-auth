@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   so changed documentation in `tools/xcejabberdctl.sh`
   for the case that `ejabberdctl` is not installed as
   `/usr/sbin/ejabberdctl`.
+* `xcejabberdctl` now no longer requires a sudo password
 
 ### Changed
 

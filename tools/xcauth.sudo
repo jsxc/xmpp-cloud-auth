@@ -5,4 +5,4 @@
 # xcejabberdctl) or symlinked from /usr/sbin/ejabberdctl (works out
 # of the box with xcauth).
 
-xcauth ALL=(ejabberd) /usr/sbin/ejabberdctl, /opt/ejabberd/bin/ejabberdctl
+xcauth ALL=(ejabberd) NOPASSWD: /usr/sbin/ejabberdctl, /opt/ejabberd/bin/ejabberdctl
