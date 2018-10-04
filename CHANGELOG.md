@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Handles underlying file rotation for the log file
   (*not* the error file)
+* Logrotate: Restart `xcauth` (the name of the process
+  when installed using the `.deb` package)
 
 ### Fixed
 * Symlinks to `ejabberdctl` do not work as expected,

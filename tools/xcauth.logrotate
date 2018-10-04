@@ -22,6 +22,6 @@
         sharedscripts
 	# No automatic detection of stderr redirection change
         postrotate
-                killall -HUP xcauth.py
+                killall -HUP xcauth
         endscript
 }
