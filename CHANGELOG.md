@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   for the case that `ejabberdctl` is not installed as
   `/usr/sbin/ejabberdctl`.
 * `xcejabberdctl` now no longer requires a sudo password
+* Files in Debian packages are now installed with the correct build time
 
 ### Changed
 

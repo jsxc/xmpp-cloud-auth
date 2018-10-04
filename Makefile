@@ -139,9 +139,11 @@ compile_python:	install_files
 ########################################################
 package:	deb tar sdeb
 update_version:
-	(echo "xcauth (${VERSION}-${MINOR}) ${RELEASE}; urgency=medium"; tail +2 debian/changelog) \
-	  > debian/changelog+ \
-	  && mv debian/changelog+ debian/changelog
+	(echo "xcauth (${VERSION}-${MINOR}) ${RELEASE}; urgency=medium"; \
+	 echo ""; \
+	 echo "  * Direct packaging"; \
+	 echo ""; \
+         echo -n " -- Marcel Waldvogel <marcel@jsxc.ch>  "; date -R) > debian/changelog
 deb:	update_version
 	dpkg-buildpackage -us -uc -b
 nightly:deb
