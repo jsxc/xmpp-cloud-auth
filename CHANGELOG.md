@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.0.2+ - [Unreleased]
 ### Added
+* Handles underlying file rotation for the log file
+  (*not* the error file)
 
 ### Fixed
 * Symlinks to `ejabberdctl` do not work as expected,

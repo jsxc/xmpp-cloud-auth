@@ -41,7 +41,8 @@ def perform(args):
         rebind_stderr(0, None)
         signal.signal(signal.SIGHUP, rebind_stderr)
         try:
-            logging.basicConfig(filename=logfile,
+            from logging.handlers import WatchedFileHandler
+            logging.basicConfig(handlers=(WatchedFileHandler(logfile),),
                 level=logging.DEBUG if args.debug else logging.INFO,
                 format='%(asctime)s %(levelname)s: %(message)s')
         except OSError as e:
