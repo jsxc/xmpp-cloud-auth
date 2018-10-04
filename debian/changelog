@@ -1,4 +1,4 @@
-xcauth (2.0.2-1) nightly; urgency=medium
+xcauth (2.0.2-5-g8cdb083-1) nightly; urgency=medium
 
   * Direct packaging
 

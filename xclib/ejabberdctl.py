@@ -19,7 +19,6 @@ class ejabberdctl:
     def maybe_set_fn(self, user, domain, name, cached_name = None):
         '''Set the full name if not already a nice name'''
         if cached_name is None:
-            logging.debug(self.ctx.ejabberdctl_path + str((user, domain, name)))
             fullname = self.execute(['get_vcard', user, domain, 'FN'])
             # 'error_no_vcard' is exitcode 1 is None
         else:
