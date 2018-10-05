@@ -80,7 +80,7 @@ def perform(args):
         success, response = sc.roster_cloud()
         print(str(response))
         if args.ejabberdctl:
-            sc.try_roster(async=False)
+            sc.try_roster(async_=False)
         return
     elif args.auth_test:
         sc = sigcloud(xc, args.auth_test[0], args.auth_test[1], args.auth_test[2])
