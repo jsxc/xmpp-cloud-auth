@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Files in Debian packages are now installed with the correct build time
 
 ### Changed
+* Renamed `async` to `async_` for Python 3.7 compatibility
 
 
 ## 2.0.2 - 2018-08-27

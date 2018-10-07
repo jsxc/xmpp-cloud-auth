@@ -73,11 +73,11 @@ def ctrl_end(args):
 def test_try_10none():
     xc.session.post = post_timeout
     xc.ejabberd_controller.execute = ctrl_fail
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
 def test_try_11none():
     xc.session.post = post_200_empty
     xc.ejabberd_controller.execute = ctrl_fail
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
 
 def ctrl_getfn20(args):
     logging.info('ctrl_getfn20')
@@ -98,18 +98,18 @@ def test_try_20first_name():
     # Expected: a get and a set vcard
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be'}})
     xc.ejabberd_controller.execute = ctrl_getfn20
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     assertEqual(xc.ejabberd_controller.execute, ctrl_end)
 def test_try_21same_name_cached():
     # Expected: no vcard calls
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be'}})
     xc.ejabberd_controller.execute = ctrl_fail
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
 def test_try_22same_name_uncached():
     # Expected: a get call
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','dummy':'1'}})
     xc.ejabberd_controller.execute = ctrl_end
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info(xc.ejabberd_controller.execute)
     assertEqual(xc.ejabberd_controller.execute, ctrl_end)
 
@@ -126,7 +126,7 @@ def test_try_30add_lonely_group():
     collect = []
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
     xc.ejabberd_controller.execute = ctrl_collect
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info('collected = ' + str(collect))
     assertEqual(collect, [
         ['srg_create', 'Lonely', 'domain1', 'Lonely', 'Lonely', 'Lonely'],
@@ -142,7 +142,7 @@ def test_try_31login_again():
     collect = []
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be','groups':['Lonely']}})
     xc.ejabberd_controller.execute = ctrl_collect
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info(collect)
     assertEqual(collect, [
         ])
@@ -155,7 +155,7 @@ def test_try_32add_normal_group():
         'user2@domain1':{'name':'De Be','groups':['Family']},
     })
     xc.ejabberd_controller.execute = ctrl_collect
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info(collect)
     assert collect == [
         ['get_vcard', 'user2', 'domain1', 'FN'],
@@ -182,7 +182,7 @@ def test_try_33login_other_user():
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user2', 'domain1')
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info(collect)
     assert collect == [
         ['get_vcard', 'user3', 'domain1', 'FN'],
@@ -209,7 +209,7 @@ def test_try_34login_other_user_again():
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user2', 'domain1')
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info(collect)
     assertEqual(collect, [])
 
@@ -222,7 +222,7 @@ def test_try_40third_party_deletion():
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user2', 'domain1')
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info(collect)
     assertEqual(collect, [
         ['srg_user_del', 'user1', 'domain1', 'Family', 'domain1']
@@ -235,7 +235,7 @@ def test_try_41self_deletion():
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user1', 'domain1')
-    assertEqual(sc.try_roster(async=False), True)
+    assertEqual(sc.try_roster(async_=False), True)
     logging.info(collect)
     assertEqual(collect, [
         # The first is unnecessary but harmless and not easily avoidable

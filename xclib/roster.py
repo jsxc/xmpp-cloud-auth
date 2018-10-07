@@ -39,7 +39,7 @@ class roster(roster_thread):
         else:
             return False, None
 
-    def try_roster(self, async=True):
+    def try_roster(self, async_=True):
         '''Maybe update roster'''
         if (self.ctx.ejabberdctl_path is not None):
             try:
@@ -68,7 +68,7 @@ class roster(roster_thread):
                         t = threading.Thread(target=self.roster_background_thread,
                             args=(response,))
                         t.start()
-                        if not async:
+                        if not async_:
                             t.join() # For automated testing only
                         else:
                             # Try to do most before the user is actually logged in.
