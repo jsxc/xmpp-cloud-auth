@@ -46,25 +46,25 @@ perltests-all:	perltests perltests-socket2366x
 perltests-direct:
 	tests/run-online.pl
 perltests-subprocess:
-	for i in run-online-*.pl; do \
+	for i in tests/run-online-*.pl; do \
 	  echo ""; \
 	  echo ===============================; \
 	  echo == $$i; \
-	  tests/$$i subprocess || exit 1; \
+	  $$i subprocess || exit 1; \
 	done
 perltests-socket1366x:
-	for i in run-online-*.pl; do \
+	for i in tests/run-online-*.pl; do \
 	  echo ""; \
 	  echo ===============================; \
 	  echo == $$i; \
-	  tests/$$i socket1366x || exit 1; \
+	  $$i socket1366x || exit 1; \
 	done
 perltests-socket2366x:
-	for i in run-online-*.pl; do \
+	for i in tests/run-online-*.pl; do \
 	  echo ""; \
 	  echo ===============================; \
 	  echo == $$i; \
-	  tests/$$i socket2366x || exit 1; \
+	  $$i socket2366x || exit 1; \
 	done
 
 loggingtests:
