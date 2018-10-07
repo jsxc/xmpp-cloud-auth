@@ -23,7 +23,7 @@ class sq3c_debugger(sqlite3.Connection):
 
 class connection:
     def __init__(self, args):
-        logging.debug('Opening database connections')
+        logging.debug('Opening database connections main=%s, cache=%s' % (args.db, args.cache_storage))
         db_was_there = (args.db != ':memory:'
                 and os.path.exists(args.db))
         # PySQLite by default does a weird

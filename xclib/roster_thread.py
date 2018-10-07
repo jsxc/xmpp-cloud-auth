@@ -22,13 +22,6 @@ class roster_thread:
                 e = ejabberdctl(self.ctx)
             groups, commands = self.roster_update_users(e, sr)
             self.roster_update_groups(e, groups)
-            # For some reason, the vcard changes are (were?)
-            # not pushed to the clients. Rinse and repeat.
-# Maybe no longer necessary with (mostly) synchronous thread?
-#            for cmd in commands:
-#                e.execute(cmd)
-#        except AttributeError:
-#            pass # For tests
         except Exception as err:
             (etype, value, tb) = sys.exc_info()
             traceback.print_exception(etype, value, tb)
@@ -46,6 +39,7 @@ Return inverted hash'''
         groups = {}
         commands = []
         for user, desc in sr.items():
+            logging.debug('user=%s, desc=%s' % (user, desc))
             if 'groups' in desc:
                 for g in desc['groups']:
                     if g in groups:
@@ -53,6 +47,7 @@ Return inverted hash'''
                     else:
                         groups[g] = [user]
             if 'name' in desc:
+                logging.debug('name in desc')
                 lhs, rhs = self.jidsplit(user)
                 jid = '@'.join((lhs, rhs))
                 cached_name = None
@@ -60,6 +55,7 @@ Return inverted hash'''
                         'SELECT fullname FROM rosterinfo WHERE jid=?',
                         (jid,)):
                     cached_name = row['fullname']
+                logging.debug('cached_name = %s' % (cached_name,))
                 if cached_name != desc['name']:
                     self.ctx.db.conn.begin()
                     self.ctx.db.conn.execute(
@@ -70,9 +66,8 @@ Return inverted hash'''
                             SET fullname = ?
                             WHERE jid = ?''', (desc['name'], jid))
                     self.ctx.db.conn.commit()
-                cmd = e.maybe_set_fn(lhs, rhs, desc['name'], cached_name=cached_name)
-                if cmd is not None:
-                    commands.append(cmd)
+                    logging.debug('set_vcard')
+                    e.execute(['set_vcard', lhs, rhs, 'FN', desc['name']])
         return groups, commands
 
     def roster_update_groups(self, e, groups):

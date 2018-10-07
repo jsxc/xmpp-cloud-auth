@@ -21,7 +21,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * `make tests` runs the Perl online tests (again)
 
 ### Changed
-* Renamed `async` to `async_` for Python 3.7 compatibility
+* Renamed `async` to `async_` for Python 3.7 compatibility (#71, #72)
+* Now full names for *ejabberd* are set whenever the user's name in Nextcloud
+  has changed; as soon as that user or any of his group members logs in again.
+  It used to be that it was (essentially) only set once. See [jsxc/jsxc#655](https://github.com/jsxc/jsxc/issues/655#issuecomment-427359966).
+  We consider this to be the best compromise between automation (the user
+  does not need to care) and leaving the user in charge of his/her *ejabberd*
+  vCard, as changing the full name in *Nextcloud* should be rare (typically,
+  when the user really has a legal name change).
 
 
 ## 2.0.2 - 2018-08-27

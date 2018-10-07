@@ -16,21 +16,6 @@ class ejabberdctl:
                 % str(err))
             return None
 
-    def maybe_set_fn(self, user, domain, name, cached_name = None):
-        '''Set the full name if not already a nice name'''
-        if cached_name is None:
-            fullname = self.execute(['get_vcard', user, domain, 'FN'])
-            # 'error_no_vcard' is exitcode 1 is None
-        else:
-            fullname = cached_name
-        if (fullname is None or fullname == '' or fullname == '\n'
-            or fullname == user + '\n' or fullname == ('%s@%s\n' % (user, domain))):
-            args = ['set_vcard', user, domain, 'FN', name]
-            self.execute(args)
-            return args
-        else:
-            return None
-
     def members(self, group, domain):
         membership = self.execute(['srg_get_members', group, domain])
         if membership is None:
