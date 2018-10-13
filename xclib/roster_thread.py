@@ -2,6 +2,7 @@ import logging
 import traceback
 import unicodedata
 import sys
+import time
 from xclib.ejabberdctl import ejabberdctl
 from xclib.utf8 import utf8, unutf8, utf8l
 
@@ -13,6 +14,7 @@ def sanitize(name):
 class roster_thread:
     def roster_background_thread(self, sr):
         '''Entry for background roster update thread'''
+        start = time.time()
         try:
             logging.debug('roster_thread for ' + str(sr))
             # Allow test hooks with static ejabberd_controller
@@ -20,14 +22,19 @@ class roster_thread:
                 e = self.ctx.ejabberd_controller
             else:
                 e = ejabberdctl(self.ctx)
-            groups, commands = self.roster_update_users(e, sr)
-            self.roster_update_groups(e, groups)
+            groups, ucommands = self.roster_update_users(e, sr)
+            gcommands = self.roster_update_groups(e, groups)
         except Exception as err:
             (etype, value, tb) = sys.exc_info()
             traceback.print_exception(etype, value, tb)
             logging.warn('roster_groups thread: %s:\n%s'
                          % (str(err), ''.join(traceback.format_tb(tb))))
+            logging.info('roster_groups thread failed after %s+%s commands in %s seconds',
+                    len(ucommands), len(gcommands), time.time() - start)
             return False
+        finally:
+            logging.info('roster_groups thread finished %s+%s commands in %s seconds',
+                    len(ucommands), len(gcommands), time.time() - start)
         
     def roster_update_users(self, e, sr):
         '''Update users' full names and invert hash
@@ -68,6 +75,7 @@ Return inverted hash'''
                     self.ctx.db.conn.commit()
                     logging.debug('set_vcard')
                     e.execute(['set_vcard', lhs, rhs, 'FN', desc['name']])
+                    commands += ('set_vcard', jid, desc['name'])
         return groups, commands
 
     def roster_update_groups(self, e, groups):
@@ -77,6 +85,7 @@ For all the *groups* we have information about:
 - create the group (idempotent)
 - delete the users that we do not know about anymore
 - add the users we know about (idempotent)'''
+        commands = []
         cleanname = {}
         for g in groups:
             cleanname[g] = sanitize(g)
@@ -88,6 +97,7 @@ For all the *groups* we have information about:
                 previous_users = row['userlist'].split('\t')
             if previous_users == ():
                 e.execute(['srg_create', cleanname[g], self.domain, cleanname[g], cleanname[g], cleanname[g]])
+                commands += ('srg_create', cleanname[g], self.domain)
                 # Fill cache (again)
                 previous_users = e.members(cleanname[g], self.domain)
             current_users = {}
@@ -97,10 +107,12 @@ For all the *groups* we have information about:
                 current_users[fulljid] = True
                 if not fulljid in previous_users:
                     e.execute(['srg_user_add', lhs, rhs, cleanname[g], self.domain])
+                    commands += ('srg_user_add', fulljid, cleanname[g])
             for p in previous_users:
                 (lhs, rhs) = self.jidsplit(p)
                 if p not in current_users:
                     e.execute(['srg_user_del', lhs, rhs, cleanname[g], self.domain])
+                    commands += ('srg_user_del', p, cleanname[g])
             # Here, we could use INSERT OR REPLACE, because we fill
             # all the fields. But only until someone would add
             # extra fields, which then would be reset to default values.
@@ -126,6 +138,7 @@ For all the *groups* we have information about:
         for p in previous:
             if p not in list(cleanname.values()):
                 e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
+                commands += ('srg_user_del2', key, p)
         # Only update when necessary
         new = '\t'.join(sorted(cleanname.values()))
         if previous != new:
@@ -138,3 +151,4 @@ For all the *groups* we have information about:
                     SET grouplist = ?
                     WHERE jid = ?''', (new, key))
             self.ctx.db.conn.commit()
+        return commands
