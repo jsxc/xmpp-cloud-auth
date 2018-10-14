@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.0.3+ - [Unreleased]
 ### Added
+* `xcrefreshroster` to clear a faulty roster cache.
 
 ### Fixed
 

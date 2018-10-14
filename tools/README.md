@@ -30,6 +30,16 @@ created the files with the wrong permissions.
 
 `make install` installs this as `/usr/bin/xcrestart`
 
+## `xcrefreshroster.sh`
+
+This will cause the roster groups to be rebuilt on the next login of
+one of their users.
+Necessary when the XMPP server's state differs from the cache, e.g.,
+because of manual modifications or due to an error in synchronization,
+as it happened e.g. in v2.0.2.
+
+`make install` installs this as `/usr/bin/xcrefreshroster`
+
 ## `dhparam.pem` and `ejabberd.yml`
 
 These are the sample configuration files from our
