@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * `xcrefreshroster` to clear a faulty roster cache.
 * `xcdeluser` to clear most user-specific information maintained by `xcauth`
-  (Nextcloud and *ejabberd* also maintain their own).
+  (*Nextcloud* and *ejabberd* also maintain their own).
 * `xcdelgroup` to delete a group from `xcauth` and *ejabberd*.
+* `xcdelhost` to delete all entries of a virtual host from `xcauth`.  
+  The four entries above are meant to clean entries for privacy, e.g.
+  related to GDPR. They only clean information in `xcauth`, not in
+  *Nextcloud* or *ejabberd*. More information in
+  [`tools/README.md`](./tools/README.md).
 
 ### Fixed
 

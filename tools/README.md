@@ -59,12 +59,10 @@ not reappear, you also have to delete it from Nextcloud.
 
 ## `xcdelhost.sh`
 
-This will delete most of a user's entries from the database.
-Not purged are group memberships, as they will be auto-updated on the
-next login of another member of that group (and cannot easily be dealt
-with using SQL statements).
+This will delete all entries relating to a host from `xcauth`.
+*ejabberd* maitains its own storage.
 
-`make install` installs this as `/usr/bin/xcdeluser`
+`make install` installs this as `/usr/bin/xcdelhost`
 
 ## `dhparam.pem` and `ejabberd.yml`
 
