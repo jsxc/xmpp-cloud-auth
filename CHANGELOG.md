@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 2.0.2+ - [Unreleased]
+## 2.0.3 - 2018-10-14
 ### Added
 * Group names ending in U+200B (Zero Width Space) are ignored. This allows
   the Nextcloud admin to blacklist some of the groups (typically large ones).
