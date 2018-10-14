@@ -75,7 +75,7 @@ Return inverted hash'''
                     self.ctx.db.conn.commit()
                     logging.debug('set_vcard')
                     e.execute(['set_vcard', lhs, rhs, 'FN', desc['name']])
-                    commands += ('set_vcard', jid, desc['name'])
+                    commands.append(('set_vcard', jid, desc['name']))
         return groups, commands
 
     def roster_update_groups(self, e, groups):
@@ -97,7 +97,7 @@ For all the *groups* we have information about:
                 previous_users = row['userlist'].split('\t')
             if previous_users == ():
                 e.execute(['srg_create', cleanname[g], self.domain, cleanname[g], cleanname[g], cleanname[g]])
-                commands += ('srg_create', cleanname[g], self.domain)
+                commands.append(('srg_create', cleanname[g], self.domain))
                 # Fill cache (again)
                 previous_users = e.members(cleanname[g], self.domain)
             current_users = {}
@@ -107,12 +107,12 @@ For all the *groups* we have information about:
                 current_users[fulljid] = True
                 if not fulljid in previous_users:
                     e.execute(['srg_user_add', lhs, rhs, cleanname[g], self.domain])
-                    commands += ('srg_user_add', fulljid, cleanname[g])
+                    commands.append(('srg_user_add', fulljid, cleanname[g]))
             for p in previous_users:
                 (lhs, rhs) = self.jidsplit(p)
                 if p not in current_users:
                     e.execute(['srg_user_del', lhs, rhs, cleanname[g], self.domain])
-                    commands += ('srg_user_del', p, cleanname[g])
+                    commands.append(('srg_user_del', p, cleanname[g]))
             # Here, we could use INSERT OR REPLACE, because we fill
             # all the fields. But only until someone would add
             # extra fields, which then would be reset to default values.
@@ -138,7 +138,7 @@ For all the *groups* we have information about:
         for p in previous:
             if p not in list(cleanname.values()):
                 e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
-                commands += ('srg_user_del2', key, p)
+                commands.append(('srg_user_del2', key, p))
         # Only update when necessary
         new = '\t'.join(sorted(cleanname.values()))
         if previous != new:
