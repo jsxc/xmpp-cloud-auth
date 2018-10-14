@@ -115,6 +115,7 @@ install_files:	install_dirs
 	install -C -m 755 -T xcauth.py ${DESTDIR}${SBINDIR}/${MODULE}
 	install -C -m 755 -T tools/xcrestart.sh ${DESTDIR}${SBINDIR}/xcrestart
 	install -C -m 755 -T tools/xcrefreshroster.sh ${DESTDIR}${SBINDIR}/xcrefreshroster
+	install -C -m 755 -T tools/xcdeluser.sh ${DESTDIR}${SBINDIR}/xcdeluser
 	install -C -m 755 -T tools/xcejabberdctl.sh ${DESTDIR}${SBINDIR}/xcejabberdctl
 	install -C -m 440 -T tools/xcauth.sudo ${DESTDIR}${SU_DIR}/xcauth
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}

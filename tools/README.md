@@ -40,6 +40,16 @@ as it happened e.g. in v2.0.2.
 
 `make install` installs this as `/usr/bin/xcrefreshroster`
 
+## `xcdeluser.sh`
+
+This will delete most of a user's entries from the database.
+Not purged are group memberships, as they will be auto-updated on the
+next login of another member of that group (and cannot easily be dealt
+with using SQL statements). To make sure it will not reappear, you
+also have to delete it from Nextcloud.
+
+`make install` installs this as `/usr/bin/xcdeluser`
+
 ## `dhparam.pem` and `ejabberd.yml`
 
 These are the sample configuration files from our

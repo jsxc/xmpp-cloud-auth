@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 2.0.3+ - [Unreleased]
 ### Added
 * `xcrefreshroster` to clear a faulty roster cache.
+* `xcdeluser` to clear most user-specific information maintained by `xcauth`
+  (Nextcloud and *ejabberd* also maintain their own).
 
 ### Fixed
 
