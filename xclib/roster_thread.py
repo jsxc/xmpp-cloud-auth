@@ -29,11 +29,11 @@ class roster_thread:
             traceback.print_exception(etype, value, tb)
             logging.warn('roster_groups thread: %s:\n%s'
                          % (str(err), ''.join(traceback.format_tb(tb))))
-            logging.info('roster_groups thread failed after %s+%s commands in %s seconds',
+            logging.debug('roster_groups thread failed after %s+%s commands in %s seconds',
                     len(ucommands), len(gcommands), time.time() - start)
             return False
         finally:
-            logging.info('roster_groups thread finished %s+%s commands in %s seconds',
+            logging.debug('roster_groups thread finished %s+%s commands in %s seconds',
                     len(ucommands), len(gcommands), time.time() - start)
         
     def roster_update_users(self, e, sr):
