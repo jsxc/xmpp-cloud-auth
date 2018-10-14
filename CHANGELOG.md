@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   when installed using the `.deb` package)
 
 ### Fixed
+* Internal state about roster groups was not updated correctly.
+  This could have lead to wrong group memberships.
 * Symlinks to `ejabberdctl` do not work as expected,
   so changed documentation in `tools/xcejabberdctl.sh`
   for the case that `ejabberdctl` is not installed as

@@ -23,6 +23,7 @@ class roster_thread:
             else:
                 e = ejabberdctl(self.ctx)
             groups, ucommands = self.roster_update_users(e, sr)
+            self.ctx.db.conn.dump('rosterinfo')
             gcommands = self.roster_update_groups(e, groups)
         except Exception as err:
             (etype, value, tb) = sys.exc_info()
@@ -46,7 +47,7 @@ Return inverted hash'''
         groups = {}
         commands = []
         for user, desc in sr.items():
-            logging.debug('user=%s, desc=%s' % (user, desc))
+            logging.debug('roster_update_users: user=%s, desc=%s' % (user, desc))
             if 'groups' in desc:
                 for g in desc['groups']:
                     if g in groups:
@@ -83,28 +84,36 @@ Return inverted hash'''
 
 For all the *groups* we have information about:
 - create the group (idempotent)
-- delete the users that we do not know about anymore
+- delete the users that we do not know about anymore (idempotent)
 - add the users we know about (idempotent)'''
         commands = []
         cleanname = {}
+        loginjid = '@'.join((self.username, self.domain))
+        logingroups = []
         for g in groups:
             cleanname[g] = sanitize(g)
             key = '@'.join((cleanname[g], self.domain))
+            logging.debug('roster_update_groups: %s', key)
             previous_users = ()
             for row in self.ctx.db.conn.execute(
                     '''SELECT userlist FROM rostergroups
                     WHERE groupname=?''', (key,)):
                 previous_users = row['userlist'].split('\t')
+            logging.debug('previous_users=%s', previous_users)
             if previous_users == ():
                 e.execute(['srg_create', cleanname[g], self.domain, cleanname[g], cleanname[g], cleanname[g]])
                 commands.append(('srg_create', cleanname[g], self.domain))
                 # Fill cache (again)
                 previous_users = e.members(cleanname[g], self.domain)
+            logging.debug('previous_users2=%s', previous_users)
             current_users = {}
             for u in groups[g]:
+                if u == loginjid:
+                    logingroups.append(cleanname[g])
                 (lhs, rhs) = self.jidsplit(u)
                 fulljid = '%s@%s' % (lhs, rhs)
                 current_users[fulljid] = True
+                logging.debug('current_users ' + ' '.join(sorted(current_users.keys())))
                 if not fulljid in previous_users:
                     e.execute(['srg_user_add', lhs, rhs, cleanname[g], self.domain])
                     commands.append(('srg_user_add', fulljid, cleanname[g]))
@@ -125,7 +134,9 @@ For all the *groups* we have information about:
                     '''UPDATE rostergroups
                     SET userlist = ?
                     WHERE groupname = ?''', ('\t'.join(sorted(current_users.keys())), key))
+            logging.debug('groupname %s, userlist %s', key, ('\t'.join(sorted(current_users.keys()))))
             self.ctx.db.conn.commit()
+            self.ctx.db.conn.dump('rosterinfo')
 
         # For all the groups the login user was previously a member of:
         # - delete her from the shared roster group if no longer a member
@@ -135,12 +146,16 @@ For all the *groups* we have information about:
                 '''SELECT grouplist FROM rosterinfo WHERE jid=?''', (key,)):
             if row['grouplist']: # Not None or ''
                 previous = row['grouplist'].split('\t')
+        logging.debug('previous %s group list %s', key, previous)
+        logging.debug('cleannames %s', cleanname.values())
+        logging.debug('logingroups %s', logingroups)
         for p in previous:
-            if p not in list(cleanname.values()):
+            if p not in logingroups:
                 e.execute(['srg_user_del', self.username, self.domain, p, self.domain])
                 commands.append(('srg_user_del2', key, p))
         # Only update when necessary
-        new = '\t'.join(sorted(cleanname.values()))
+        new = '\t'.join(sorted(logingroups))
+        logging.debug('new %s group list %s', key, new)
         if previous != new:
             self.ctx.db.conn.begin()
             self.ctx.db.conn.execute(
@@ -151,4 +166,5 @@ For all the *groups* we have information about:
                     SET grouplist = ?
                     WHERE jid = ?''', (new, key))
             self.ctx.db.conn.commit()
+            logging.debug('jid %s, set grouplist %s', key, new)
         return commands

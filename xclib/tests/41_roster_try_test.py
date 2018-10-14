@@ -91,6 +91,8 @@ def ctrl_setfn23(args):
     return True
 def test_try_20first_name():
     # Expected: a single set vcard
+    sc.username = 'user1'
+    sc.domain = 'domain1'
     xc.session.post = make_rosterfunc({'user1@domain1':{'name':'Ah Be'}})
     xc.ejabberd_controller.execute = ctrl_setfn20
     assertEqual(sc.try_roster(async_=False), True)
@@ -114,6 +116,17 @@ def test_try_23changed_name():
     assertEqual(sc.try_roster(async_=False), True)
     assertEqual(xc.ejabberd_controller.execute, ctrl_end)
 
+def assert_grouplist(jid, grouplist):
+    for row in xc.db.conn.execute('SELECT grouplist FROM rosterinfo WHERE jid = ?', (jid,)):
+        assertEqual(grouplist, row['grouplist'])
+        return
+    assertEqual('jid does not exist', jid) # Fail on empty list
+def assert_groupinfo(groupname, userlist):
+    for row in xc.db.conn.execute('SELECT userlist FROM rostergroups WHERE groupname = ?', (groupname,)):
+        assertEqual(userlist, row['userlist'])
+        return
+    assertEqual('groupname does not exist', groupname) # Fail on empty list
+
 def ctrl_collect(args):
     global collect
     collect.append(args)
@@ -135,7 +148,10 @@ def test_try_30add_lonely_group():
         ['srg_user_add', 'user1', 'domain1', 'Lonely', 'domain1'],
         ])
     #xc.db.conn.dump('sqlite_master')
-    #xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
+    assert_grouplist('user1@domain1', 'Lonely')
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
     #assert False
 def test_try_31login_again():
     # Expected: groups calls
@@ -147,6 +163,8 @@ def test_try_31login_again():
     logging.info(collect)
     assertEqual(collect, [
         ])
+    assert_grouplist('user1@domain1', 'Lonely')
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
 def test_try_32add_normal_group():
     # Expected: groups calls
     global collect
@@ -171,6 +189,13 @@ def test_try_32add_normal_group():
         ['srg_user_add', 'user2', 'domain1', 'Family', 'domain1'],
         ['srg_user_add', 'user1', 'domain1', 'Family', 'domain1'],
     ]
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
+    assert_grouplist('user1@domain1', 'Family\tLonely')
+    #assert_grouplist('user2@domain1', 'Family')
+    assert_grouplist('user2@domain1', None)
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
+    assert_groupinfo('Family@domain1', 'user1@domain1\tuser2@domain1')
 def test_try_33login_other_user():
     global collect
     collect = []
@@ -196,6 +221,14 @@ def test_try_33login_other_user():
         ['srg_user_add', 'user2', 'domain1', 'Friends', 'domain1'],
         ['srg_user_add', 'user3', 'domain1', 'Friends', 'domain1'],
     ]
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
+    assert_grouplist('user1@domain1', 'Family\tLonely')
+    assert_grouplist('user2@domain1', 'Family\tFriends')
+    assert_grouplist('user3@domain1', None)
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
+    assert_groupinfo('Family@domain1', 'user1@domain1\tuser2@domain1')
+    assert_groupinfo('Friends@domain1', 'user2@domain1\tuser3@domain1')
 def test_try_34login_other_user_again():
     global collect
     collect = []
@@ -209,10 +242,19 @@ def test_try_34login_other_user_again():
     assertEqual(sc.try_roster(async_=False), True)
     logging.info(collect)
     assertEqual(collect, [])
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
+    assert_grouplist('user1@domain1', 'Family\tLonely')
+    assert_grouplist('user2@domain1', 'Family\tFriends')
+    assert_grouplist('user3@domain1', None)
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
+    assert_groupinfo('Family@domain1', 'user1@domain1\tuser2@domain1')
+    assert_groupinfo('Friends@domain1', 'user2@domain1\tuser3@domain1')
 
 def test_try_40third_party_deletion():
     global collect
     collect = []
+    xc.db.conn.dump('rosterinfo')
     xc.session.post = make_rosterfunc({
         'user2@domain1':{'name':'De Be','groups':['Family', 'Friends']},
         'user3@domain1':{'name':'Xy Zzy','groups':['Friends']},
@@ -224,18 +266,39 @@ def test_try_40third_party_deletion():
     assertEqual(collect, [
         ['srg_user_del', 'user1', 'domain1', 'Family', 'domain1']
     ])
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
+    assert_grouplist('user1@domain1', 'Family\tLonely') # This is not touched by 3rd party deletion
+    assert_grouplist('user2@domain1', 'Family\tFriends')
+    assert_grouplist('user3@domain1', None)
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
+    assert_groupinfo('Family@domain1', 'user2@domain1') # Only this
+    assert_groupinfo('Friends@domain1', 'user2@domain1\tuser3@domain1')
+
 def test_try_41self_deletion():
     global collect
     collect = []
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
     xc.session.post = make_rosterfunc({
         'user1@domain1':{'name':'Ce De'}
     })
     xc.ejabberd_controller.execute = ctrl_collect
     sc = sigcloud(xc, 'user1', 'domain1')
     assertEqual(sc.try_roster(async_=False), True)
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
     logging.info(collect)
     assertEqual(collect, [
-        # The first is unnecessary but harmless and not easily avoidable
+        # The first is unnecessary but harmless (idempotent) and not easily avoidable
         ['srg_user_del', 'user1', 'domain1', 'Family', 'domain1'],
         ['srg_user_del', 'user1', 'domain1', 'Lonely', 'domain1']
     ])
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
+    assert_grouplist('user1@domain1', '')
+    assert_grouplist('user2@domain1', 'Family\tFriends')
+    assert_grouplist('user3@domain1', None)
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
+    assert_groupinfo('Family@domain1', 'user2@domain1')
+    assert_groupinfo('Friends@domain1', 'user2@domain1\tuser3@domain1')
