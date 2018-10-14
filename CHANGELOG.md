@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.0.2+ - [Unreleased]
 ### Added
+* Group names ending in U+200B (Zero Width Space) are ignored. This allows
+  the Nextcloud admin to blacklist some of the groups (typically large ones).
 * Handles underlying file rotation for the log file
   (*not* the error file)
 * Logrotate: Restart `xcauth` (the name of the process

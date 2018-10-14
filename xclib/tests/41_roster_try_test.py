@@ -250,6 +250,30 @@ def test_try_34login_other_user_again():
     assert_groupinfo('Lonely@domain1', 'user1@domain1')
     assert_groupinfo('Family@domain1', 'user1@domain1\tuser2@domain1')
     assert_groupinfo('Friends@domain1', 'user2@domain1\tuser3@domain1')
+def test_try_35login_with_ignored_group():
+    global collect
+    collect = []
+    xc.db.conn.dump('rosterinfo')
+    xc.session.post = make_rosterfunc({
+        'user1@domain1':{'name':'Ce De','groups':['Family', 'Lonely', 'Hidden\u200b']},
+        'user2@domain1':{'name':'De Be','groups':['Family', 'Friends']},
+        'user3@domain1':{'name':'Xy Zzy','groups':['Friends']},
+    })
+    xc.ejabberd_controller.execute = ctrl_collect
+    sc = sigcloud(xc, 'user1', 'domain1')
+    assertEqual(sc.try_roster(async_=False), True)
+    logging.info(collect)
+    xc.db.conn.dump('rosterinfo')
+    xc.db.conn.dump('rostergroups')
+    assertEqual(collect, [
+        # No add of Hidden
+        ])
+    assert_grouplist('user1@domain1', 'Family\tLonely')
+    assert_grouplist('user2@domain1', 'Family\tFriends')
+    assert_grouplist('user3@domain1', None)
+    assert_groupinfo('Lonely@domain1', 'user1@domain1')
+    assert_groupinfo('Family@domain1', 'user1@domain1\tuser2@domain1')
+    assert_groupinfo('Friends@domain1', 'user2@domain1\tuser3@domain1')
 
 def test_try_40third_party_deletion():
     global collect

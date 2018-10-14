@@ -50,6 +50,10 @@ Return inverted hash'''
             logging.debug('roster_update_users: user=%s, desc=%s' % (user, desc))
             if 'groups' in desc:
                 for g in desc['groups']:
+                    # Ignore groups ending in U+200B Zero-Width Space
+                    if g.endswith('\u200b'):
+                        logging.info('Ignoring group %s (ends with U+200B)', g)
+                        continue
                     if g in groups:
                         groups[g].append(user)
                     else:
