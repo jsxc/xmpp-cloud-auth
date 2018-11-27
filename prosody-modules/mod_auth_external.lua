@@ -20,7 +20,6 @@ local host = module.host;
 local script_type = module:get_option_string("external_auth_protocol", "generic");
 local command = module:get_option_string("external_auth_command", "");
 local read_timeout = module:get_option_number("external_auth_timeout", 5);
-local blocking = module:get_option_boolean("external_auth_blocking", not(have_async and server.event and lpty.getfd));
 local auth_processes = module:get_option_number("external_auth_processes", 1);
 
 local lpty, pty_options;
@@ -34,6 +33,7 @@ else
 	log("info", "External auth with pty command %s", command);
 	pty_options = { throw_errors = false, no_local_echo = true, use_path = false };
 end
+local blocking = module:get_option_boolean("external_auth_blocking", not(have_async and server.event and lpty.getfd));
 assert(script_type == "ejabberd" or script_type == "generic",
 	"Config error: external_auth_protocol must be 'ejabberd' or 'generic'");
 assert(not host:find(":"), "Invalid hostname");
