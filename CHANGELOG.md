@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   [`tools/README.md`](./tools/README.md).
 
 ### Fixed
+* Handle empty roster information
 
 ### Changed
 
