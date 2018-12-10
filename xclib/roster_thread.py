@@ -47,6 +47,10 @@ For all *users* we have information about:
 Return inverted hash'''
         groups = {}
         commands = []
+        if len(sr) == 0:
+            # Empty roster information arrives as [] instead of {},
+            # so sr.items() below would fail.
+            return groups, commands
         for user, desc in sr.items():
             logging.debug('roster_update_users: user=%s, desc=%s' % (user, desc))
             if 'groups' in desc:
