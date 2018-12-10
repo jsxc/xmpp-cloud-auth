@@ -15,6 +15,7 @@ class roster_thread:
     def roster_background_thread(self, sr):
         '''Entry for background roster update thread'''
         start = time.time()
+        ucommands = gcommands = ()
         try:
             logging.debug('roster_thread for ' + str(sr))
             # Allow test hooks with static ejabberd_controller
