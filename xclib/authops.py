@@ -95,12 +95,7 @@ def perform(args):
         # Single socket; unclear whether it is connected or an acceptor
         try:
             stdinfd = sys.stdin.fileno()
-        except io.UnsupportedOperation:
-            stdinfd = None
-        if stdinfd is None:
-            # Not a real socket, assume stdio communication
-            perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
-        else:
+            # Is it a socket?
             s = socket.socket(fileno=stdinfd)
             try:
                 # Is it an acceptor socket?
@@ -110,6 +105,9 @@ def perform(args):
             except OSError:
                 # Not an acceptor socket, use for stdio
                 perform_from_fd(sys.stdin, sys.stdout, xc, args.type, closefds=(sys.stdin,sys.stdout,s))
+        except (io.UnsupportedOperation, OSError):
+            # Not a real socket, assume stdio communication
+            perform_from_fd(sys.stdin, sys.stdout, xc, args.type)
     else:
         # Uses systemd socket activation
         perform_from_listeners(listeners, xc, args.type)

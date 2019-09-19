@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * Handle empty roster information
+* Handle interactive sessions again
 
 ### Changed
 
