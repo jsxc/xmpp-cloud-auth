@@ -273,8 +273,8 @@ Current workaround: Delete the account in Conversations and then add it again.
 
 If you see unreliable behavior with *Prosody*, you might want to try the experimental socket interface.
 When using the `mod_auth_external.lua` bundled here (together with `pseudolpty.lua`), you can use
-the `external_auth_command = "@localhost:23664";` option to talk over a socket to a process not spawned
-by *Prosody* on port 23664. [doc/Systemd.md](../doc/Systemd.md) explains how to automatically start
+the `external_auth_command = "@localhost:23663";` option to talk over a socket to a process not spawned
+by *Prosody* on port 23663. [doc/Systemd.md](../doc/Systemd.md) explains how to automatically start
 such a process using *systemd*.
 
 ### *ejabberd* shared roster support
