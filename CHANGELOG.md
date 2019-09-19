@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Port numbers in Prosody documentation
+- Ejabberd cache documentation reference
 
 ### Changed
 
