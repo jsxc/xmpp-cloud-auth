@@ -1,4 +1,4 @@
-RELEASE		= nightly
+RELEASE		= buster
 MINOR		= 1
 MODULE		= xcauth
 LIBNAME		= xclib
