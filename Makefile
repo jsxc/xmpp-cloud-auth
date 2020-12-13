@@ -122,6 +122,7 @@ install_files:	install_dirs
 	install -C -m 440 -T tools/xcauth.sudo ${DESTDIR}${SU_DIR}/xcauth
 	install -C -m 644 -T tools/xcauth.logrotate ${DESTDIR}${LRTDIR}/${MODULE}
 	install -C -m 644 -T prosody-modules/mod_auth_external.lua ${DESTDIR}${MODDIR}/mod_auth_external.lua-xcauth-version
+	install -C -m 644 -T prosody-modules/mod_auth_socket.lua ${DESTDIR}${MODDIR}/mod_auth_socket.lua
 	install -C -m 644 -T prosody-modules/pseudolpty.lib.lua ${DESTDIR}${MODDIR}/pseudolpty.lib.lua
 	install -C -m 644 -T tools/ejabberd.yml ${DESTDIR}${JABDIR}/ejabberd.yml-xcauth-example
 	install -C -m 644 -T tools/dhparams.pem.md ${DESTDIR}${JABDIR}/dhparams.pem-xcauth-example
