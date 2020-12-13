@@ -9,7 +9,7 @@ Sockets=xcauth.socket xcejabberd.socket xcpostfix.socket xcprosody.socket xcsasl
 # https://www.freedesktop.org/software/systemd/man/systemd.socket.html#ExecStartPre=
 # but doesn't for me in Ubuntu 18.04. So I moved it here.
 #
-# The downside of this setup: salsauth connection may not occur before
+# The downside of this setup: saslauth connection may not occur before
 # manual `systemctl start xcauth.service` or connection to one of the
 # other sockets.
 #
