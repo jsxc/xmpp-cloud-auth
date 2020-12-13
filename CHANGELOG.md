@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## 2.0.4+ - [Unreleased]
 ### Added
+- Own module `mod_auth_socket`, duplicating most of `mod_auth_external`, but
+  without requiring manual rename. Just use it instead of `mod_auth_external`.
+  It is configurable with `socket_auth_*` instead of `external_auth_*`, but
+  already preconfigured to talk to `@localhost:23663`. Note that
+  `external_auth_command` is now `socket_auth_connection`; all others are renamed
+  1:1.
 
 ### Fixed
 - Port numbers in Prosody documentation
