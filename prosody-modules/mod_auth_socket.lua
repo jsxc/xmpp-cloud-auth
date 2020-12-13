@@ -4,7 +4,7 @@
 -- Copyright (C) 2010 Jeff Mitchell
 -- Copyright (C) 2013 Mikael Nordfeldth
 -- Copyright (C) 2013 Matthew Wild, finally came to fix it all
--- Copyright (C) 2017-2018 Marcel Waldvogel
+-- Copyright (C) 2017-2020 Marcel Waldvogel (this file only)
 --
 -- This project is MIT/X11 licensed. Please see the
 -- COPYING file in the source package for more information.
@@ -18,33 +18,28 @@ local have_async, async = pcall(require, "util.async");
 local log = module._log;
 local host = module.host;
 
-local script_type = module:get_option_string("external_auth_protocol", "generic");
-local command = module:get_option_string("external_auth_command", "");
-local read_timeout = module:get_option_number("external_auth_timeout", 5);
-local auth_processes = module:get_option_number("external_auth_processes", 1);
+local script_type = module:get_option_string("socket_auth_protocol", "generic");
+local command = module:get_option_string("socket_auth_connect", "@localhost:23663");
+local read_timeout = module:get_option_number("socket_auth_timeout", 5);
+local auth_processes = module:get_option_number("socket_auth_processes", 1);
 
 local lpty, pty_options;
-if command:sub(1,1) == "@" then
-	-- Use a socket connection
-	lpty = module:require "pseudolpty";
-	log("info", "External auth with pseudolpty socket to %s", command:sub(2));
-	pty_options = { log = log };
-else
-	lpty = assert(require "lpty", "mod_auth_external requires lpty: https://modules.prosody.im/mod_auth_external.html#installation");
-	log("info", "External auth with pty command %s", command);
-	pty_options = { throw_errors = false, no_local_echo = true, use_path = false };
-end
-local blocking = module:get_option_boolean("external_auth_blocking", not(have_async and server.event and lpty.getfd));
+assert(command:sub(1,1) == "@", "mod_auth_socket requires a socket connection starting with @")
+lpty = module:require "pseudolpty";
+log("info", "Socket auth with pseudolpty socket to %s", command:sub(2));
+pty_options = { log = log };
+
+local blocking = module:get_option_boolean("socket_auth_blocking", not(have_async and server.event and lpty.getfd));
 assert(script_type == "ejabberd" or script_type == "generic",
-	"Config error: external_auth_protocol must be 'ejabberd' or 'generic'");
+	"Config error: socket_auth_protocol must be 'ejabberd' or 'generic'");
 assert(not host:find(":"), "Invalid hostname");
 
 
 if not blocking then
-	log("debug", "External auth in non-blocking mode, yay!")
+	log("debug", "Socket auth in non-blocking mode, yay!")
 	waiter, guard = async.waiter, async.guarder();
 elseif auth_processes > 1 then
-	log("warn", "external_auth_processes is greater than 1, but we are in blocking mode - reducing to 1");
+	log("warn", "socket_auth_processes is greater than 1, but we are in blocking mode - reducing to 1");
 	auth_processes = 1;
 end
 
