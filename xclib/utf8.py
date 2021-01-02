@@ -16,8 +16,11 @@ def unutf8(u, opts='strict'):
             traceback.print_exc()
             return 'illegal-utf8-sequence-' + dec
     else:
-        return u.decode('utf-8', opts)
-
+        try:
+            return u.decode('utf-8', opts)
+        except AttributeError:
+            pass
+        
 def utf8l(l):
     '''Encode a copy of the list, converted to UTF-8'''
     return list(map(utf8, l))
