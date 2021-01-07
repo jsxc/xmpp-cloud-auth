@@ -2,11 +2,11 @@
 
 For testing, we use `nose`. This probably can be installed using
 ```sh
-apt install python-nose
+apt install python3-nose python3-rednose python3-nose-cov
 ```
 or
 ```sh
-pip install nose
+pip3 install nose rednose nose-cov
 ```
 on your system. To run the tests, type
 ```sh
